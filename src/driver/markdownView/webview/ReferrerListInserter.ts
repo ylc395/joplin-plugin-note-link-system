@@ -1,3 +1,4 @@
+import { Note } from 'model/Note';
 import {
   REFERRER_LIST_HEADING_SETTING,
   REFERRER_AUTO_LIST_POSITION_SETTING,
@@ -5,13 +6,10 @@ import {
   REFERRER_AUTO_LIST_ENABLED_SETTING,
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
-} from 'driver/constants';
-import { Note } from 'model/Note';
-import type {
   QuerySettingRequest,
   SearchReferrersRequest,
   SearchNoteReferrersResponse,
-} from '../type';
+} from 'driver/constants';
 
 declare const webviewApi: {
   postMessage: <T>(id: string, payload: QuerySettingRequest | SearchReferrersRequest) => Promise<T>;
@@ -67,9 +65,11 @@ export class ReferrerListInserter {
       return;
     }
 
-    this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
-      event: 'searchReferrers',
-    });
+    this.referrers = (
+      await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
+        event: 'searchReferrers',
+      })
+    ).referrers;
 
     const rootEl = document.getElementById('rendered-md')!;
     const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];

@@ -1,5 +1,5 @@
 module.exports = {
-  default: function (context: unknown) {
+  default: function () {
     return {
       plugin: () => {},
       assets: function () {

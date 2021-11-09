@@ -5,8 +5,8 @@ import {
   NOTE_SEARCH_PATTERN_SETTING,
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
+  SearchElementReferrersResponse,
 } from 'driver/constants';
-import { SearchReferrersResponse } from 'driver/markdownView/type';
 
 interface SearchedNote {
   id: string;
@@ -74,7 +74,7 @@ export class SearchEngine {
     }
 
     try {
-      const result = {} as SearchReferrersResponse;
+      const result = {} as SearchElementReferrersResponse;
 
       for (const elementId of elementIds) {
         const keyword = this.referrerSearchPattern.replaceAll(

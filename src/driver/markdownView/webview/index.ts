@@ -1,7 +1,6 @@
 import { ElementReferrerBuilder } from './ElementReferrerBuilder';
 import { ReferrerListInserter } from './ReferrerListInserter';
-import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
-import type { OpenNoteRequest } from '../type';
+import { MARKDOWN_SCRIPT_ID, OpenNoteRequest } from 'driver/constants';
 
 declare const webviewApi: {
   postMessage: <T>(id: string, payload: OpenNoteRequest) => Promise<T>;

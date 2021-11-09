@@ -1,8 +1,12 @@
 import tippy, { roundArrow } from 'tippy.js';
 import 'tippy.js/dist/svg-arrow.css';
-import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
 import { Note } from 'model/Note';
-import type { SearchReferrersRequest, SearchReferrersResponse, OpenNoteRequest } from '../type';
+import {
+  MARKDOWN_SCRIPT_ID,
+  SearchReferrersRequest,
+  SearchElementReferrersResponse,
+  OpenNoteRequest,
+} from 'driver/constants';
 
 declare const webviewApi: {
   postMessage: <T>(id: string, payload: SearchReferrersRequest | OpenNoteRequest) => Promise<T>;
@@ -39,10 +43,13 @@ export class ElementReferrerBuilder {
     const rootEl = document.getElementById('rendered-md')!;
     const els = [...rootEl.querySelectorAll('[id]')] as HTMLElement[];
     const ids = els.map((el) => el.id);
-    const referrersMap = await webviewApi.postMessage<SearchReferrersResponse>(MARKDOWN_SCRIPT_ID, {
-      event: 'searchReferrers',
-      payload: { elementIds: ids },
-    });
+    const referrersMap = await webviewApi.postMessage<SearchElementReferrersResponse>(
+      MARKDOWN_SCRIPT_ID,
+      {
+        event: 'searchReferrers',
+        payload: { elementIds: ids },
+      },
+    );
 
     for (const elId of Object.keys(referrersMap)) {
       const idEl = document.getElementById(elId)!;

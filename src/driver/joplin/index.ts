@@ -10,12 +10,12 @@ import {
   REFERRER_LIST_HEADING_SETTING,
   REFERRER_AUTO_LIST_POSITION_SETTING,
   REFERRER_AUTO_LIST_ENABLED_SETTING,
+  REFERRER_PANEL_ENABLED_SETTING,
+  REFERRER_PANEL_TITLE_SETTING,
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
 } from 'driver/constants';
-import type { Request as CodeMirrorRequest } from 'driver/codeMirror/type';
-import type { Request as MarkdownViewRequest } from 'driver/markdownView/type';
-import { SearchEngine } from './SearchEngine';
+import requestHandler from './requestHandler';
 
 export async function setupSetting() {
   const SECTION_NAME = 'Note Link';
@@ -59,13 +59,27 @@ export async function setupSetting() {
         [ReferrersAutoListPosition.Bottom]: 'Note Bottom',
       },
     },
+    [REFERRER_PANEL_ENABLED_SETTING]: {
+      label: 'Referrers - Panel: Enabled',
+      type: SettingItemType.Bool,
+      public: true,
+      value: false,
+      section: SECTION_NAME,
+    },
+    [REFERRER_PANEL_TITLE_SETTING]: {
+      label: 'Referrers - Panel: Title',
+      type: SettingItemType.String,
+      public: true,
+      value: 'Backlinks',
+      section: SECTION_NAME,
+    },
     [REFERRER_SEARCH_PATTERN_SETTING]: {
       label: 'Referrers: Search Filter',
       type: SettingItemType.String,
       public: true,
       advanced: true,
       section: SECTION_NAME,
-      value: 'body: (:/$noteId)',
+      value: '/:/$noteId',
       description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
     },
     [NOTE_SEARCH_PATTERN_SETTING]: {
@@ -101,34 +115,40 @@ export async function setupToolbar() {
 }
 
 export async function setupMarkdownView() {
-  const searchEngine = new SearchEngine();
-
   await joplin.contentScripts.register(
     ContentScriptType.MarkdownItPlugin,
     MARKDOWN_SCRIPT_ID,
     './driver/markdownView/index.js',
   );
 
-  await joplin.contentScripts.onMessage(
-    MARKDOWN_SCRIPT_ID,
-    async (request: MarkdownViewRequest) => {
-      switch (request.event) {
-        case 'querySetting':
-          return joplin.settings.value(request.payload.key);
-        case 'openNote':
-          return joplin.commands.execute('openNote', request.payload.noteId);
-        case 'searchReferrers':
-          return request.payload?.elementIds
-            ? searchEngine.searchReferrersOfElements(
-                (await joplin.workspace.selectedNote()).id,
-                request.payload.elementIds,
-              )
-            : searchEngine.searchReferrers((await joplin.workspace.selectedNote()).id);
-        default:
-          break;
+  await joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, requestHandler);
+}
+
+export async function setupPanel() {
+  let panelVisible = false;
+  const panel = await joplin.views.panels.create('panel');
+  const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
+
+  await joplin.views.panels.addScript(panel, './driver/panelView/index.js');
+  await joplin.views.panels.onMessage(panel, requestHandler);
+
+  joplin.settings.onChange(async ({ keys }) => {
+    if (keys.includes(REFERRER_PANEL_ENABLED_SETTING)) {
+      const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
+
+      if (!enabled && panelVisible) {
+        joplin.views.panels.hide(panel);
       }
-    },
-  );
+
+      if (enabled && !panelVisible) {
+        joplin.views.panels.show(panel);
+      }
+    }
+  });
+
+  if (enabled) {
+    await joplin.views.panels.show(panel);
+  }
 }
 
 export async function setupCodeMirror() {
@@ -138,10 +158,5 @@ export async function setupCodeMirror() {
     './driver/codeMirror/index.js',
   );
 
-  await joplin.contentScripts.onMessage(CODE_MIRROR_SCRIPT_ID, (request: CodeMirrorRequest) => {
-    switch (request.event) {
-      default:
-        break;
-    }
-  });
+  await joplin.contentScripts.onMessage(CODE_MIRROR_SCRIPT_ID, requestHandler);
 }
