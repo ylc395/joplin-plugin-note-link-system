@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "module": "commonjs",
+    "target": "es2015",
+    "jsx": "react",
+    "allowJs": true,
+    "baseUrl": ".",
+    "strict": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "paths": {
+      "model/*": ["src/model/*"],
+      "driver/*": ["src/driver/*"]
+    },
+    "sourceMap": true
+  }
+}

@@ -1,0 +1,3 @@
+{
+  "extraScripts": ["driver/markdownView/index.ts", "driver/markdownView/webview/index.ts"]
+}
