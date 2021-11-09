@@ -44,7 +44,6 @@ export async function setupSetting() {
         [ReferrersAutoListPosition.NoteStart]: 'Displayed in note start',
         [ReferrersAutoListPosition.NoteEnd]: 'Displayed in note end',
       },
-      description: 'Need to restart Joplin',
     },
     [REFERRER_SEARCH_PATTERN_SETTING]: {
       label: 'Referrers: Search Filter',

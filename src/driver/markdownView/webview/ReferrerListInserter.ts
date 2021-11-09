@@ -67,7 +67,8 @@ export class ReferrerListInserter {
       return;
     }
 
-    const headingELs = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
+    const rootEl = document.getElementById('rendered-md')!;
+    const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
     const minLevel = Math.max(1, Math.min(...headingELs.map((el) => Number(el.tagName[1]))));
     const headingEl = document.createElement(`h${minLevel}`);
     headingEl.innerText = this.listHeading;
@@ -78,7 +79,7 @@ export class ReferrerListInserter {
       listEl.innerHTML += `<li>${note.title}</li>`;
     }
 
-    document.body.insertAdjacentElement(
+    rootEl.insertAdjacentElement(
       this.autoListPosition === ReferrersAutoListPosition.NoteStart ? 'afterbegin' : 'beforeend',
       headingEl,
     );
@@ -99,7 +100,8 @@ export class ReferrerListInserter {
       return false;
     }
 
-    const headingELs = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
+    const rootEl = document.getElementById('rendered-md')!;
+    const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
     let inserted = false;
 
     for (const el of headingELs) {
