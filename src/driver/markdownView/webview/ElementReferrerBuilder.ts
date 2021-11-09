@@ -20,6 +20,7 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
   attachTargetEl.appendChild(iconEl);
 
   tippy(iconEl, {
+    duration: [300, 0],
     content: listEl,
     interactive: true,
     placement: 'right',
