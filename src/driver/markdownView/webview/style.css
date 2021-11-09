@@ -1,4 +1,8 @@
-.note-link-referrers-icon {
+a[data-note-link-referrer-id] {
+  cursor: pointer;
+}
+
+.note-link-element-referrers-icon {
   font-family: monospace;
   cursor: pointer;
   vertical-align: middle;
@@ -9,7 +13,7 @@
   font-size: 0.6em;
 }
 
-.note-link-referrers-list {
+.note-link-element-referrers-list {
   width: 200px;
   background-color: #fff;
   border: 1px solid #000;
@@ -17,8 +21,7 @@
   margin: 0;
 }
 
-.note-link-referrers-list-item {
-  cursor: pointer;
+.note-link-element-referrers-list-item {
   margin: 0;
   font-size: 16px;
   font-weight: normal;

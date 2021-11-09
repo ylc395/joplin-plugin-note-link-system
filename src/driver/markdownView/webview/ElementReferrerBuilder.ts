@@ -1,39 +1,36 @@
+import tippy, { roundArrow } from 'tippy.js';
+import 'tippy.js/dist/svg-arrow.css';
 import { MARKDOWN_SCRIPT_ID } from 'driver/constants';
 import { Note } from 'model/Note';
 import type { SearchReferrersRequest, SearchReferrersResponse, OpenNoteRequest } from '../type';
-import { attach } from './attach';
 
 declare const webviewApi: {
   postMessage: <T>(id: string, payload: SearchReferrersRequest | OpenNoteRequest) => Promise<T>;
 };
 
-const ICON_CLASS_NAME = 'note-link-referrers-icon';
-const LIST_CLASS_NAME = 'note-link-referrers-list';
-const LIST_ITEM_CLASS_NAME = 'note-link-referrers-list-item';
+const ICON_CLASS_NAME = 'note-link-element-referrers-icon';
+const LIST_CLASS_NAME = 'note-link-element-referrers-list';
+const LIST_ITEM_CLASS_NAME = 'note-link-element-referrers-list-item';
+function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLElement) {
+  // currently, wo only handle h1-h6 as attach target
+  if (!['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(attachTargetEl.tagName)) {
+    return;
+  }
+
+  attachTargetEl.appendChild(iconEl);
+
+  tippy(iconEl, {
+    content: listEl,
+    interactive: true,
+    placement: 'right',
+    arrow: roundArrow,
+    trigger: process.env.NODE_ENV === 'development' ? 'click' : 'mouseenter focus',
+  });
+}
 
 export class ElementReferrerBuilder {
   init() {
     document.addEventListener('joplin-noteDidUpdate', this.attachReferrers.bind(this));
-    document.addEventListener('click', (e) => {
-      let target = e.target as HTMLElement;
-
-      if (target.matches(` .${LIST_ITEM_CLASS_NAME} *`)) {
-        while (!target.classList.contains(LIST_ITEM_CLASS_NAME)) {
-          target = target.parentElement!;
-        }
-      }
-
-      if (target.classList.contains(LIST_ITEM_CLASS_NAME)) {
-        const noteId = target.dataset.noteLinkReferrerId;
-
-        if (!noteId) {
-          throw new Error('no noteId');
-        }
-
-        webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'openNote', payload: { noteId } });
-      }
-    });
-
     this.attachReferrers();
   }
 
@@ -64,7 +61,7 @@ export class ElementReferrerBuilder {
     olEL.classList.add(LIST_CLASS_NAME);
 
     for (const note of notes) {
-      olEL.innerHTML += `<li class="${LIST_ITEM_CLASS_NAME}" data-note-link-referrer-id="${note.id}">${note.title}</li>`;
+      olEL.innerHTML += `<li><a class="${LIST_ITEM_CLASS_NAME}" data-note-link-referrer-id="${note.id}">${note.title}</a></li>`;
     }
 
     return [iconEl, olEL];

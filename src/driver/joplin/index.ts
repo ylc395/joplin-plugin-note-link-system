@@ -8,8 +8,10 @@ import {
   MARKDOWN_SCRIPT_ID,
   CODE_MIRROR_SCRIPT_ID,
   REFERRER_LIST_HEADING_SETTING,
-  REFERRER_AUTO_LIST_SETTING,
+  REFERRER_AUTO_LIST_POSITION_SETTING,
+  REFERRER_AUTO_LIST_ENABLED_SETTING,
   ReferrersAutoListPosition,
+  ReferrersAutoListEnabled,
 } from 'driver/constants';
 import type { Request as CodeMirrorRequest } from 'driver/codeMirror/type';
 import type { Request as MarkdownViewRequest } from 'driver/markdownView/type';
@@ -24,28 +26,38 @@ export async function setupSetting() {
 
   await joplin.settings.registerSettings({
     [REFERRER_LIST_HEADING_SETTING]: {
-      label: 'Referrers - View: Referrers List Heading',
+      label: 'Referrers - View: Referrers List Heading Text',
       type: SettingItemType.String,
       public: true,
       value: 'Backlinks', // compatible with [Automatic backlinks Plugin](https://discourse.joplinapp.org/t/insert-referencing-notes-backlinks-plugin/13632)
       section: SECTION_NAME,
-      description:
-        'Text in Headings(h1-h6) representing for referrers list(need to restart Joplin). You can always insert a referrers list heading manually to display the list',
+      description: 'Text in Headings(h1-h6) for auto & manually inserted referrers list',
     },
-    [REFERRER_AUTO_LIST_SETTING]: {
-      label: 'Referrers - View: Auto Referrers List Insertion',
+    [REFERRER_AUTO_LIST_ENABLED_SETTING]: {
+      label: 'Referrers - View: Enable/Disable Auto Referrers List Insertion',
       type: SettingItemType.Int,
       isEnum: true,
       public: true,
-      value: ReferrersAutoListPosition.NoteEnd,
+      value: ReferrersAutoListEnabled.EnabledWhenNoManual,
       section: SECTION_NAME,
       options: {
-        [ReferrersAutoListPosition.None]: 'Disabled',
-        [ReferrersAutoListPosition.NoteStart]: 'Displayed in note start',
-        [ReferrersAutoListPosition.NoteEnd]: 'Displayed in note end',
+        [ReferrersAutoListEnabled.Enabled]: 'Always enabled',
+        [ReferrersAutoListEnabled.EnabledWhenNoManual]:
+          'Enabled only when no manual insertion is existing',
+        [ReferrersAutoListEnabled.Disabled]: 'Always disabled',
       },
-      description:
-        'Auto insertion will always be disabled if there are manual insertions in a note',
+    },
+    [REFERRER_AUTO_LIST_POSITION_SETTING]: {
+      label: 'Referrers - View: Auto Inserted Referrers List Position',
+      type: SettingItemType.Int,
+      isEnum: true,
+      public: true,
+      value: ReferrersAutoListPosition.Bottom,
+      section: SECTION_NAME,
+      options: {
+        [ReferrersAutoListPosition.Top]: 'Note Top',
+        [ReferrersAutoListPosition.Bottom]: 'Note Bottom',
+      },
     },
     [REFERRER_SEARCH_PATTERN_SETTING]: {
       label: 'Referrers: Search Filter',

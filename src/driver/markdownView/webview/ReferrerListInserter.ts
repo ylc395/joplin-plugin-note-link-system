@@ -1,8 +1,10 @@
 import {
   REFERRER_LIST_HEADING_SETTING,
-  REFERRER_AUTO_LIST_SETTING,
-  ReferrersAutoListPosition,
+  REFERRER_AUTO_LIST_POSITION_SETTING,
   MARKDOWN_SCRIPT_ID,
+  REFERRER_AUTO_LIST_ENABLED_SETTING,
+  ReferrersAutoListPosition,
+  ReferrersAutoListEnabled,
 } from 'driver/constants';
 import { Note } from 'model/Note';
 import type {
@@ -15,106 +17,123 @@ declare const webviewApi: {
   postMessage: <T>(id: string, payload: QuerySettingRequest | SearchReferrersRequest) => Promise<T>;
 };
 
+const REFERRER_LIST_HEADING_CLASS_NAME = 'note-link-referrers-list-heading';
+
 export class ReferrerListInserter {
-  private listHeading?: string;
-  private autoListPosition?: ReferrersAutoListPosition;
+  private listHeadingText?: string;
+  private listPosition?: ReferrersAutoListPosition;
+  private autoInsertionEnabled?: ReferrersAutoListEnabled;
   private referrers?: Note[];
+  private refererHeadingEls?: HTMLElement[];
 
   init() {
     document.addEventListener('joplin-noteDidUpdate', this.insert.bind(this));
     this.insert();
   }
 
-  private async insert() {
-    if (typeof this.autoListPosition === 'undefined') {
-      this.autoListPosition = await webviewApi.postMessage<ReferrersAutoListPosition>(
+  private async fetchSetting() {
+    if (typeof this.autoInsertionEnabled === 'undefined') {
+      this.autoInsertionEnabled = await webviewApi.postMessage<ReferrersAutoListEnabled>(
         MARKDOWN_SCRIPT_ID,
         {
           event: 'querySetting',
-          payload: { key: REFERRER_AUTO_LIST_SETTING },
+          payload: { key: REFERRER_AUTO_LIST_ENABLED_SETTING },
         },
       );
     }
 
-    if (typeof this.listHeading === 'undefined') {
-      this.listHeading = await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
+    if (typeof this.listPosition === 'undefined') {
+      this.listPosition = await webviewApi.postMessage<ReferrersAutoListPosition>(
+        MARKDOWN_SCRIPT_ID,
+        {
+          event: 'querySetting',
+          payload: { key: REFERRER_AUTO_LIST_POSITION_SETTING },
+        },
+      );
+    }
+
+    if (typeof this.listHeadingText === 'undefined') {
+      this.listHeadingText = await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
         event: 'querySetting',
         payload: { key: REFERRER_LIST_HEADING_SETTING },
       });
+    }
+  }
+
+  private async insert() {
+    await this.fetchSetting();
+
+    if (!this.listHeadingText) {
+      return;
     }
 
     this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
       event: 'searchReferrers',
     });
 
-    const hasInserted = await this.insertListAfterHeadings();
+    const rootEl = document.getElementById('rendered-md')!;
+    const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
 
-    if (!hasInserted) {
-      await this.insertAutoList();
-    }
+    this.refererHeadingEls = headingELs.filter((el) => el.innerText === this.listHeadingText);
+
+    await this.prepareHeadings();
+    await this.insertListAfterHeadings();
   }
 
-  private async insertAutoList() {
+  private async prepareHeadings() {
     if (
-      typeof this.listHeading === 'undefined' ||
-      typeof this.autoListPosition === 'undefined' ||
+      typeof this.listHeadingText === 'undefined' ||
+      typeof this.autoInsertionEnabled === 'undefined' ||
+      typeof this.listPosition === 'undefined' ||
+      !this.refererHeadingEls ||
       !this.referrers
     ) {
       throw new Error('can not auto insert');
     }
 
-    if (this.autoListPosition === ReferrersAutoListPosition.None) {
+    if (this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled) {
+      return;
+    }
+
+    if (
+      this.refererHeadingEls.length > 0 &&
+      this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual
+    ) {
       return;
     }
 
     const rootEl = document.getElementById('rendered-md')!;
     const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
-    const minLevel = Math.max(1, Math.min(...headingELs.map((el) => Number(el.tagName[1]))));
+    const minLevel = Math.min(6, Math.min(...headingELs.map((el) => Number(el.tagName[1]))));
     const headingEl = document.createElement(`h${minLevel}`);
-    headingEl.innerText = this.listHeading;
+    headingEl.innerText = this.listHeadingText;
 
-    const listEl = document.createElement('ol');
-
-    for (const note of this.referrers) {
-      listEl.innerHTML += `<li>${note.title}</li>`;
-    }
-
+    this.refererHeadingEls.push(headingEl);
     rootEl.insertAdjacentElement(
-      this.autoListPosition === ReferrersAutoListPosition.NoteStart ? 'afterbegin' : 'beforeend',
+      this.listPosition === ReferrersAutoListPosition.Top ? 'afterbegin' : 'beforeend',
       headingEl,
     );
-
-    headingEl.insertAdjacentElement('afterend', listEl);
   }
 
-  private async insertListAfterHeadings(): Promise<boolean> {
-    if (!this.referrers || typeof this.listHeading === 'undefined') {
+  private async insertListAfterHeadings() {
+    if (!this.referrers || !this.refererHeadingEls) {
       throw new Error('can not insert list');
     }
 
-    if (!this.listHeading || this.referrers.length === 0) {
-      return false;
+    const listHtml = this.referrers
+      .map((note) => `<li>${this.referrerToHtmlLink(note)}</li>`)
+      .join('');
+
+    for (const headingEl of this.refererHeadingEls) {
+      const listEl = listHtml ? document.createElement('ol') : document.createElement('p');
+
+      listEl.innerHTML = listHtml || '<p>No referrers.</p>';
+      headingEl.classList.add(REFERRER_LIST_HEADING_CLASS_NAME);
+      headingEl.insertAdjacentElement('afterend', listEl);
     }
+  }
 
-    const rootEl = document.getElementById('rendered-md')!;
-    const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
-    let inserted = false;
-
-    for (const el of headingELs) {
-      if (el.innerText !== this.listHeading) {
-        continue;
-      }
-
-      inserted = true;
-      const listEl = document.createElement('ol');
-
-      for (const note of this.referrers) {
-        listEl.innerHTML += `<li>${note.title}</li>`;
-      }
-
-      el.insertAdjacentElement('afterend', listEl);
-    }
-
-    return inserted;
+  private referrerToHtmlLink(note: Note) {
+    return `<a data-note-link-referrer-id="${note.id}"><span class="resource-icon fa-joplin"></span>${note.title}</a>`;
   }
 }
