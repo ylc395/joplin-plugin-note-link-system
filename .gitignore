@@ -3,3 +3,4 @@ node_modules/
 publish/
 .vscode
 .DS_Store
+yarn-error.log
