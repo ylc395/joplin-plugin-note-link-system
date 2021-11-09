@@ -12,10 +12,12 @@ import {
   REFERRER_AUTO_LIST_ENABLED_SETTING,
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
+  REFERRER_PANEL_STYLESHEET_SETTING,
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
 } from 'driver/constants';
 import requestHandler from './requestHandler';
+import { PanelView } from '../panelView';
 
 export async function setupSetting() {
   const SECTION_NAME = 'Note Link';
@@ -70,7 +72,7 @@ export async function setupSetting() {
       label: 'Referrers - Panel: Title',
       type: SettingItemType.String,
       public: true,
-      value: 'Backlinks',
+      value: 'REFERRERS',
       section: SECTION_NAME,
     },
     [REFERRER_SEARCH_PATTERN_SETTING]: {
@@ -81,6 +83,15 @@ export async function setupSetting() {
       section: SECTION_NAME,
       value: '/:/$noteId',
       description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
+    },
+    [REFERRER_PANEL_STYLESHEET_SETTING]: {
+      label: 'Referrers - Panel: Stylesheet',
+      type: SettingItemType.String,
+      public: true,
+      advanced: true,
+      section: SECTION_NAME,
+      value: '',
+      description: 'CSS For panel',
     },
     [NOTE_SEARCH_PATTERN_SETTING]: {
       section: SECTION_NAME,
@@ -125,30 +136,12 @@ export async function setupMarkdownView() {
 }
 
 export async function setupPanel() {
-  let panelVisible = false;
-  const panel = await joplin.views.panels.create('panel');
-  const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
+  const panelId = await joplin.views.panels.create('panel');
+  await joplin.views.panels.addScript(panelId, './driver/panelView/script.js');
+  await joplin.views.panels.addScript(panelId, './driver/panelView/style.css');
+  await joplin.views.panels.onMessage(panelId, requestHandler);
 
-  await joplin.views.panels.addScript(panel, './driver/panelView/index.js');
-  await joplin.views.panels.onMessage(panel, requestHandler);
-
-  joplin.settings.onChange(async ({ keys }) => {
-    if (keys.includes(REFERRER_PANEL_ENABLED_SETTING)) {
-      const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
-
-      if (!enabled && panelVisible) {
-        joplin.views.panels.hide(panel);
-      }
-
-      if (enabled && !panelVisible) {
-        joplin.views.panels.show(panel);
-      }
-    }
-  });
-
-  if (enabled) {
-    await joplin.views.panels.show(panel);
-  }
+  new PanelView(panelId);
 }
 
 export async function setupCodeMirror() {

@@ -14,12 +14,14 @@ export default async function requestHandler(request: Request) {
       return joplin.settings.value(request.payload.key);
     case 'openNote':
       return joplin.commands.execute('openNote', request.payload.noteId);
+    case 'writeClipboard':
+      return joplin.clipboard.writeText(request.payload.content);
     case 'searchReferrers':
       const selectedNoteId = (await joplin.workspace.selectedNote()).id;
 
       return request.payload?.elementIds
         ? searchEngine.searchReferrersOfElements(selectedNoteId, request.payload.elementIds)
-        : { noteId: selectedNoteId, referrers: await searchEngine.searchReferrers(selectedNoteId) };
+        : searchEngine.searchReferrers(selectedNoteId);
     default:
       break;
   }

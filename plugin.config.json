@@ -2,6 +2,6 @@
   "extraScripts": [
     "driver/markdownView/index.ts",
     "driver/markdownView/webview/index.ts",
-    "driver/panelView/index.ts"
+    "driver/panelView/script.ts"
   ]
 }

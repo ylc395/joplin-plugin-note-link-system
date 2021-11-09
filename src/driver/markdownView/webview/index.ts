@@ -1,3 +1,4 @@
+import delegate from 'delegate';
 import { ElementReferrerBuilder } from './ElementReferrerBuilder';
 import { ReferrerListInserter } from './ReferrerListInserter';
 import { MARKDOWN_SCRIPT_ID, OpenNoteRequest } from 'driver/constants';
@@ -6,25 +7,15 @@ declare const webviewApi: {
   postMessage: <T>(id: string, payload: OpenNoteRequest) => Promise<T>;
 };
 
-document.addEventListener('click', (e) => {
-  let target: HTMLElement | null = e.target as HTMLElement;
-  const selector = '[data-note-link-referrer-id]';
+delegate('[data-note-link-referrer-id]', 'click', (e: any) => {
+  const target = e.delegateTarget as HTMLElement;
+  const noteId = target.dataset.noteLinkReferrerId;
 
-  if (target.matches(`${selector} *`)) {
-    while (target && !target.matches(selector)) {
-      target = target.parentElement!;
-    }
+  if (!noteId) {
+    throw new Error('no noteId');
   }
 
-  if (target?.matches(selector)) {
-    const noteId = target.dataset.noteLinkReferrerId;
-
-    if (!noteId) {
-      throw new Error('no noteId');
-    }
-
-    webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'openNote', payload: { noteId } });
-  }
+  webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'openNote', payload: { noteId } });
 });
 
 new ElementReferrerBuilder().init();

@@ -65,11 +65,9 @@ export class ReferrerListInserter {
       return;
     }
 
-    this.referrers = (
-      await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
-        event: 'searchReferrers',
-      })
-    ).referrers;
+    this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
+      event: 'searchReferrers',
+    });
 
     const rootEl = document.getElementById('rendered-md')!;
     const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];

@@ -1,46 +1,93 @@
+import joplin from 'api';
+import type { ViewHandle } from 'api/types';
 import {
-  SearchReferrersRequest,
-  OpenNoteRequest,
-  QuerySettingRequest,
-  SearchNoteReferrersResponse,
+  REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
+  REFERRER_PANEL_STYLESHEET_SETTING,
 } from 'driver/constants';
+import { SearchEngine } from '../joplin/SearchEngine';
 
-declare const webviewApi: {
-  postMessage: <T>(
-    payload: SearchReferrersRequest | OpenNoteRequest | QuerySettingRequest,
-  ) => Promise<T>;
-};
-
-const rootEl = document.getElementById('joplin-plugin-content')!;
-let lastSelectedNoteId = '';
-
-const refresh = async () => {
-  const { noteId, referrers } = await webviewApi.postMessage<SearchNoteReferrersResponse>({
-    event: 'searchReferrers',
-  });
-
-  if (lastSelectedNoteId === noteId) {
-    return;
+export class PanelView {
+  constructor(private readonly viewHandler: ViewHandle) {
+    this.init();
   }
 
-  const listEl = document.querySelector('ol')!;
-  listEl.innerHTML = '';
+  private readonly searchEngine = new SearchEngine();
+  private panelVisible = false;
+  private currentNoteId?: string;
+  private panelTitle?: string;
+  private stylesheet?: string;
 
-  for (const note of referrers) {
-    listEl.innerHTML += `<li data-note-id="${note.id}">${note.title}</li>`;
+  private async init() {
+    const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
+
+    this.panelTitle = await joplin.settings.value(REFERRER_PANEL_TITLE_SETTING);
+    this.stylesheet = await joplin.settings.value(REFERRER_PANEL_STYLESHEET_SETTING);
+    this.currentNoteId = (await joplin.workspace.selectedNote()).id;
+
+    if (enabled) {
+      await this.show();
+    }
+
+    joplin.workspace.onNoteSelectionChange(({ value }: { value: string[] }) => {
+      this.currentNoteId = value[0];
+      this.refresh();
+    });
+
+    joplin.settings.onChange(async ({ keys }) => {
+      if (keys.includes(REFERRER_PANEL_ENABLED_SETTING)) {
+        const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
+
+        if (!enabled && this.panelVisible) {
+          this.hide();
+        }
+
+        if (enabled && !this.panelVisible) {
+          this.show();
+        }
+      }
+
+      if (
+        keys.includes(REFERRER_PANEL_TITLE_SETTING) ||
+        keys.includes(REFERRER_PANEL_STYLESHEET_SETTING)
+      ) {
+        this.panelTitle = await joplin.settings.value(REFERRER_PANEL_TITLE_SETTING);
+        this.stylesheet = await joplin.settings.value(REFERRER_PANEL_STYLESHEET_SETTING);
+        this.refresh();
+      }
+    });
   }
 
-  lastSelectedNoteId = noteId;
-};
+  show() {
+    this.panelVisible = true;
+    joplin.views.panels.show(this.viewHandler);
+    this.refresh();
+  }
+  hide() {
+    this.panelVisible = false;
+    joplin.views.panels.hide(this.viewHandler);
+  }
 
-(async function init() {
-  const title = await webviewApi.postMessage<string>({
-    event: 'querySetting',
-    payload: { key: REFERRER_PANEL_TITLE_SETTING },
-  });
-  rootEl.innerHTML = `<h1>${title}<h1><ol></ol>`;
-  refresh();
-})();
+  private async refresh() {
+    if (!this.currentNoteId) {
+      throw new Error('no current note id');
+    }
 
-setInterval(refresh, 500);
+    const notes = await this.searchEngine.searchReferrers(this.currentNoteId);
+    let html = `<style>${this.stylesheet}</style><div id="root"><h1>${this.panelTitle}</h1>`;
+
+    if (notes.length > 0) {
+      html += '<ol>';
+      for (const note of notes) {
+        html += `<li><a data-note-id="${note.id}">${note.title}</a></li>`;
+      }
+      html += '</ol>';
+    } else {
+      html += '<p>No referrers.</p>';
+    }
+
+    html += '</div>';
+
+    joplin.views.panels.setHtml(this.viewHandler, html);
+  }
+}
