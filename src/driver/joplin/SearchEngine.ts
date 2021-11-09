@@ -107,7 +107,6 @@ export class SearchEngine {
     while (hasMore) {
       const { items, has_more } = await joplin.data.get(['search'], {
         query,
-        type: 'note',
         page: page++,
       });
 

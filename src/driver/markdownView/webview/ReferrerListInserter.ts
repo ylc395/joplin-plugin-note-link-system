@@ -92,11 +92,7 @@ export class ReferrerListInserter {
       throw new Error('can not insert list');
     }
 
-    if (!this.listHeading) {
-      return false;
-    }
-
-    if (this.referrers.length === 0) {
+    if (!this.listHeading || this.referrers.length === 0) {
       return false;
     }
 

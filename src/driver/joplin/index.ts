@@ -30,10 +30,10 @@ export async function setupSetting() {
       value: 'Backlinks', // compatible with [Automatic backlinks Plugin](https://discourse.joplinapp.org/t/insert-referencing-notes-backlinks-plugin/13632)
       section: SECTION_NAME,
       description:
-        'Text in Headings(h1-h6) representing for referrers list(need to restart Joplin)',
+        'Text in Headings(h1-h6) representing for referrers list(need to restart Joplin). You can always insert a referrers list heading manually to display the list',
     },
     [REFERRER_AUTO_LIST_SETTING]: {
-      label: 'Referrers - View: Auto Display Referrers List In View',
+      label: 'Referrers - View: Auto Referrers List Insertion',
       type: SettingItemType.Int,
       isEnum: true,
       public: true,
@@ -44,6 +44,8 @@ export async function setupSetting() {
         [ReferrersAutoListPosition.NoteStart]: 'Displayed in note start',
         [ReferrersAutoListPosition.NoteEnd]: 'Displayed in note end',
       },
+      description:
+        'Auto insertion will always be disabled if there are manual insertions in a note',
     },
     [REFERRER_SEARCH_PATTERN_SETTING]: {
       label: 'Referrers: Search Filter',
