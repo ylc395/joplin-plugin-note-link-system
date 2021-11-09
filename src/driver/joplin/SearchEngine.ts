@@ -8,6 +8,11 @@ import {
 } from 'driver/constants';
 import { SearchReferrersResponse } from 'driver/markdownView/type';
 
+interface SearchedNote {
+  id: string;
+  title: string;
+}
+
 export class SearchEngine {
   private noteSearchPattern?: string;
   private referrerSearchPattern?: string;
@@ -50,9 +55,11 @@ export class SearchEngine {
     }
 
     try {
-      const notes = await SearchEngine.searchNotes(
-        this.referrerSearchPattern.replaceAll(REFERRER_SEARCH_PATTERN_PLACEHOLDER, noteId),
+      const keyword = this.referrerSearchPattern.replaceAll(
+        REFERRER_SEARCH_PATTERN_PLACEHOLDER,
+        noteId,
       );
+      const notes = await SearchEngine.searchNotes(keyword);
 
       return notes;
     } catch (error) {
@@ -70,12 +77,11 @@ export class SearchEngine {
       const result = {} as SearchReferrersResponse;
 
       for (const elementId of elementIds) {
-        const referrers = await SearchEngine.searchNotes(
-          this.referrerSearchPattern.replaceAll(
-            REFERRER_SEARCH_PATTERN_PLACEHOLDER,
-            `${noteId}#${elementId}`,
-          ),
+        const keyword = this.referrerSearchPattern.replaceAll(
+          REFERRER_SEARCH_PATTERN_PLACEHOLDER,
+          `${noteId}#${elementId}`,
         );
+        const referrers = await SearchEngine.searchNotes(keyword);
 
         if (referrers.length > 0) {
           result[elementId] = referrers;
@@ -93,7 +99,7 @@ export class SearchEngine {
     this.init(true);
   }
 
-  private static async searchNotes(query: string): Promise<Note[]> {
+  private static async searchNotes(query: string): Promise<SearchedNote[]> {
     let result: Note[] = [];
     let page = 1;
     let hasMore = true;
@@ -102,7 +108,6 @@ export class SearchEngine {
       const { items, has_more } = await joplin.data.get(['search'], {
         query,
         type: 'note',
-        field: 'id,title,updated_time,created_time',
         page: page++,
       });
 

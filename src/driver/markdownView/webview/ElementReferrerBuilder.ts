@@ -7,16 +7,21 @@ declare const webviewApi: {
   postMessage: <T>(id: string, payload: SearchReferrersRequest | OpenNoteRequest) => Promise<T>;
 };
 
-const LIST_CONTAINER_CLASS_NAME = 'note-link-referrers-container';
 const ICON_CLASS_NAME = 'note-link-referrers-icon';
 const LIST_CLASS_NAME = 'note-link-referrers-list';
-const LIST_ITEM_CLASS_NAME = 'note-link-referrers-list=item';
+const LIST_ITEM_CLASS_NAME = 'note-link-referrers-list-item';
 
 export class ElementReferrerBuilder {
   init() {
     document.addEventListener('joplin-noteDidUpdate', this.attachReferrers.bind(this));
     document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
+      let target = e.target as HTMLElement;
+
+      if (target.matches(` .${LIST_ITEM_CLASS_NAME} *`)) {
+        while (!target.classList.contains(LIST_ITEM_CLASS_NAME)) {
+          target = target.parentElement!;
+        }
+      }
 
       if (target.classList.contains(LIST_ITEM_CLASS_NAME)) {
         const noteId = target.dataset.noteLinkReferrerId;
@@ -42,32 +47,26 @@ export class ElementReferrerBuilder {
     });
 
     for (const elId of Object.keys(referrersMap)) {
-      const el = document.getElementById(elId)!;
+      const idEl = document.getElementById(elId)!;
       const referrers = referrersMap[elId];
-      const containerEl = this.createReferrerListContainer(referrers);
+      const [iconEl, listEl] = this.createReferrerElements(referrers);
 
-      attach(el, containerEl);
+      attach(idEl, iconEl, listEl);
     }
   }
 
-  private createReferrerListContainer(notes: Note[]) {
-    function getListItemHtml() {
-      let html = '';
-      for (const note of notes) {
-        html += `<li class="${LIST_ITEM_CLASS_NAME}" data-note-link-referrer-id="${note.id}">${note.title}</li>`;
-      }
-      return html;
+  private createReferrerElements(notes: Note[]) {
+    const iconEl = document.createElement('span');
+    iconEl.classList.add(ICON_CLASS_NAME);
+    iconEl.textContent = String(notes.length);
+
+    const olEL = document.createElement('ol');
+    olEL.classList.add(LIST_CLASS_NAME);
+
+    for (const note of notes) {
+      olEL.innerHTML += `<li class="${LIST_ITEM_CLASS_NAME}" data-note-link-referrer-id="${note.id}">${note.title}</li>`;
     }
 
-    const listContainer = document.createElement('div');
-    listContainer.classList.add(LIST_CONTAINER_CLASS_NAME);
-
-    listContainer.innerHTML = `
-      <span class="${ICON_CLASS_NAME}">${notes.length}</span>
-      <ol class="${LIST_CLASS_NAME}">
-        ${getListItemHtml()}
-      </ol>`;
-
-    return listContainer;
+    return [iconEl, olEL];
   }
 }

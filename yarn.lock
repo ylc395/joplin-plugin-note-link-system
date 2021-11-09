@@ -44,6 +44,11 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
+"@popperjs/core@^2.9.0":
+  version "2.10.2"
+  resolved "https://registry.npmjs.org/@popperjs/core/-/core-2.10.2.tgz#0798c03351f0dea1a5a4cabddf26a55a7cbee590"
+  integrity sha512-IXf3XA7+XyN7CP9gGh/XB0UxVMlvARGEgGXLubFICsUMGz6Q+DU+i4gGlpOxTjKvXjkJDJC8YdqdKkDj9qZHEQ==
+
 "@types/json-schema@^7.0.8":
   version "7.0.9"
   resolved "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
@@ -894,6 +899,27 @@ crypto-browserify@^3.11.0:
     randombytes "^2.0.0"
     randomfill "^1.0.3"
 
+css-loader@5:
+  version "5.2.7"
+  resolved "https://registry.npmjs.org/css-loader/-/css-loader-5.2.7.tgz#9b9f111edf6fb2be5dc62525644cbc9c232064ae"
+  integrity sha512-Q7mOvpBNBG7YrVGMxRxcBJZFL75o+cH2abNASdibkj/fffYD8qWbInZrD0S9ccI6vZclF3DsHE7njGlLtaHbhg==
+  dependencies:
+    icss-utils "^5.1.0"
+    loader-utils "^2.0.0"
+    postcss "^8.2.15"
+    postcss-modules-extract-imports "^3.0.0"
+    postcss-modules-local-by-default "^4.0.0"
+    postcss-modules-scope "^3.0.0"
+    postcss-modules-values "^4.0.0"
+    postcss-value-parser "^4.1.0"
+    schema-utils "^3.0.0"
+    semver "^7.3.5"
+
+cssesc@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
+  integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
+
 cyclist@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
@@ -1478,6 +1504,11 @@ https-browserify@^1.0.0:
   resolved "https://registry.npmjs.org/https-browserify/-/https-browserify-1.0.0.tgz#ec06c10e0a34c0f2faf199f7fd7fc78fffd03c73"
   integrity sha1-7AbBDgo0wPL68Zn3/X/Hj//QPHM=
 
+icss-utils@^5.0.0, icss-utils@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.npmjs.org/icss-utils/-/icss-utils-5.1.0.tgz#c6be6858abd013d768e98366ae47e25d5887b1ae"
+  integrity sha512-soFhflCVWLfRNOPU3iv5Z9VUdT44xFRbzjLsEzSr5AQmgqPMTHdU3PMT1Cf1ssx8fLNJDA1juftYl+PUcv3MqA==
+
 ieee754@^1.1.4:
   version "1.2.1"
   resolved "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
@@ -2023,6 +2054,11 @@ nan@^2.12.1:
   resolved "https://registry.npmjs.org/nan/-/nan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
   integrity sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==
 
+nanoid@^3.1.30:
+  version "3.1.30"
+  resolved "https://registry.npmjs.org/nanoid/-/nanoid-3.1.30.tgz#63f93cc548d2a113dc5dfbc63bfa09e2b9b64362"
+  integrity sha512-zJpuPDwOv8D2zq2WRoMe1HsfZthVewpel9CAvTfc/2mBD1uUT/agc5f7GHGWXlYkFvi1mVxe4IjvP2HNrop7nQ==
+
 nanomatch@^1.2.9:
   version "1.2.13"
   resolved "https://registry.npmjs.org/nanomatch/-/nanomatch-1.2.13.tgz#b87a8aa4fc0de8fe6be88895b38983ff265bd119"
@@ -2262,6 +2298,11 @@ pbkdf2@^3.0.3:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
+picocolors@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/picocolors/-/picocolors-1.0.0.tgz#cb5bdc74ff3f51892236eaf79d68bc44564ab81c"
+  integrity sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==
+
 picomatch@^2.0.4, picomatch@^2.2.1, picomatch@^2.2.3:
   version "2.3.0"
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-2.3.0.tgz#f1f061de8f6a4bf022892e2d128234fb98302972"
@@ -2290,6 +2331,56 @@ posix-character-classes@^0.1.0:
   version "0.1.1"
   resolved "https://registry.npmjs.org/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha1-AerA/jta9xoqbAL+q7jB/vfgDqs=
+
+postcss-modules-extract-imports@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/postcss-modules-extract-imports/-/postcss-modules-extract-imports-3.0.0.tgz#cda1f047c0ae80c97dbe28c3e76a43b88025741d"
+  integrity sha512-bdHleFnP3kZ4NYDhuGlVK+CMrQ/pqUm8bx/oGL93K6gVwiclvX5x0n76fYMKuIGKzlABOy13zsvqjb0f92TEXw==
+
+postcss-modules-local-by-default@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/postcss-modules-local-by-default/-/postcss-modules-local-by-default-4.0.0.tgz#ebbb54fae1598eecfdf691a02b3ff3b390a5a51c"
+  integrity sha512-sT7ihtmGSF9yhm6ggikHdV0hlziDTX7oFoXtuVWeDd3hHObNkcHRo9V3yg7vCAY7cONyxJC/XXCmmiHHcvX7bQ==
+  dependencies:
+    icss-utils "^5.0.0"
+    postcss-selector-parser "^6.0.2"
+    postcss-value-parser "^4.1.0"
+
+postcss-modules-scope@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/postcss-modules-scope/-/postcss-modules-scope-3.0.0.tgz#9ef3151456d3bbfa120ca44898dfca6f2fa01f06"
+  integrity sha512-hncihwFA2yPath8oZ15PZqvWGkWf+XUfQgUGamS4LqoP1anQLOsOJw0vr7J7IwLpoY9fatA2qiGUGmuZL0Iqlg==
+  dependencies:
+    postcss-selector-parser "^6.0.4"
+
+postcss-modules-values@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.npmjs.org/postcss-modules-values/-/postcss-modules-values-4.0.0.tgz#d7c5e7e68c3bb3c9b27cbf48ca0bb3ffb4602c9c"
+  integrity sha512-RDxHkAiEGI78gS2ofyvCsu7iycRv7oqw5xMWn9iMoR0N/7mf9D50ecQqUo5BZ9Zh2vH4bCUR/ktCqbB9m8vJjQ==
+  dependencies:
+    icss-utils "^5.0.0"
+
+postcss-selector-parser@^6.0.2, postcss-selector-parser@^6.0.4:
+  version "6.0.6"
+  resolved "https://registry.npmjs.org/postcss-selector-parser/-/postcss-selector-parser-6.0.6.tgz#2c5bba8174ac2f6981ab631a42ab0ee54af332ea"
+  integrity sha512-9LXrvaaX3+mcv5xkg5kFwqSzSH1JIObIx51PrndZwlmznwXRfxMddDvo9gve3gVR8ZTKgoFDdWkbRFmEhT4PMg==
+  dependencies:
+    cssesc "^3.0.0"
+    util-deprecate "^1.0.2"
+
+postcss-value-parser@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.npmjs.org/postcss-value-parser/-/postcss-value-parser-4.1.0.tgz#443f6a20ced6481a2bda4fa8532a6e55d789a2cb"
+  integrity sha512-97DXOFbQJhk71ne5/Mt6cOu6yxsSfM0QGQyl0L25Gca4yGWEGJaig7l7gbCX623VqTBNGLRLaVUCnNkcedlRSQ==
+
+postcss@^8.2.15:
+  version "8.3.11"
+  resolved "https://registry.npmjs.org/postcss/-/postcss-8.3.11.tgz#c3beca7ea811cd5e1c4a3ec6d2e7599ef1f8f858"
+  integrity sha512-hCmlUAIlUiav8Xdqw3Io4LcpA1DOt7h3LSTAC4G6JGHFFaWzI6qvFt9oilvl8BmkbBRX1IhM90ZAmpk68zccQA==
+  dependencies:
+    nanoid "^3.1.30"
+    picocolors "^1.0.0"
+    source-map-js "^0.6.2"
 
 prettier@^2.4.1:
   version "2.4.1"
@@ -2703,6 +2794,11 @@ source-list-map@^2.0.0:
   resolved "https://registry.npmjs.org/source-list-map/-/source-list-map-2.0.1.tgz#3993bd873bfc48479cca9ea3a547835c7c154b34"
   integrity sha512-qnQ7gVMxGNxsiL4lEuJwe/To8UnK7fAnmbGEEH8RpLouuKbeEm0lhbQVFIrNSuB+G7tVrAlVsZgETT5nljf+Iw==
 
+source-map-js@^0.6.2:
+  version "0.6.2"
+  resolved "https://registry.npmjs.org/source-map-js/-/source-map-js-0.6.2.tgz#0bb5de631b41cfbda6cfba8bd05a80efdfd2385e"
+  integrity sha512-/3GptzWzu0+0MBQFrDKzw/DvvMTUORvgY6k6jd/VS6iCR4RDTKWH6v6WPwQoUO8667uQEf9Oe38DxAYWY5F/Ug==
+
 source-map-resolve@^0.5.0:
   version "0.5.3"
   resolved "https://registry.npmjs.org/source-map-resolve/-/source-map-resolve-0.5.3.tgz#190866bece7553e1f8f267a2ee82c606b5509a1a"
@@ -2849,6 +2945,14 @@ strip-bom@^3.0.0:
   resolved "https://registry.npmjs.org/strip-bom/-/strip-bom-3.0.0.tgz#2334c18e9c759f7bdd56fdef7e9ae3d588e68ed3"
   integrity sha1-IzTBjpx1n3vdVv3vfprj1YjmjtM=
 
+style-loader@2:
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/style-loader/-/style-loader-2.0.0.tgz#9669602fd4690740eaaec137799a03addbbc393c"
+  integrity sha512-Z0gYUJmzZ6ZdRUqpg1r8GsaFKypE+3xAzuFeMuoHgjc9KZv3wMyCRjQIWEbhoFSq7+7yoHXySDJyyWQaPajeiQ==
+  dependencies:
+    loader-utils "^2.0.0"
+    schema-utils "^3.0.0"
+
 supports-color@^5.3.0:
   version "5.5.0"
   resolved "https://registry.npmjs.org/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
@@ -2930,6 +3034,13 @@ timers-browserify@^2.0.4:
   integrity sha512-9phl76Cqm6FhSX9Xe1ZUAMLtm1BLkKj2Qd5ApyWkXzsMRaA7dgr81kf4wJmQf/hAvg8EEyJxDo3du/0KlhPiKQ==
   dependencies:
     setimmediate "^1.0.4"
+
+tippy.js@^6.3.5:
+  version "6.3.5"
+  resolved "https://registry.npmjs.org/tippy.js/-/tippy.js-6.3.5.tgz#cbc99d34f87ccc127e6460032b86c8d47971d38f"
+  integrity sha512-B9hAQ5KNF+jDJRg6cRysV6Y3J+5fiNfD60GuXR5TP0sfrcltpgdzVc7f1wMtjQ3W0+Xsy80CDvk0Z+Vr0cM4sQ==
+  dependencies:
+    "@popperjs/core" "^2.9.0"
 
 to-arraybuffer@^1.0.0:
   version "1.0.1"
@@ -3080,7 +3191,7 @@ use@^3.1.0:
   resolved "https://registry.npmjs.org/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
   integrity sha512-cwESVXlO3url9YWlFW/TA9cshCEhtu7IKJ/p5soJ/gGpj7vbvFrAY/eIioQ6Dw23KjZhYgiIo8HOs1nQ2vr/oQ==
 
-util-deprecate@^1.0.1, util-deprecate@~1.0.1:
+util-deprecate@^1.0.1, util-deprecate@^1.0.2, util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=
