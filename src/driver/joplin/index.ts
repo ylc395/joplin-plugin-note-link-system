@@ -1,5 +1,5 @@
 import joplin from 'api';
-import { ContentScriptType, SettingItemType } from 'api/types';
+import { ContentScriptType, SettingItemType, ToolbarButtonLocation } from 'api/types';
 import {
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   NOTE_SEARCH_PATTERN_SETTING,
@@ -78,6 +78,26 @@ export async function setupSetting() {
       description: `Search filter for making quick links in editor. Filters can be found at https://joplinapp.org/help/#search-filters. ${NOTE_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for keyword you typed in.`,
     },
   });
+}
+
+export async function setupToolbar() {
+  const commandName = 'insert referrers list';
+
+  await joplin.commands.register({
+    name: commandName,
+    label: 'Insert a referrers list',
+    iconName: 'fas fa-hand-point-left',
+    execute: async () => {
+      const text = await joplin.settings.value(REFERRER_LIST_HEADING_SETTING);
+      joplin.commands.execute('replaceSelection', `# ${text}`);
+    },
+  });
+
+  await joplin.views.toolbarButtons.create(
+    'insert-referrers-list',
+    commandName,
+    ToolbarButtonLocation.EditorToolbar,
+  );
 }
 
 export async function setupMarkdownView() {
