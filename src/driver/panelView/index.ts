@@ -81,7 +81,7 @@ export class PanelView {
       for (const note of notes) {
         html += `<li><a class="title" data-note-id="${note.id}">${
           note.title
-        }</a><span class="count" data-tip="${note.mentionCount} reference${
+        }</a><span class="count" title="${note.mentionCount} reference${
           note.mentionCount > 1 ? 's' : ''
         } from this note">${note.mentionCount}</span></li>`;
       }

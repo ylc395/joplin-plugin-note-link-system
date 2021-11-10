@@ -123,7 +123,11 @@ export class ElementReferrerBuilder {
     olEL.classList.add(LIST_CLASS_NAME);
 
     for (const note of notes) {
-      olEL.innerHTML += `<li><a data-note-link-referrer-id="${note.id}">${note.title}</a><span class="${LIST_ITEM_COUNT_CLASS_NAME}">${note.mentionCount}</span></li>`;
+      olEL.innerHTML += `<li><a data-note-link-referrer-id="${note.id}">${
+        note.title
+      }</a><span title="${note.mentionCount} reference${
+        note.mentionCount > 1 ? 's' : ''
+      } from this note" class="${LIST_ITEM_COUNT_CLASS_NAME}">${note.mentionCount}</span></li>`;
     }
 
     return [iconEl, olEL];
