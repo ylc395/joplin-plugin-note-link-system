@@ -22,8 +22,8 @@ export enum ReferrersAutoListEnabled {
   Disabled,
 }
 
-export const MARKDOWN_SCRIPT_ID = 'MARKDOWN_SCRIPT_ID';
-export const CODE_MIRROR_SCRIPT_ID = 'CODE_MIRROR_SCRIPT_ID';
+export const MARKDOWN_SCRIPT_ID = 'ylc395.noteLinkSystem.MARKDOWN_SCRIPT_ID';
+export const CODE_MIRROR_SCRIPT_ID = 'ylc395.noteLinkSystem.CODE_MIRROR_SCRIPT_ID';
 
 export type Request =
   | SearchReferrersRequest
