@@ -79,11 +79,15 @@ export class PanelView {
     if (notes.length > 0) {
       html += '<ol>';
       for (const note of notes) {
-        html += `<li><a data-note-id="${note.id}">${note.title}</a><span>${note.mentionCount}</span></li>`;
+        html += `<li><a class="title" data-note-id="${note.id}">${
+          note.title
+        }</a><span class="count" data-tip="${note.mentionCount} reference${
+          note.mentionCount > 1 ? 's' : ''
+        } from this note">${note.mentionCount}</span></li>`;
       }
       html += '</ol>';
     } else {
-      html += '<p>No referrers.</p>';
+      html += '<p class="no-referrers">No referrers.</p>';
     }
 
     html += '</div>';

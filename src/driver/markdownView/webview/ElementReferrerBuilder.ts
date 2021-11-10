@@ -1,5 +1,6 @@
 import tippy, { roundArrow } from 'tippy.js';
 import 'tippy.js/dist/svg-arrow.css';
+import referenceIcon from 'bootstrap-icons/icons/box-arrow-in-down-left.svg';
 import { Referrer } from 'model/Referrer';
 import {
   MARKDOWN_SCRIPT_ID,
@@ -14,7 +15,8 @@ declare const webviewApi: {
 
 const ICON_CLASS_NAME = 'note-link-element-referrers-icon';
 const LIST_CLASS_NAME = 'note-link-element-referrers-list';
-const LIST_ITEM_CLASS_NAME = 'note-link-element-referrers-list-item';
+const LIST_ITEM_COUNT_CLASS_NAME = 'note-link-element-referrer-count';
+
 function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLElement) {
   // currently, wo only handle h1-h6 as attach target
   if (!['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(attachTargetEl.tagName)) {
@@ -29,7 +31,17 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
     interactive: true,
     placement: 'right',
     arrow: roundArrow,
-    trigger: process.env.NODE_ENV === 'development' ? 'click' : 'mouseenter focus',
+    trigger: 'click',
+    popperOptions: {
+      modifiers: [
+        {
+          name: 'flip',
+          options: {
+            fallbackPlacements: ['top', 'bottom', 'right'],
+          },
+        },
+      ],
+    },
   });
 }
 
@@ -63,13 +75,14 @@ export class ElementReferrerBuilder {
   private createReferrerElements(notes: Referrer[]) {
     const iconEl = document.createElement('span');
     iconEl.classList.add(ICON_CLASS_NAME);
-    iconEl.textContent = String(notes.length);
+    // todo: and a setting to configure which number(notes.length / sum of mentions / both) should be displayed
+    iconEl.innerHTML = `${notes.length}${referenceIcon}`;
 
     const olEL = document.createElement('ol');
     olEL.classList.add(LIST_CLASS_NAME);
 
     for (const note of notes) {
-      olEL.innerHTML += `<li><a class="${LIST_ITEM_CLASS_NAME}" data-note-link-referrer-id="${note.id}">${note.title}</a><span>${note.mentionCount}</span></li>`;
+      olEL.innerHTML += `<li><a data-note-link-referrer-id="${note.id}">${note.title}</a><span class="${LIST_ITEM_COUNT_CLASS_NAME}">${note.mentionCount}</span></li>`;
     }
 
     return [iconEl, olEL];

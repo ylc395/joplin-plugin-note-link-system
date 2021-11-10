@@ -1,3 +1,5 @@
+import tippy, { roundArrow } from 'tippy.js';
+import 'tippy.js/dist/svg-arrow.css';
 import { Referrer } from 'model/Referrer';
 import {
   REFERRER_LIST_HEADING_SETTING,
@@ -16,6 +18,8 @@ declare const webviewApi: {
 };
 
 const REFERRER_LIST_HEADING_CLASS_NAME = 'note-link-referrers-list-heading';
+const REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME = 'note-link-referrers-list-count';
+const REFERRER_LIST_REFERENCE_TIP_CLASS_NAME = 'note-link-referrers-list-tip';
 
 export class ReferrerListInserter {
   private listHeadingText?: string;
@@ -129,9 +133,26 @@ export class ReferrerListInserter {
       headingEl.classList.add(REFERRER_LIST_HEADING_CLASS_NAME);
       headingEl.insertAdjacentElement('afterend', listEl);
     }
+
+    tippy(`.${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}`, {
+      content: (el) =>
+        `<p class="${REFERRER_LIST_REFERENCE_TIP_CLASS_NAME}">${
+          (el as HTMLElement).dataset.tip || ''
+        }</p>`,
+      allowHTML: true,
+      arrow: roundArrow,
+    });
   }
 
   private referrerToHtmlLink(note: Referrer) {
-    return `<a data-note-link-referrer-id="${note.id}"><span class="resource-icon fa-joplin"></span>${note.title}</a><span>${note.mentionCount}</span>`;
+    return `<a data-note-link-referrer-id="${
+      note.id
+    }"><span class="resource-icon fa-joplin"></span>${note.title}</a><span data-tip="${
+      note.mentionCount
+    } reference${
+      note.mentionCount > 1 ? 's' : ''
+    } from this note" class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}">${
+      note.mentionCount
+    }</span>`;
   }
 }

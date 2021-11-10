@@ -2,15 +2,32 @@ a[data-note-link-referrer-id] {
   cursor: pointer;
 }
 
-.note-link-element-referrers-icon {
+.note-link-referrers-list-count,
+.note-link-element-referrers-icon,
+.note-link-element-referrer-count {
   font-family: monospace;
-  cursor: pointer;
-  vertical-align: middle;
-  margin-left: 0.5em;
-  border-radius: 0.4em;
-  background: slategray;
+  background-color: rgb(233, 233, 233);
+  color: rgb(145, 145, 145);
   padding: 0.2em 0.3em;
+  border-radius: 0.4em;
+  vertical-align: middle;
+}
+
+.note-link-referrers-list-count,
+.note-link-element-referrer-count {
+  margin-left: 0.3em;
+  font-size: 0.8em;
+}
+
+.note-link-element-referrers-icon {
+  cursor: pointer;
+  margin-left: 0.5em;
   font-size: 0.6em;
+}
+.note-link-element-referrers-icon > svg {
+  height: 1em;
+  vertical-align: text-top;
+  margin-left: 0.3em;
 }
 
 .note-link-element-referrers-list {
@@ -21,9 +38,8 @@ a[data-note-link-referrer-id] {
   margin: 0;
 }
 
-.note-link-element-referrers-list-item {
+.note-link-element-referrers-list > li {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: normal;
-  font-weight: bold;
 }

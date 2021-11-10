@@ -22,14 +22,24 @@ li {
   margin: 1em 0;
 }
 
-a {
+.title {
   cursor: pointer;
 }
 
-a:hover {
+.title:hover {
   text-decoration: underline;
 }
 
-p {
-  color: rgb(196, 196, 196);
+.count {
+  margin-left: 3px;
+  font-family: monospace;
+  background-color: rgb(233, 233, 233);
+  color: rgb(145, 145, 145);
+  padding: 0.1em 0.3em;
+  border-radius: 0.4em;
+  vertical-align: middle;
+}
+
+.no-referrers {
+  color: rgb(145, 145, 145);
 }

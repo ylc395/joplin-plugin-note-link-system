@@ -1,4 +1,6 @@
 import delegate from 'delegate';
+import { delegate as delegateTippy, roundArrow } from 'tippy.js';
+import 'tippy.js/dist/svg-arrow.css';
 import type { OpenNoteRequest, WriteClipboardRequest } from 'driver/constants';
 
 declare const webviewApi: {
@@ -38,4 +40,11 @@ delegate('[data-note-id]', 'contextmenu', (e: any) => {
       titleEl.innerText = title;
     }, 1000);
   }
+});
+
+delegateTippy(document.body, {
+  target: '.count',
+  content: (el) => `<p class="tip">${(el as HTMLElement).dataset.tip || ''}</p>`,
+  allowHTML: true,
+  arrow: roundArrow,
 });
