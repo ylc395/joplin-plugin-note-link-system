@@ -1,6 +1,7 @@
 import delegate from 'delegate';
 import { ElementReferrerBuilder } from './ElementReferrerBuilder';
 import { ReferrerListInserter } from './ReferrerListInserter';
+import { IdentifierBuilder } from './IdentifierBuilder';
 import { MARKDOWN_SCRIPT_ID, OpenNoteRequest } from 'driver/constants';
 
 declare const webviewApi: {
@@ -20,3 +21,4 @@ delegate('[data-note-link-referrer-id]', 'click', (e: any) => {
 
 new ElementReferrerBuilder().init();
 new ReferrerListInserter().init();
+new IdentifierBuilder().init();

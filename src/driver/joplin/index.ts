@@ -15,6 +15,7 @@ import {
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
   REFERRER_PANEL_STYLESHEET_SETTING,
+  REFERRER_IDENTIFIER_ENABLED_SETTING,
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
   ReferrersListNumberType,
@@ -98,6 +99,14 @@ export async function setupSetting() {
       value: 'REFERRERS',
       section: SECTION_NAME,
     },
+    [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
+      label: 'Quick Link: Enable Identifier Icon For Copy Url',
+      type: SettingItemType.Bool,
+      public: true,
+      value: true,
+      section: SECTION_NAME,
+    },
+
     [REFERRER_SEARCH_PATTERN_SETTING]: {
       label: 'Referrers: Search Filter',
       type: SettingItemType.String,

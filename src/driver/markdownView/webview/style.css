@@ -43,3 +43,22 @@ a[data-note-link-referrer-id] {
   font-size: 14px;
   font-weight: normal;
 }
+
+.note-link-identifier {
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0 0.2em;
+  border: none;
+  font-size: inherit;
+  background-color: transparent;
+  display: none;
+}
+
+.note-link-identifier:active {
+  transform: translate(1px, -1px);
+  transition-duration: 0.2s;
+}
+
+#rendered-md [id]:hover > .note-link-identifier {
+  display: inline-block;
+}

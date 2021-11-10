@@ -10,6 +10,7 @@ export const REFERRER_AUTO_LIST_POSITION_SETTING = 'REFERRER_AUTO_LIST_POSITION_
 export const REFERRER_PANEL_ENABLED_SETTING = 'REFERRER_PANEL_ENABLED_SETTING';
 export const REFERRER_PANEL_TITLE_SETTING = 'REFERRER_PANEL_TITLE_SETTING';
 export const REFERRER_PANEL_STYLESHEET_SETTING = 'REFERRER_PANEL_STYLESHEET_SETTING';
+export const REFERRER_IDENTIFIER_ENABLED_SETTING = 'REFERRER_IDENTIFIER_ENABLED_SETTING';
 
 export const NOTE_SEARCH_PATTERN_PLACEHOLDER = '$keyword';
 export const REFERRER_SEARCH_PATTERN_PLACEHOLDER = '$noteId';
@@ -37,7 +38,8 @@ export type Request =
   | SearchReferrersRequest
   | OpenNoteRequest
   | QuerySettingRequest
-  | WriteClipboardRequest;
+  | WriteClipboardRequest
+  | QueryCurrentNoteRequest;
 
 export interface SearchReferrersRequest {
   event: 'searchReferrers';
@@ -69,4 +71,8 @@ export type SearchNoteReferrersResponse = Referrer[];
 export interface QuerySettingRequest {
   event: 'querySetting';
   payload: { key: string };
+}
+
+export interface QueryCurrentNoteRequest {
+  event: 'queryCurrentNote';
 }

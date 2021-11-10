@@ -128,9 +128,6 @@ export class SearchEngine {
   }
 
   private static getMentionCount(keyword: string, content: string) {
-    console.log(keyword);
-    console.log(content);
-
     const keywordLength = keyword.length;
     let index = 0;
     let count = 0;
