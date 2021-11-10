@@ -30,6 +30,10 @@ export class PanelView {
     }
 
     joplin.workspace.onNoteSelectionChange(({ value }: { value: string[] }) => {
+      if (value.length > 1) {
+        return;
+      }
+
       this.currentNoteId = value[0];
       this.refresh();
     });
