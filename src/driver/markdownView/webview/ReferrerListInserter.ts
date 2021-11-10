@@ -28,43 +28,33 @@ export class ReferrerListInserter {
   private referrers?: Referrer[];
   private refererHeadingEls?: HTMLElement[];
 
-  init() {
+  async init() {
+    this.autoInsertionEnabled = await webviewApi.postMessage<ReferrersAutoListEnabled>(
+      MARKDOWN_SCRIPT_ID,
+      {
+        event: 'querySetting',
+        payload: { key: REFERRER_AUTO_LIST_ENABLED_SETTING },
+      },
+    );
+
+    this.listPosition = await webviewApi.postMessage<ReferrersAutoListPosition>(
+      MARKDOWN_SCRIPT_ID,
+      {
+        event: 'querySetting',
+        payload: { key: REFERRER_AUTO_LIST_POSITION_SETTING },
+      },
+    );
+
+    this.listHeadingText = await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_LIST_HEADING_SETTING },
+    });
+
     document.addEventListener('joplin-noteDidUpdate', this.insert.bind(this));
     this.insert();
   }
 
-  private async fetchSetting() {
-    if (typeof this.autoInsertionEnabled === 'undefined') {
-      this.autoInsertionEnabled = await webviewApi.postMessage<ReferrersAutoListEnabled>(
-        MARKDOWN_SCRIPT_ID,
-        {
-          event: 'querySetting',
-          payload: { key: REFERRER_AUTO_LIST_ENABLED_SETTING },
-        },
-      );
-    }
-
-    if (typeof this.listPosition === 'undefined') {
-      this.listPosition = await webviewApi.postMessage<ReferrersAutoListPosition>(
-        MARKDOWN_SCRIPT_ID,
-        {
-          event: 'querySetting',
-          payload: { key: REFERRER_AUTO_LIST_POSITION_SETTING },
-        },
-      );
-    }
-
-    if (typeof this.listHeadingText === 'undefined') {
-      this.listHeadingText = await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
-        event: 'querySetting',
-        payload: { key: REFERRER_LIST_HEADING_SETTING },
-      });
-    }
-  }
-
   private async insert() {
-    await this.fetchSetting();
-
     if (!this.listHeadingText) {
       return;
     }

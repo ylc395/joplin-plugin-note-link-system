@@ -8,6 +8,8 @@ import {
   MARKDOWN_SCRIPT_ID,
   CODE_MIRROR_SCRIPT_ID,
   REFERRER_LIST_HEADING_SETTING,
+  REFERRER_ELEMENT_NUMBER_ENABLED,
+  REFERRER_ELEMENT_NUMBER_TYPE,
   REFERRER_AUTO_LIST_POSITION_SETTING,
   REFERRER_AUTO_LIST_ENABLED_SETTING,
   REFERRER_PANEL_ENABLED_SETTING,
@@ -15,6 +17,7 @@ import {
   REFERRER_PANEL_STYLESHEET_SETTING,
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
+  ReferrersListNumberType,
 } from 'driver/constants';
 import requestHandler from './requestHandler';
 import { PanelView } from '../panelView';
@@ -61,8 +64,28 @@ export async function setupSetting() {
         [ReferrersAutoListPosition.Bottom]: 'Note Bottom',
       },
     },
+    [REFERRER_ELEMENT_NUMBER_ENABLED]: {
+      label: 'Referrers - View: Enable Referrers Count Of Elements',
+      type: SettingItemType.Bool,
+      public: true,
+      value: true,
+      section: SECTION_NAME,
+    },
+    [REFERRER_ELEMENT_NUMBER_TYPE]: {
+      label: 'Referrers - View: Which Number Should Be Displayed For Referred Elements',
+      type: SettingItemType.Int,
+      isEnum: true,
+      public: true,
+      value: ReferrersListNumberType.ReferencesCount,
+      section: SECTION_NAME,
+      options: {
+        [ReferrersListNumberType.ReferrersCount]: "Referrers' Count",
+        [ReferrersListNumberType.ReferencesCount]: "References' Count",
+        [ReferrersListNumberType.Both]: 'Both',
+      },
+    },
     [REFERRER_PANEL_ENABLED_SETTING]: {
-      label: 'Referrers - Panel: Enabled',
+      label: 'Referrers - Panel: Enable',
       type: SettingItemType.Bool,
       public: true,
       value: false,

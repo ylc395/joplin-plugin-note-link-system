@@ -7,10 +7,17 @@ import {
   SearchReferrersRequest,
   SearchElementReferrersResponse,
   OpenNoteRequest,
+  QuerySettingRequest,
+  REFERRER_ELEMENT_NUMBER_ENABLED,
+  ReferrersListNumberType,
+  REFERRER_ELEMENT_NUMBER_TYPE,
 } from 'driver/constants';
 
 declare const webviewApi: {
-  postMessage: <T>(id: string, payload: SearchReferrersRequest | OpenNoteRequest) => Promise<T>;
+  postMessage: <T>(
+    id: string,
+    payload: SearchReferrersRequest | OpenNoteRequest | QuerySettingRequest,
+  ) => Promise<T>;
 };
 
 const ICON_CLASS_NAME = 'note-link-element-referrers-icon';
@@ -46,7 +53,22 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
 }
 
 export class ElementReferrerBuilder {
-  init() {
+  private numberType?: ReferrersListNumberType;
+  async init() {
+    const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_ELEMENT_NUMBER_ENABLED },
+    });
+
+    if (!enabled) {
+      return;
+    }
+
+    this.numberType = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_ELEMENT_NUMBER_TYPE },
+    });
+
     document.addEventListener('joplin-noteDidUpdate', this.attachReferrers.bind(this));
     this.attachReferrers();
   }
@@ -76,8 +98,27 @@ export class ElementReferrerBuilder {
     const iconEl = document.createElement('span');
     iconEl.classList.add(ICON_CLASS_NAME);
     // todo: and a setting to configure which number(notes.length / sum of mentions / both) should be displayed
-    iconEl.innerHTML = `${notes.length}${referenceIcon}`;
+    const content = (() => {
+      const referencesCount = notes
+        .map(({ mentionCount }) => mentionCount)
+        .reduce((count, num) => count + num, 0);
 
+      const referrersCount = notes.length;
+
+      if (this.numberType === ReferrersListNumberType.ReferencesCount) {
+        return referencesCount;
+      }
+
+      if (this.numberType === ReferrersListNumberType.ReferrersCount) {
+        return referrersCount;
+      }
+
+      if (this.numberType === ReferrersListNumberType.Both) {
+        return `${referrersCount}(${referencesCount})`;
+      }
+    })();
+
+    iconEl.innerHTML = `${content}${referenceIcon}`;
     const olEL = document.createElement('ol');
     olEL.classList.add(LIST_CLASS_NAME);
 
