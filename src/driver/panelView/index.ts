@@ -79,7 +79,7 @@ export class PanelView {
     if (notes.length > 0) {
       html += '<ol>';
       for (const note of notes) {
-        html += `<li><a data-note-id="${note.id}">${note.title}</a></li>`;
+        html += `<li><a data-note-id="${note.id}">${note.title}</a><span>${note.mentionCount}</span></li>`;
       }
       html += '</ol>';
     } else {

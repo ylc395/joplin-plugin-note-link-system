@@ -1,6 +1,6 @@
 import tippy, { roundArrow } from 'tippy.js';
 import 'tippy.js/dist/svg-arrow.css';
-import { Note } from 'model/Note';
+import { Referrer } from 'model/Referrer';
 import {
   MARKDOWN_SCRIPT_ID,
   SearchReferrersRequest,
@@ -60,7 +60,7 @@ export class ElementReferrerBuilder {
     }
   }
 
-  private createReferrerElements(notes: Note[]) {
+  private createReferrerElements(notes: Referrer[]) {
     const iconEl = document.createElement('span');
     iconEl.classList.add(ICON_CLASS_NAME);
     iconEl.textContent = String(notes.length);
@@ -69,7 +69,7 @@ export class ElementReferrerBuilder {
     olEL.classList.add(LIST_CLASS_NAME);
 
     for (const note of notes) {
-      olEL.innerHTML += `<li><a class="${LIST_ITEM_CLASS_NAME}" data-note-link-referrer-id="${note.id}">${note.title}</a></li>`;
+      olEL.innerHTML += `<li><a class="${LIST_ITEM_CLASS_NAME}" data-note-link-referrer-id="${note.id}">${note.title}</a><span>${note.mentionCount}</span></li>`;
     }
 
     return [iconEl, olEL];

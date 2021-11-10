@@ -1,4 +1,4 @@
-import { Note } from 'model/Note';
+import { Referrer } from 'model/Referrer';
 import {
   REFERRER_LIST_HEADING_SETTING,
   REFERRER_AUTO_LIST_POSITION_SETTING,
@@ -21,7 +21,7 @@ export class ReferrerListInserter {
   private listHeadingText?: string;
   private listPosition?: ReferrersAutoListPosition;
   private autoInsertionEnabled?: ReferrersAutoListEnabled;
-  private referrers?: Note[];
+  private referrers?: Referrer[];
   private refererHeadingEls?: HTMLElement[];
 
   init() {
@@ -131,7 +131,7 @@ export class ReferrerListInserter {
     }
   }
 
-  private referrerToHtmlLink(note: Note) {
-    return `<a data-note-link-referrer-id="${note.id}"><span class="resource-icon fa-joplin"></span>${note.title}</a>`;
+  private referrerToHtmlLink(note: Referrer) {
+    return `<a data-note-link-referrer-id="${note.id}"><span class="resource-icon fa-joplin"></span>${note.title}</a><span>${note.mentionCount}</span>`;
   }
 }

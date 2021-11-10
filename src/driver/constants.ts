@@ -1,4 +1,4 @@
-import type { Note } from 'model/Note';
+import type { Referrer } from 'model/Referrer';
 
 export const NOTE_SEARCH_PATTERN_SETTING = 'NOTE_SEARCH_PATTERN_SETTING';
 export const REFERRER_SEARCH_PATTERN_SETTING = 'REFERRER_SEARCH_PATTERN_SETTING';
@@ -53,10 +53,10 @@ export interface WriteClipboardRequest {
 }
 
 export interface SearchElementReferrersResponse {
-  [index: string]: Note[];
+  [index: string]: Referrer[];
 }
 
-export type SearchNoteReferrersResponse = Note[];
+export type SearchNoteReferrersResponse = Referrer[];
 
 export interface QuerySettingRequest {
   event: 'querySetting';
