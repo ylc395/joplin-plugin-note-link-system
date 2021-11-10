@@ -97,7 +97,6 @@ export class ElementReferrerBuilder {
   private createReferrerElements(notes: Referrer[]) {
     const iconEl = document.createElement('span');
     iconEl.classList.add(ICON_CLASS_NAME);
-    // todo: and a setting to configure which number(notes.length / sum of mentions / both) should be displayed
     const content = (() => {
       const referencesCount = notes
         .map(({ mentionCount }) => mentionCount)

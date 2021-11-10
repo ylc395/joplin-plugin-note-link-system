@@ -32,7 +32,7 @@ export async function setupSetting() {
 
   await joplin.settings.registerSettings({
     [REFERRER_LIST_HEADING_SETTING]: {
-      label: 'Referrers - View: Referrers List Heading Text',
+      label: 'View: Referrers List Heading Text',
       type: SettingItemType.String,
       public: true,
       value: 'Backlinks', // compatible with [Automatic backlinks Plugin](https://discourse.joplinapp.org/t/insert-referencing-notes-backlinks-plugin/13632)
@@ -40,7 +40,7 @@ export async function setupSetting() {
       description: 'Text in Headings(h1-h6) for auto & manually inserted referrers list',
     },
     [REFERRER_AUTO_LIST_ENABLED_SETTING]: {
-      label: 'Referrers - View: Enable/Disable Auto Referrers List Insertion',
+      label: 'View: Enable/Disable Auto Referrers List Insertion',
       type: SettingItemType.Int,
       isEnum: true,
       public: true,
@@ -54,7 +54,7 @@ export async function setupSetting() {
       },
     },
     [REFERRER_AUTO_LIST_POSITION_SETTING]: {
-      label: 'Referrers - View: Auto Inserted Referrers List Position',
+      label: 'View: Auto Inserted Referrers List Position',
       type: SettingItemType.Int,
       isEnum: true,
       public: true,
@@ -66,14 +66,14 @@ export async function setupSetting() {
       },
     },
     [REFERRER_ELEMENT_NUMBER_ENABLED]: {
-      label: 'Referrers - View: Enable Referrers Count Of Elements',
+      label: 'View: Enable Referrers Count Of Elements',
       type: SettingItemType.Bool,
       public: true,
       value: true,
       section: SECTION_NAME,
     },
     [REFERRER_ELEMENT_NUMBER_TYPE]: {
-      label: 'Referrers - View: Which Number Should Be Displayed For Referred Elements',
+      label: 'View: Which Number Should Be Displayed For Referred Elements',
       type: SettingItemType.Int,
       isEnum: true,
       public: true,
@@ -86,38 +86,31 @@ export async function setupSetting() {
       },
     },
     [REFERRER_PANEL_ENABLED_SETTING]: {
-      label: 'Referrers - Panel: Enable',
+      label: 'Panel: Enable',
       type: SettingItemType.Bool,
       public: true,
       value: false,
       section: SECTION_NAME,
+      description: 'Display referrers in panel',
     },
     [REFERRER_PANEL_TITLE_SETTING]: {
-      label: 'Referrers - Panel: Title',
+      label: 'Panel: Title',
       type: SettingItemType.String,
       public: true,
       value: 'REFERRERS',
       section: SECTION_NAME,
     },
     [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
-      label: 'Quick Link: Enable Identifier Icon For Copy Url',
+      label: 'Editor: Enable Identifier Icon For Copy Url',
       type: SettingItemType.Bool,
       public: true,
       value: true,
       section: SECTION_NAME,
     },
 
-    [REFERRER_SEARCH_PATTERN_SETTING]: {
-      label: 'Referrers: Search Filter',
-      type: SettingItemType.String,
-      public: true,
-      advanced: true,
-      section: SECTION_NAME,
-      value: '/:/$noteId',
-      description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
-    },
+    // below are advanced
     [REFERRER_PANEL_STYLESHEET_SETTING]: {
-      label: 'Referrers - Panel: Stylesheet',
+      label: 'Panel: Stylesheet',
       type: SettingItemType.String,
       public: true,
       advanced: true,
@@ -127,12 +120,21 @@ export async function setupSetting() {
     },
     [NOTE_SEARCH_PATTERN_SETTING]: {
       section: SECTION_NAME,
-      label: 'Quick Link: Search Filter',
+      label: 'Filter For Quick Link',
       type: SettingItemType.String,
       public: true,
       value: 'title: $keyword',
       advanced: true,
       description: `Search filter for making quick links in editor. Filters can be found at https://joplinapp.org/help/#search-filters. ${NOTE_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for keyword you typed in.`,
+    },
+    [REFERRER_SEARCH_PATTERN_SETTING]: {
+      label: 'Filter For Searching Referrers',
+      type: SettingItemType.String,
+      public: true,
+      advanced: true,
+      section: SECTION_NAME,
+      value: '/:/$noteId',
+      description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
     },
   });
 }
