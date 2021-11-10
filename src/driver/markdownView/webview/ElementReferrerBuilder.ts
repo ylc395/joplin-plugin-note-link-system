@@ -69,6 +69,7 @@ export class ElementReferrerBuilder {
       payload: { key: REFERRER_ELEMENT_NUMBER_TYPE },
     });
 
+    // this event will be triggered twice within 1s. debounce function will cause an ignorable delay
     document.addEventListener('joplin-noteDidUpdate', this.attachReferrers.bind(this));
     this.attachReferrers();
   }

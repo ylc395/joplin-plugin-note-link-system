@@ -33,6 +33,7 @@ export class IdentifierBuilder {
       this.copyUrl(target);
     });
 
+    // this event will be triggered twice within 1s. debounce function will cause an ignorable delay
     document.addEventListener('joplin-noteDidUpdate', this.attach.bind(this));
     this.attach();
   }

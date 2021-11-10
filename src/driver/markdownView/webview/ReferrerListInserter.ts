@@ -47,6 +47,7 @@ export class ReferrerListInserter {
       payload: { key: REFERRER_LIST_HEADING_SETTING },
     });
 
+    // this event will be triggered twice within 1s. debounce function will cause an ignorable delay
     document.addEventListener('joplin-noteDidUpdate', this.insert.bind(this));
     this.insert();
   }

@@ -1,5 +1,6 @@
 import joplin from 'api';
 import type { ViewHandle } from 'api/types';
+import debounce from 'lodash.debounce';
 import {
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
@@ -29,14 +30,16 @@ export class PanelView {
       await this.show();
     }
 
-    joplin.workspace.onNoteSelectionChange(({ value }: { value: string[] }) => {
-      if (value.length > 1) {
-        return;
-      }
+    joplin.workspace.onNoteSelectionChange(
+      debounce(({ value }: { value: string[] }) => {
+        if (value.length > 1) {
+          return;
+        }
 
-      this.currentNoteId = value[0];
-      this.refresh();
-    });
+        this.currentNoteId = value[0];
+        this.refresh();
+      }, 500),
+    );
 
     joplin.settings.onChange(async ({ keys }) => {
       if (keys.includes(REFERRER_PANEL_ENABLED_SETTING)) {
