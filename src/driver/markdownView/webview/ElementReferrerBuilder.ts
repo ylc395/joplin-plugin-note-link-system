@@ -25,11 +25,6 @@ const LIST_CLASS_NAME = 'note-link-element-referrers-list';
 const LIST_ITEM_COUNT_CLASS_NAME = 'note-link-element-referrer-count';
 
 function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLElement) {
-  // currently, wo only handle h1-h6 as attach target
-  if (!['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(attachTargetEl.tagName)) {
-    return;
-  }
-
   attachTargetEl.appendChild(iconEl);
 
   tippy(iconEl, {

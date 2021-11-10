@@ -22,8 +22,19 @@ a[data-note-link-referrer-id] {
 .note-link-element-referrers-icon {
   cursor: pointer;
   margin-left: 0.5em;
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+h1 > .note-link-element-referrers-icon,
+h2 > .note-link-element-referrers-icon,
+h3 > .note-link-element-referrers-icon,
+h4 > .note-link-element-referrers-icon,
+h5 > .note-link-element-referrers-icon,
+h6 > .note-link-element-referrers-icon {
   font-size: 0.6em;
 }
+
 .note-link-element-referrers-icon > svg {
   height: 1em;
   vertical-align: text-top;
