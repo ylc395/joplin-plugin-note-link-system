@@ -21,7 +21,9 @@ interface Completion {
 export type ExtendedEditor = Editor & {
   showHint(options?: {
     completeSingle: boolean;
-    hint: (cm: Editor) => Promise<{ from: Position; to: Position; list: (Completion | string)[] }>;
+    hint: (
+      cm: Editor,
+    ) => Promise<{ from: Position; to: Position; list: (Completion | string)[] } | undefined>;
   }): void;
 };
 
@@ -77,6 +79,11 @@ export class QuickLinker {
 
     const { line, ch } = this.symbolRange.to;
     const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
+
+    if (cursorLine < line || cursorCh < ch) {
+      return;
+    }
+
     const keyword = this.doc.getRange({ line, ch }, { line: cursorLine, ch: cursorCh });
 
     const notes = await this.context.postMessage<SearchedNote[]>({
