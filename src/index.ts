@@ -10,7 +10,7 @@ import {
 joplin.plugins.register({
   onStart: async function () {
     await setupSetting();
-    // await setupCodeMirror();
+    await setupCodeMirror();
     await setupToolbar();
     await setupMarkdownView();
     await setupPanel();

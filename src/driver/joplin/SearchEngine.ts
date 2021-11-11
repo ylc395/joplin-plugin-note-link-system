@@ -1,5 +1,5 @@
 import joplin from 'api';
-import { Referrer } from 'model/Referrer';
+import type { Referrer, SearchedNote, Note } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
   NOTE_SEARCH_PATTERN_SETTING,
@@ -7,8 +7,6 @@ import {
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
   SearchElementReferrersResponse,
 } from 'driver/constants';
-
-type SearchedNote = Pick<Referrer, 'id' | 'title'>;
 
 export class SearchEngine {
   private noteSearchPattern?: string;
@@ -27,6 +25,30 @@ export class SearchEngine {
           this.init(false);
         }
       });
+    }
+  }
+
+  async searchNotes(keyword?: string): Promise<SearchedNote[]> {
+    if (typeof this.noteSearchPattern === 'undefined') {
+      throw new Error('no note search pattern');
+    }
+
+    if (!this.noteSearchPattern) {
+      return [];
+    }
+
+    if (keyword) {
+      const _keyword = this.noteSearchPattern.replaceAll(NOTE_SEARCH_PATTERN_PLACEHOLDER, keyword);
+      return SearchEngine.searchNotes(_keyword);
+    } else {
+      return (
+        await joplin.data.get(['notes'], {
+          fields: 'id,title',
+          order_by: 'updated_time',
+          order_dir: 'DESC',
+          limit: 20,
+        })
+      ).items;
     }
   }
 
@@ -121,10 +143,10 @@ export class SearchEngine {
     return Promise.all(
       notes.map(({ id }) =>
         joplin.data.get(['notes', id], {
-          fields: 'id,title,user_created_time,user_updated_time,body',
+          fields: 'id,title,created_time,updated_time,body',
         }),
       ),
-    ) as Promise<Omit<Referrer, 'mentionCount'>[]>;
+    ) as Promise<Note[]>;
   }
 
   private static getMentionCount(keyword: string, content: string) {

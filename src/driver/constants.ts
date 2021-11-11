@@ -35,11 +35,17 @@ export const MARKDOWN_SCRIPT_ID = 'ylc395.noteLinkSystem.MARKDOWN_SCRIPT_ID';
 export const CODE_MIRROR_SCRIPT_ID = 'ylc395.noteLinkSystem.CODE_MIRROR_SCRIPT_ID';
 
 export type Request =
+  | SearchNotesRequest
   | SearchReferrersRequest
   | OpenNoteRequest
   | QuerySettingRequest
   | WriteClipboardRequest
   | QueryCurrentNoteRequest;
+
+export interface SearchNotesRequest {
+  event: 'searchNotes';
+  payload: { keyword: string };
+}
 
 export interface SearchReferrersRequest {
   event: 'searchReferrers';

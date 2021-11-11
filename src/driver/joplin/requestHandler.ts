@@ -24,6 +24,8 @@ export default async function requestHandler(request: Request) {
         : searchEngine.searchReferrers(selectedNoteId);
     case 'queryCurrentNote':
       return joplin.workspace.selectedNote();
+    case 'searchNotes':
+      return searchEngine.searchNotes(request.payload.keyword);
     default:
       break;
   }

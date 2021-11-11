@@ -1,8 +1,13 @@
-export interface Referrer {
+export interface Note {
   id: string;
   title: string;
-  user_created_time: string;
-  user_updated_time: string;
+  created_time: string;
+  updated_time: string;
   body: string;
-  mentionCount: number;
 }
+
+export type Referrer = Note & {
+  mentionCount: number;
+};
+
+export type SearchedNote = Pick<Note, 'id' | 'title'>;
