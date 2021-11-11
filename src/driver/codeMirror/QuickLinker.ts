@@ -19,8 +19,9 @@ interface Completion {
 }
 
 export type ExtendedEditor = Editor & {
-  showHint(options?: {
+  showHint(options: {
     completeSingle: boolean;
+    selectedHint: number;
     hint: (
       cm: Editor,
     ) => Promise<{ from: Position; to: Position; list: (Completion | string)[] } | undefined>;
@@ -66,6 +67,7 @@ export class QuickLinker {
     if (chars === this.triggerSymbol) {
       this.symbolRange = { from: symbolRange[0], to: symbolRange[1] };
       this.cm.showHint({
+        selectedHint: 0,
         completeSingle: false,
         hint: this.getHints.bind(this),
       });
