@@ -1,11 +1,11 @@
 import type CodeMirror from 'codemirror';
-import { Context, QuickLinkMonitor, ExtendedEditor } from './QuickLinkMonitor';
+import { Context, QuickLinker, ExtendedEditor } from './QuickLinker';
 
 export default function (context: Context) {
   return {
     plugin: function (codemirror: typeof CodeMirror) {
       codemirror.defineOption('quickLinks', false, (cm) => {
-        new QuickLinkMonitor(context, cm as ExtendedEditor);
+        new QuickLinker(context, cm as ExtendedEditor);
       });
     },
     codeMirrorOptions: {

@@ -1,5 +1,10 @@
-import { Editor, EditorChange, Position } from 'codemirror';
-import type { QuerySettingRequest, SearchNotesRequest } from 'driver/constants';
+import { Editor, Position } from 'codemirror';
+import {
+  QuerySettingRequest,
+  SearchNotesRequest,
+  QUICK_LINK_ENABLED_SETTING,
+  QUICK_LINK_SYMBOL_SETTING,
+} from 'driver/constants';
 import type { SearchedNote } from 'model/Referrer';
 
 export interface Context {
@@ -20,16 +25,37 @@ export type ExtendedEditor = Editor & {
   }): void;
 };
 
-export class QuickLinkMonitor {
+export class QuickLinker {
   constructor(private readonly context: Context, private readonly cm: ExtendedEditor) {
+    this.init();
+  }
+
+  async init() {
+    const enabled = await this.context.postMessage<boolean>({
+      event: 'querySetting',
+      payload: { key: QUICK_LINK_ENABLED_SETTING },
+    });
+
+    if (!enabled) {
+      return;
+    }
+    this.triggerSymbol = await this.context.postMessage<string>({
+      event: 'querySetting',
+      payload: { key: QUICK_LINK_SYMBOL_SETTING },
+    });
     this.cm.on('cursorActivity', this.triggerHints.bind(this));
   }
 
   private readonly doc = this.cm.getDoc();
-  private triggerSymbol = '@@';
+
+  private triggerSymbol?: string;
   private symbolRange?: { from: Position; to: Position };
 
   private triggerHints() {
+    if (!this.triggerSymbol) {
+      return;
+    }
+
     const to = this.doc.getCursor();
 
     const symbolRange = [{ line: to.line, ch: to.ch - this.triggerSymbol.length }, to] as const;

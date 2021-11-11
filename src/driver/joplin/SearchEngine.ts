@@ -2,7 +2,7 @@ import joplin from 'api';
 import type { Referrer, SearchedNote, Note } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
-  NOTE_SEARCH_PATTERN_SETTING,
+  QUICK_LINK_SEARCH_PATTERN_SETTING,
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
   SearchElementReferrersResponse,
@@ -12,14 +12,14 @@ export class SearchEngine {
   private noteSearchPattern?: string;
   private referrerSearchPattern?: string;
   private async init(isFirstTime: boolean) {
-    this.noteSearchPattern = await joplin.settings.value(NOTE_SEARCH_PATTERN_SETTING);
+    this.noteSearchPattern = await joplin.settings.value(QUICK_LINK_SEARCH_PATTERN_SETTING);
     this.referrerSearchPattern = await joplin.settings.value(REFERRER_SEARCH_PATTERN_SETTING);
 
     if (isFirstTime) {
       joplin.settings.onChange(({ keys }) => {
         const needInit =
           keys.includes(REFERRER_SEARCH_PATTERN_SETTING) ||
-          keys.includes(NOTE_SEARCH_PATTERN_SETTING);
+          keys.includes(QUICK_LINK_SEARCH_PATTERN_SETTING);
 
         if (needInit) {
           this.init(false);

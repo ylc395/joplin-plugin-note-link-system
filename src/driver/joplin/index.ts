@@ -2,7 +2,6 @@ import joplin from 'api';
 import { ContentScriptType, SettingItemType, ToolbarButtonLocation } from 'api/types';
 import {
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
-  NOTE_SEARCH_PATTERN_SETTING,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_SETTING,
   MARKDOWN_SCRIPT_ID,
@@ -16,6 +15,9 @@ import {
   REFERRER_PANEL_TITLE_SETTING,
   REFERRER_PANEL_STYLESHEET_SETTING,
   REFERRER_IDENTIFIER_ENABLED_SETTING,
+  QUICK_LINK_ENABLED_SETTING,
+  QUICK_LINK_SYMBOL_SETTING,
+  QUICK_LINK_SEARCH_PATTERN_SETTING,
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
   ReferrersListNumberType,
@@ -107,6 +109,20 @@ export async function setupSetting() {
       value: true,
       section: SECTION_NAME,
     },
+    [QUICK_LINK_ENABLED_SETTING]: {
+      label: 'Quick Link: Enable',
+      type: SettingItemType.Bool,
+      public: true,
+      value: true,
+      section: SECTION_NAME,
+    },
+    [QUICK_LINK_SYMBOL_SETTING]: {
+      label: 'Quick Link: Symbols To Trigger',
+      type: SettingItemType.String,
+      public: true,
+      value: '@@',
+      section: SECTION_NAME,
+    },
 
     // below are advanced
     [REFERRER_PANEL_STYLESHEET_SETTING]: {
@@ -118,7 +134,7 @@ export async function setupSetting() {
       value: '',
       description: 'CSS For panel',
     },
-    [NOTE_SEARCH_PATTERN_SETTING]: {
+    [QUICK_LINK_SEARCH_PATTERN_SETTING]: {
       section: SECTION_NAME,
       label: 'Filter For Quick Link',
       type: SettingItemType.String,
