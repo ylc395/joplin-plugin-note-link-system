@@ -18,6 +18,7 @@ import {
   QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
+  QUICK_LINK_ELEMENTS_ENABLED_SETTING,
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
   ReferrersListNumberType,
@@ -121,6 +122,13 @@ export async function setupSetting() {
       type: SettingItemType.String,
       public: true,
       value: '@@',
+      section: SECTION_NAME,
+    },
+    [QUICK_LINK_ELEMENTS_ENABLED_SETTING]: {
+      label: 'Quick Link: Enable Link to Element',
+      type: SettingItemType.Bool,
+      public: true,
+      value: true,
       section: SECTION_NAME,
     },
 

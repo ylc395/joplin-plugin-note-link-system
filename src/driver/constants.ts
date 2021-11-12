@@ -13,6 +13,7 @@ export const REFERRER_PANEL_STYLESHEET_SETTING = 'REFERRER_PANEL_STYLESHEET_SETT
 export const REFERRER_IDENTIFIER_ENABLED_SETTING = 'REFERRER_IDENTIFIER_ENABLED_SETTING';
 export const QUICK_LINK_ENABLED_SETTING = 'QUICK_LINK_ENABLED_SETTING';
 export const QUICK_LINK_SYMBOL_SETTING = 'QUICK_LINK_SYMBOL_SETTING';
+export const QUICK_LINK_ELEMENTS_ENABLED_SETTING = 'QUICK_LINK_ENABLED_SETTING';
 
 export const NOTE_SEARCH_PATTERN_PLACEHOLDER = '$keyword';
 export const REFERRER_SEARCH_PATTERN_PLACEHOLDER = '$noteId';
@@ -42,6 +43,7 @@ export type Request =
   | OpenNoteRequest
   | QuerySettingRequest
   | WriteClipboardRequest
+  | FetchNoteRequest
   | QueryCurrentNoteRequest;
 
 export interface SearchNotesRequest {
@@ -83,4 +85,9 @@ export interface QuerySettingRequest {
 
 export interface QueryCurrentNoteRequest {
   event: 'queryCurrentNote';
+}
+
+export interface FetchNoteRequest {
+  event: 'fetchNote';
+  payload: { id: string };
 }

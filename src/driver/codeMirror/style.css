@@ -34,3 +34,9 @@ li.CodeMirror-hint-active {
   background: #08f;
   color: white;
 }
+
+.note-link-element-hint svg {
+  height: 1em;
+  vertical-align: text-top;
+  margin-right: 0.3em;
+}

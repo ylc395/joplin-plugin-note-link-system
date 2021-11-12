@@ -26,6 +26,8 @@ export default async function requestHandler(request: Request) {
       return joplin.workspace.selectedNote();
     case 'searchNotes':
       return searchEngine.searchNotes(request.payload.keyword);
+    case 'fetchNote':
+      return joplin.data.get(['notes', request.payload.id], { fields: 'body' });
     default:
       break;
   }
