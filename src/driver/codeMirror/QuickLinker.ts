@@ -7,7 +7,7 @@ import h2Icon from 'bootstrap-icons/icons/type-h2.svg';
 import h3Icon from 'bootstrap-icons/icons/type-h3.svg';
 import cardHeadingIcon from 'bootstrap-icons/icons/card-heading.svg';
 import boxIcon from 'bootstrap-icons/icons/box.svg';
-import plusIcon from 'bootstrap-icons/icons/plus.svg';
+import plusIcon from 'bootstrap-icons/icons/file-earmark-plus.svg';
 import markdownItAnchor from 'markdown-it-anchor';
 import {
   QuerySettingRequest,
@@ -203,10 +203,28 @@ export class QuickLinker {
           selectedHint: list.findIndex(({ text }) => text.slice(1).includes(keyword)),
         };
 
-        this.cm.on(completion, 'pick', (({ text }: Hint) => {
-          const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
+        const handleClose: any = () => {
+          if (!this.symbolRange) {
+            throw new Error('no symbolRange');
+          }
 
+          const { from } = this.symbolRange;
+
+          if (!keyword) {
+            this.afterCompletion('element', [
+              { line: from.line, ch: from.ch + 1 },
+              { line: from.line, ch: from.ch + 1 + title.length },
+            ]);
+          }
+        };
+
+        this.cm.on(completion, 'close', handleClose);
+        this.cm.on(completion, 'pick', (({ text }: Hint) => {
+          this.cm.off(completion, 'close', handleClose);
+
+          const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
           const titleEnd = cursorCh - (text.length + noteId.length + 4);
+
           this.doc.replaceRange(text, {
             line: cursorLine,
             ch: titleEnd,
