@@ -20,6 +20,7 @@ a[data-note-link-referrer-id] {
 }
 
 .note-link-element-referrers-icon {
+  white-space: nowrap;
   cursor: pointer;
   margin-left: 0.5em;
   font-size: 0.8em;
@@ -57,12 +58,17 @@ h6 > .note-link-element-referrers-icon {
 
 .note-link-identifier {
   cursor: pointer;
-  opacity: 0.6;
-  padding: 0 0.2em;
+  vertical-align: bottom;
+  opacity: 0.4;
+  padding: 0;
   border: none;
   font-size: inherit;
   background-color: transparent;
   display: none;
+}
+
+.note-link-identifier svg {
+  height: 1em;
 }
 
 .note-link-identifier:active {

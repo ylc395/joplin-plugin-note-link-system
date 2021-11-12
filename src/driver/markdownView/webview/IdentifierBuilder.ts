@@ -1,5 +1,6 @@
 import delegate from 'delegate';
 import debounce from 'lodash.debounce';
+import hashIcon from 'bootstrap-icons/icons/hash.svg';
 import type { Referrer } from 'model/Referrer';
 import {
   MARKDOWN_SCRIPT_ID,
@@ -63,7 +64,7 @@ export class IdentifierBuilder {
       const identifierEl = document.createElement('button');
       identifierEl.classList.add(IDENTIFIER_CLASS_NAME);
       identifierEl.dataset.noteLinkElementId = el.id;
-      identifierEl.innerText = '#';
+      identifierEl.innerHTML = hashIcon;
 
       el.prepend(identifierEl);
     }
