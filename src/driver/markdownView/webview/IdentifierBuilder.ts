@@ -56,6 +56,10 @@ export class IdentifierBuilder {
     const elsWithId = [...rootEl.querySelectorAll('[id]')];
 
     for (const el of elsWithId) {
+      if (!el.id) {
+        continue;
+      }
+
       const identifierEl = document.createElement('button');
       identifierEl.classList.add(IDENTIFIER_CLASS_NAME);
       identifierEl.dataset.noteLinkElementId = el.id;
