@@ -18,6 +18,7 @@ import {
 } from 'driver/constants';
 import type { SearchedNote, Note } from 'model/Referrer';
 import { ActionAfterCompletion } from './constants';
+import CodeMirror from 'codemirror';
 
 export interface Context {
   postMessage: <T>(
@@ -53,7 +54,11 @@ const HINT_ITEM_CLASS = 'note-link-hint';
 const HINT_ITEM_PATH_CLASS = 'note-link-hint-path';
 
 export class QuickLinker {
-  constructor(private readonly context: Context, private readonly cm: ExtendedEditor) {
+  constructor(
+    private readonly context: Context,
+    private readonly editor: ExtendedEditor,
+    private readonly cm: typeof CodeMirror,
+  ) {
     this.init();
   }
 
@@ -82,11 +87,11 @@ export class QuickLinker {
 
     // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
     this.md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
-    this.cm.on('cursorActivity', this.triggerHints.bind(this));
+    this.editor.on('cursorActivity', this.triggerHints.bind(this));
   }
 
   private md?: MarkdownIt;
-  private readonly doc = this.cm.getDoc();
+  private readonly doc = this.editor.getDoc();
   private triggerSymbol?: string;
   private symbolRange?: { from: Position; to: Position };
   private linkToElementEnabled?: boolean;
@@ -104,9 +109,9 @@ export class QuickLinker {
 
     if (chars === this.triggerSymbol) {
       this.symbolRange = { from: symbolRange[0], to: symbolRange[1] };
-      this.cm.showHint({
+      this.editor.showHint({
         completeSingle: false,
-        hint: this.getHints.bind(this),
+        hint: this.getNoteCompletion.bind(this),
       });
     }
   }
@@ -171,7 +176,7 @@ export class QuickLinker {
       return;
     }
 
-    this.cm.showHint({
+    this.editor.showHint({
       completeSingle: false,
       hint: () => {
         const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
@@ -181,75 +186,32 @@ export class QuickLinker {
           return;
         }
 
-        this.setElementPicker({ id: noteId, title });
-
         const keyword = this.doc.getRange({ line, ch }, { line: cursorLine, ch: cursorCh });
-
-        return {
+        const completion = {
           from: { line: start.line, ch: start.ch },
           to: { line: start.line, ch: start.ch + keyword.length },
           list,
           selectedHint: list.findIndex(({ text }) => text.slice(1).includes(keyword)),
         };
+
+        this.cm.on(completion, 'pick', (({ text }: Hint) => {
+          const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
+
+          const titleEnd = cursorCh - (text.length + noteId.length + 4);
+          this.doc.replaceRange(text, {
+            line: cursorLine,
+            ch: titleEnd,
+          });
+
+          this.afterCompletion('element', [
+            { line: cursorLine, ch: titleEnd - title.length },
+            { line: cursorLine, ch: titleEnd + text.length },
+          ]);
+        }) as any);
+
+        return completion;
       },
     });
-  }
-
-  private setNotePicker() {
-    const { completionActive } = this.cm.state;
-    const originPick = completionActive.pick.bind(completionActive);
-
-    completionActive.pick = (
-      { from, list, to }: { from: Position; to: Position; list: Hint[] },
-      index: number,
-    ) => {
-      originPick({ from, list, to }, index);
-      const completion = list[index];
-      const titleRange = [
-        { line: to.line, ch: from.ch + 1 },
-        { line: to.line, ch: from.ch + completion.title!.length + 1 },
-      ] as [Position, Position];
-
-      if (!this.linkToElementEnabled) {
-        this.afterCompletion('note', titleRange);
-        return;
-      }
-
-      const positionAfterId = { line: to.line, ch: from.ch + completion.text.length - 1 };
-
-      this.doc.setCursor(positionAfterId);
-      this.hintForElements(
-        { id: completion.id!, title: completion.title! },
-        positionAfterId,
-        titleRange,
-      );
-    };
-  }
-
-  private setElementPicker({ id: noteId, title }: { id: string; title: string }) {
-    const { completionActive } = this.cm.state;
-    const originPick = completionActive.pick.bind(completionActive);
-
-    completionActive.pick = (
-      { from, list, to }: { from: Position; to: Position; list: Hint[] },
-      index: number,
-    ) => {
-      originPick({ from, list, to }, index);
-
-      const { text } = list[index];
-      const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
-
-      const titleEnd = cursorCh - (text.length + noteId.length + 4);
-      this.doc.replaceRange(text, {
-        line: cursorLine,
-        ch: titleEnd,
-      });
-
-      this.afterCompletion('element', [
-        { line: cursorLine, ch: titleEnd - title.length },
-        { line: cursorLine, ch: titleEnd + text.length },
-      ]);
-    };
   }
 
   private afterCompletion(source: 'note' | 'element', range: [Position, Position]) {
@@ -266,7 +228,7 @@ export class QuickLinker {
     }
   }
 
-  private async getHints(): Promise<Completion | undefined> {
+  private async getNoteCompletion(): Promise<Completion | undefined> {
     if (!this.symbolRange) {
       throw new Error('no symbolRange');
     }
@@ -278,17 +240,17 @@ export class QuickLinker {
       return;
     }
 
-    this.setNotePicker();
-
     const keyword = this.doc.getRange({ line, ch }, { line: cursorLine, ch: cursorCh });
     const notes = await this.context.postMessage<SearchedNote[]>({
       event: 'searchNotes',
       payload: { keyword: keyword },
     });
 
-    return {
-      from: this.symbolRange.from,
-      to: { line, ch: ch + keyword.length },
+    const { from } = this.symbolRange;
+    const to = { line, ch: ch + keyword.length };
+    const completion: Completion = {
+      from,
+      to,
       list: notes.map(({ title, id, path }) => ({
         text: `[${title}](:/${id})`,
         className: HINT_ITEM_CLASS,
@@ -300,5 +262,24 @@ export class QuickLinker {
         id,
       })),
     };
+
+    this.cm.on(completion, 'pick', ((hint: Hint) => {
+      const titleRange = [
+        { line: to.line, ch: from.ch + 1 },
+        { line: to.line, ch: from.ch + hint.title!.length + 1 },
+      ] as [Position, Position];
+
+      if (!this.linkToElementEnabled) {
+        this.afterCompletion('note', titleRange);
+        return;
+      }
+
+      const positionAfterId = { line: to.line, ch: from.ch + hint.text.length - 1 };
+
+      this.doc.setCursor(positionAfterId);
+      this.hintForElements({ id: hint.id!, title: hint.title! }, positionAfterId, titleRange);
+    }) as any);
+
+    return completion;
   }
 }

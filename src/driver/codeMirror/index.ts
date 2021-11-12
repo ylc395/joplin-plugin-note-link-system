@@ -5,7 +5,7 @@ export default function (context: Context) {
   return {
     plugin: function (codemirror: typeof CodeMirror) {
       codemirror.defineOption('quickLinks', false, (cm) => {
-        new QuickLinker(context, cm as ExtendedEditor);
+        new QuickLinker(context, cm as ExtendedEditor, codemirror);
       });
     },
     codeMirrorOptions: {
