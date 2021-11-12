@@ -63,16 +63,20 @@ export class QuickLinker {
     private readonly editor: ExtendedEditor,
     private readonly cm: typeof CodeMirror,
   ) {
-    this.init();
+    // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
+    this.md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
+    this.editor.on('cursorActivity', this.triggerHints.bind(this));
+    // hack: don't know fetching must happen in next micro task
+    setTimeout(this.init.bind(this), 100);
   }
 
   async init() {
-    const enabled = await this.context.postMessage<boolean>({
+    this.enabled = await this.context.postMessage<boolean>({
       event: 'querySetting',
       payload: { key: QUICK_LINK_ENABLED_SETTING },
     });
 
-    if (!enabled) {
+    if (!this.enabled) {
       return;
     }
 
@@ -92,14 +96,11 @@ export class QuickLinker {
       event: 'querySetting',
       payload: { key: QUICK_LINK_CREATE_NOTE_SETTING },
     });
-
-    // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
-    this.md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
-    this.editor.on('cursorActivity', this.triggerHints.bind(this));
   }
 
   private md?: MarkdownIt;
   private readonly doc = this.editor.getDoc();
+  private enabled?: boolean;
   private triggerSymbol?: string;
   private symbolRange?: { from: Position; to: Position };
   private linkToElementEnabled?: boolean;
@@ -107,7 +108,7 @@ export class QuickLinker {
   private createNoteEnabled?: boolean;
 
   private triggerHints() {
-    if (!this.triggerSymbol) {
+    if (!this.triggerSymbol || !this.enabled) {
       return;
     }
 
