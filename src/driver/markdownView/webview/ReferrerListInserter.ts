@@ -4,12 +4,11 @@ import {
   REFERRER_AUTO_LIST_POSITION_SETTING,
   MARKDOWN_SCRIPT_ID,
   REFERRER_AUTO_LIST_ENABLED_SETTING,
-  ReferrersAutoListPosition,
-  ReferrersAutoListEnabled,
   QuerySettingRequest,
   SearchReferrersRequest,
   SearchNoteReferrersResponse,
 } from 'driver/constants';
+import { ReferrersAutoListPosition, ReferrersAutoListEnabled } from './constants';
 
 declare const webviewApi: {
   postMessage: <T>(id: string, payload: QuerySettingRequest | SearchReferrersRequest) => Promise<T>;

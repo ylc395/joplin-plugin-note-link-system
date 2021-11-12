@@ -9,9 +9,9 @@ import {
   OpenNoteRequest,
   QuerySettingRequest,
   REFERRER_ELEMENT_NUMBER_ENABLED,
-  ReferrersListNumberType,
   REFERRER_ELEMENT_NUMBER_TYPE,
 } from 'driver/constants';
+import { ReferrersListNumberType } from './constants';
 
 declare const webviewApi: {
   postMessage: <T>(

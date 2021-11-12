@@ -19,12 +19,14 @@ import {
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
-  ReferrersAutoListPosition,
-  ReferrersAutoListEnabled,
-  ReferrersListNumberType,
 } from 'driver/constants';
 import requestHandler from './requestHandler';
 import { PanelView } from '../panelView';
+import {
+  ReferrersAutoListPosition,
+  ReferrersAutoListEnabled,
+  ReferrersListNumberType,
+} from '../markdownView/webview/constants';
 
 export async function setupSetting() {
   const SECTION_NAME = 'Note Link';
