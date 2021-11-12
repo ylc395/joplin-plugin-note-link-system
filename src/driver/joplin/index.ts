@@ -93,6 +93,13 @@ export async function setupSetting() {
         [ReferrersListNumberType.Both]: 'Both',
       },
     },
+    [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
+      label: 'View: Enable Identifier Icon For Copying Url',
+      type: SettingItemType.Bool,
+      public: true,
+      value: true,
+      section: SECTION_NAME,
+    },
     [REFERRER_PANEL_ENABLED_SETTING]: {
       label: 'Panel: Enable',
       type: SettingItemType.Bool,
@@ -108,15 +115,22 @@ export async function setupSetting() {
       value: 'REFERRERS',
       section: SECTION_NAME,
     },
-    [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
-      label: 'Editor: Enable Identifier Icon For Copy Url',
+    [QUICK_LINK_ENABLED_SETTING]: {
+      label: 'Quick Link: Enable',
       type: SettingItemType.Bool,
       public: true,
       value: true,
       section: SECTION_NAME,
     },
-    [QUICK_LINK_ENABLED_SETTING]: {
-      label: 'Quick Link: Enable',
+    [QUICK_LINK_SHOW_PATH_SETTING]: {
+      label: 'Quick Link: Display Path Of Note',
+      type: SettingItemType.Bool,
+      public: true,
+      value: false,
+      section: SECTION_NAME,
+    },
+    [QUICK_LINK_ELEMENTS_ENABLED_SETTING]: {
+      label: 'Quick Link: Enable Link To Element',
       type: SettingItemType.Bool,
       public: true,
       value: true,
@@ -129,29 +143,15 @@ export async function setupSetting() {
       value: '@@',
       section: SECTION_NAME,
     },
-    [QUICK_LINK_SHOW_PATH_SETTING]: {
-      label: 'Quick Link: Display Path Of Note',
-      type: SettingItemType.Bool,
-      public: true,
-      value: false,
-      section: SECTION_NAME,
-    },
-    [QUICK_LINK_ELEMENTS_ENABLED_SETTING]: {
-      label: 'Quick Link: Enable Link to Element',
-      type: SettingItemType.Bool,
-      public: true,
-      value: true,
-      section: SECTION_NAME,
-    },
     [QUICK_LINK_AFTER_COMPLETION_SETTING]: {
-      label: 'Quick Link: What happen after completion',
+      label: 'Quick Link: What Happen After Completion',
       isEnum: true,
       type: SettingItemType.Int,
       public: true,
       value: ActionAfterCompletion.SelectText,
       options: {
-        [ActionAfterCompletion.MoveCursorToEnd]: 'move cursor to link end',
-        [ActionAfterCompletion.SelectText]: 'select title of link',
+        [ActionAfterCompletion.MoveCursorToEnd]: 'Move cursor to link end',
+        [ActionAfterCompletion.SelectText]: 'Select title of link',
       },
       section: SECTION_NAME,
     },
