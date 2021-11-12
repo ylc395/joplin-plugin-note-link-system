@@ -20,6 +20,7 @@ import {
   QUICK_LINK_SEARCH_PATTERN_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
   QUICK_LINK_AFTER_COMPLETION_SETTING,
+  QUICK_LINK_SHOW_PATH_SETTING,
 } from 'driver/constants';
 import requestHandler from './requestHandler';
 import { PanelView } from '../panelView';
@@ -126,6 +127,13 @@ export async function setupSetting() {
       type: SettingItemType.String,
       public: true,
       value: '@@',
+      section: SECTION_NAME,
+    },
+    [QUICK_LINK_SHOW_PATH_SETTING]: {
+      label: 'Quick Link: Display Path Of Note',
+      type: SettingItemType.Bool,
+      public: true,
+      value: false,
       section: SECTION_NAME,
     },
     [QUICK_LINK_ELEMENTS_ENABLED_SETTING]: {

@@ -10,4 +10,14 @@ export type Referrer = Note & {
   mentionCount: number;
 };
 
-export type SearchedNote = Pick<Note, 'id' | 'title'>;
+export type SearchedNote = Pick<Note, 'id' | 'title'> & {
+  parent_id: string;
+  path?: string;
+};
+
+export interface Notebook {
+  id: string;
+  parent_id: string;
+  title: string;
+  children?: Notebook[];
+}

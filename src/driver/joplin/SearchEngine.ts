@@ -1,24 +1,61 @@
 import joplin from 'api';
-import type { Referrer, SearchedNote, Note } from 'model/Referrer';
+import debounce from 'lodash.debounce';
+import type { Referrer, SearchedNote, Note, Notebook } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
+  QUICK_LINK_SHOW_PATH_SETTING,
   SearchElementReferrersResponse,
 } from 'driver/constants';
 
 export class SearchEngine {
+  private notebooksIndex: Record<string, Notebook> = {};
+  private isBuildingIndex = false;
   private noteSearchPattern?: string;
   private referrerSearchPattern?: string;
+  private needNotebooks?: boolean;
+
+  private async buildNotebookIndex() {
+    if (!this.needNotebooks || this.isBuildingIndex) {
+      return;
+    }
+
+    this.isBuildingIndex = true;
+    this.notebooksIndex = {};
+    const notebooks = await SearchEngine.fetchAll<Notebook>(['folders']);
+
+    const buildIndex = (notebooks: Notebook[]) => {
+      for (const notebook of notebooks) {
+        this.notebooksIndex[notebook.id] = notebook;
+
+        if (notebook.children) {
+          buildIndex(notebook.children);
+        }
+      }
+    };
+
+    buildIndex(notebooks);
+    this.isBuildingIndex = false;
+  }
+
   private async init(isFirstTime: boolean) {
+    const buildNoteIndex = debounce(this.buildNotebookIndex.bind(this), 1000);
+
     this.noteSearchPattern = await joplin.settings.value(QUICK_LINK_SEARCH_PATTERN_SETTING);
     this.referrerSearchPattern = await joplin.settings.value(REFERRER_SEARCH_PATTERN_SETTING);
+    this.needNotebooks = await joplin.settings.value(QUICK_LINK_SHOW_PATH_SETTING);
+    buildNoteIndex();
 
     if (isFirstTime) {
+      joplin.workspace.onSyncComplete(buildNoteIndex);
+      joplin.workspace.onNoteSelectionChange(buildNoteIndex);
+
       joplin.settings.onChange(({ keys }) => {
         const needInit =
           keys.includes(REFERRER_SEARCH_PATTERN_SETTING) ||
+          keys.includes(QUICK_LINK_SHOW_PATH_SETTING) ||
           keys.includes(QUICK_LINK_SEARCH_PATTERN_SETTING);
 
         if (needInit) {
@@ -37,19 +74,38 @@ export class SearchEngine {
       return [];
     }
 
+    let notes: SearchedNote[];
     if (keyword) {
       const _keyword = this.noteSearchPattern.replaceAll(NOTE_SEARCH_PATTERN_PLACEHOLDER, keyword);
-      return SearchEngine.searchNotes(_keyword);
+      notes = await SearchEngine.fetchAll<SearchedNote>(['search'], { query: _keyword });
     } else {
-      return (
-        await joplin.data.get(['notes'], {
-          fields: 'id,title',
-          order_by: 'updated_time',
-          order_dir: 'DESC',
-          limit: 20,
-        })
-      ).items;
+      notes = await SearchEngine.fetchAll<SearchedNote>(['notes'], {
+        fields: 'id,title,parent_id',
+        order_by: 'updated_time',
+        order_dir: 'DESC',
+        limit: 20,
+      });
     }
+
+    if (this.needNotebooks) {
+      for (const note of notes) {
+        note.path = this.getPathOfNote(note);
+      }
+    }
+
+    return notes;
+  }
+
+  private getPathOfNote(note: SearchedNote) {
+    let parentId = note.parent_id;
+    let path = '';
+
+    while (this.notebooksIndex[parentId]) {
+      path = '/' + this.notebooksIndex[parentId].title + path;
+      parentId = this.notebooksIndex[parentId].parent_id;
+    }
+
+    return path;
   }
 
   async searchReferrers(noteId: string): Promise<Referrer[]> {
@@ -66,7 +122,9 @@ export class SearchEngine {
         REFERRER_SEARCH_PATTERN_PLACEHOLDER,
         noteId,
       );
-      const notes = await SearchEngine.getDetailedNotes(await SearchEngine.searchNotes(keyword));
+      const notes = await SearchEngine.getDetailedNotes(
+        await SearchEngine.fetchAll(['search'], { query: keyword }),
+      );
 
       return notes.map((note) => ({
         ...note,
@@ -99,7 +157,7 @@ export class SearchEngine {
           `${noteId}#${elementId}`,
         );
         const referrers = await SearchEngine.getDetailedNotes(
-          await SearchEngine.searchNotes(keyword),
+          await SearchEngine.fetchAll(['search'], { query: keyword }),
         );
 
         if (referrers.length > 0) {
@@ -121,14 +179,14 @@ export class SearchEngine {
     this.init(true);
   }
 
-  private static async searchNotes(query: string): Promise<SearchedNote[]> {
-    let result: Referrer[] = [];
+  private static async fetchAll<T>(path: string[], query?: Record<string, unknown>): Promise<T[]> {
+    let result: T[] = [];
     let page = 1;
     let hasMore = true;
 
     while (hasMore) {
-      const { items, has_more } = await joplin.data.get(['search'], {
-        query,
+      const { items, has_more } = await joplin.data.get(path, {
+        ...query,
         page: page++,
       });
 

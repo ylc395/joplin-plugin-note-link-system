@@ -49,6 +49,9 @@ export type ExtendedEditor = Editor & {
   }): void;
 };
 
+const HINT_ITEM_CLASS = 'note-link-hint';
+const HINT_ITEM_PATH_CLASS = 'note-link-hint-path';
+
 export class QuickLinker {
   constructor(private readonly context: Context, private readonly cm: ExtendedEditor) {
     this.init();
@@ -155,7 +158,7 @@ export class QuickLinker {
 
       return {
         text: `#${el.id}`,
-        className: 'note-link-element-hint',
+        className: HINT_ITEM_CLASS,
         render: (container) => {
           container.innerHTML = `${' '.repeat(level - 1)}${icon}${el.id}`;
         },
@@ -252,7 +255,7 @@ export class QuickLinker {
     }
   }
 
-  private async getHints() {
+  private async getHints(): Promise<Completion | undefined> {
     if (!this.symbolRange) {
       throw new Error('no symbolRange');
     }
@@ -275,9 +278,13 @@ export class QuickLinker {
     return {
       from: this.symbolRange.from,
       to: { line, ch: ch + keyword.length },
-      list: notes.map(({ title, id }) => ({
+      list: notes.map(({ title, id, path }) => ({
         text: `[${title}](:/${id})`,
-        displayText: title,
+        className: HINT_ITEM_CLASS,
+        render(container) {
+          container.innerHTML =
+            title + (path ? `<span class="${HINT_ITEM_PATH_CLASS}">${path}</span>` : '');
+        },
         title,
         id,
       })),
