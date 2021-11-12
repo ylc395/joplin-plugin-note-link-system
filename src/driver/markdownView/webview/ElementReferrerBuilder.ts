@@ -1,4 +1,5 @@
 import tippy, { roundArrow } from 'tippy.js';
+import debounce from 'lodash.debounce';
 import 'tippy.js/dist/svg-arrow.css';
 import referenceIcon from 'bootstrap-icons/icons/box-arrow-in-down-left.svg';
 import { Referrer } from 'model/Referrer';
@@ -64,8 +65,10 @@ export class ElementReferrerBuilder {
       payload: { key: REFERRER_ELEMENT_NUMBER_TYPE },
     });
 
-    // this event will be triggered twice within 1s. debounce function will cause an ignorable delay
-    document.addEventListener('joplin-noteDidUpdate', this.attachReferrers.bind(this));
+    document.addEventListener(
+      'joplin-noteDidUpdate',
+      debounce(this.attachReferrers.bind(this), 1500),
+    );
     this.attachReferrers();
   }
 

@@ -1,3 +1,4 @@
+import debounce from 'lodash.debounce';
 import { Referrer } from 'model/Referrer';
 import {
   REFERRER_LIST_HEADING_SETTING,
@@ -46,8 +47,7 @@ export class ReferrerListInserter {
       payload: { key: REFERRER_LIST_HEADING_SETTING },
     });
 
-    // this event will be triggered twice within 1s. debounce function will cause an ignorable delay
-    document.addEventListener('joplin-noteDidUpdate', this.insert.bind(this));
+    document.addEventListener('joplin-noteDidUpdate', debounce(this.insert.bind(this), 1500));
     this.insert();
   }
 

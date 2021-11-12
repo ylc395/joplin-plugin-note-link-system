@@ -1,4 +1,5 @@
 import delegate from 'delegate';
+import debounce from 'lodash.debounce';
 import type { Referrer } from 'model/Referrer';
 import {
   MARKDOWN_SCRIPT_ID,
@@ -33,8 +34,7 @@ export class IdentifierBuilder {
       this.copyUrl(target);
     });
 
-    // this event will be triggered twice within 1s. debounce function will cause an ignorable delay
-    document.addEventListener('joplin-noteDidUpdate', this.attach.bind(this));
+    document.addEventListener('joplin-noteDidUpdate', debounce(this.attach.bind(this), 1500));
     this.attach();
   }
 

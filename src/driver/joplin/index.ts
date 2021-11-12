@@ -189,14 +189,14 @@ export async function setupSetting() {
       public: true,
       advanced: true,
       section: SECTION_NAME,
-      value: '/:/$noteId',
+      value: '/(:/$noteId)',
       description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
     },
   });
 }
 
 export async function setupToolbar() {
-  const commandName = 'insert referrers list';
+  const commandName = 'insertReferrersList';
 
   await joplin.commands.register({
     name: commandName,

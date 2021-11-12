@@ -152,6 +152,10 @@ export class SearchEngine {
       const result = {} as SearchElementReferrersResponse;
 
       for (const elementId of elementIds) {
+        if (!elementId) {
+          continue;
+        }
+
         const keyword = this.referrerSearchPattern.replaceAll(
           REFERRER_SEARCH_PATTERN_PLACEHOLDER,
           `${noteId}#${elementId}`,
