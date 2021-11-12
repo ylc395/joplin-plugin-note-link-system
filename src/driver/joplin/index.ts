@@ -19,6 +19,7 @@ import {
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
+  QUICK_LINK_AFTER_COMPLETION_SETTING,
 } from 'driver/constants';
 import requestHandler from './requestHandler';
 import { PanelView } from '../panelView';
@@ -27,6 +28,7 @@ import {
   ReferrersAutoListEnabled,
   ReferrersListNumberType,
 } from '../markdownView/webview/constants';
+import { ActionAfterCompletion } from '../codeMirror/constants';
 
 export async function setupSetting() {
   const SECTION_NAME = 'Note Link';
@@ -131,6 +133,18 @@ export async function setupSetting() {
       type: SettingItemType.Bool,
       public: true,
       value: true,
+      section: SECTION_NAME,
+    },
+    [QUICK_LINK_AFTER_COMPLETION_SETTING]: {
+      label: 'Quick Link: What happen after completion',
+      isEnum: true,
+      type: SettingItemType.Int,
+      public: true,
+      value: ActionAfterCompletion.SelectText,
+      options: {
+        [ActionAfterCompletion.MoveCursorToEnd]: 'move cursor to link end',
+        [ActionAfterCompletion.SelectText]: 'select title of link',
+      },
       section: SECTION_NAME,
     },
 

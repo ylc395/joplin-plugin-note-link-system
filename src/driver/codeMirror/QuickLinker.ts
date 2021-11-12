@@ -1,4 +1,4 @@
-import type { Editor, EditorChangeCancellable, Position } from 'codemirror';
+import type { Editor, Position } from 'codemirror';
 import MarkdownIt from 'markdown-it';
 import uslug from 'uslug';
 import h1Icon from 'bootstrap-icons/icons/type-h1.svg';
@@ -14,8 +14,10 @@ import {
   QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
+  QUICK_LINK_AFTER_COMPLETION_SETTING,
 } from 'driver/constants';
 import type { SearchedNote, Note } from 'model/Referrer';
+import { ActionAfterCompletion } from './constants';
 
 export interface Context {
   postMessage: <T>(
@@ -30,6 +32,7 @@ interface Hint {
   className?: string;
   render?: (container: Element, completion: Completion, hint: Hint) => void;
   id?: string; // custom field for our app
+  title?: string; // custom field for our app
 }
 
 interface Completion {
@@ -69,6 +72,10 @@ export class QuickLinker {
       event: 'querySetting',
       payload: { key: QUICK_LINK_ELEMENTS_ENABLED_SETTING },
     });
+    this.actionAfterCompletion = await this.context.postMessage<ActionAfterCompletion>({
+      event: 'querySetting',
+      payload: { key: QUICK_LINK_AFTER_COMPLETION_SETTING },
+    });
 
     // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
     this.md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
@@ -80,6 +87,7 @@ export class QuickLinker {
   private triggerSymbol?: string;
   private symbolRange?: { from: Position; to: Position };
   private linkToElementEnabled?: boolean;
+  private actionAfterCompletion?: ActionAfterCompletion;
 
   private triggerHints() {
     if (!this.triggerSymbol) {
@@ -100,7 +108,10 @@ export class QuickLinker {
     }
   }
 
-  private async hintForElements(noteId: string, start: Position) {
+  private async hintForElements(
+    { id: noteId, title }: { id: string; title: string },
+    start: Position,
+  ) {
     if (!this.md) {
       throw new Error('no md');
     }
@@ -161,7 +172,7 @@ export class QuickLinker {
           return;
         }
 
-        this.setElementPicker(noteId);
+        this.setElementPicker({ id: noteId, title });
 
         const keyword = this.doc.getRange({ line, ch }, { line: cursorLine, ch: cursorCh });
 
@@ -176,10 +187,6 @@ export class QuickLinker {
   }
 
   private setNotePicker() {
-    if (!this.linkToElementEnabled) {
-      return;
-    }
-
     const { completionActive } = this.cm.state;
     const originPick = completionActive.pick.bind(completionActive);
 
@@ -188,19 +195,24 @@ export class QuickLinker {
       index: number,
     ) => {
       originPick({ from, list, to }, index);
-
       const completion = list[index];
-      const newCursorPosition = { line: to.line, ch: from.ch + completion.text.length - 1 };
 
-      this.doc.setCursor(newCursorPosition);
-
-      if (completion.id) {
-        this.hintForElements(completion.id, newCursorPosition);
+      if (!this.linkToElementEnabled) {
+        this.afterCompletion('note', [
+          { line: to.line, ch: from.ch + 1 },
+          { line: to.line, ch: from.ch + completion.title!.length - 1 },
+        ]);
+        return;
       }
+
+      const positionAfterId = { line: to.line, ch: from.ch + completion.text.length - 1 };
+
+      this.doc.setCursor(positionAfterId);
+      this.hintForElements({ id: completion.id!, title: completion.title! }, positionAfterId);
     };
   }
 
-  private setElementPicker(noteId: string) {
+  private setElementPicker({ id: noteId, title }: { id: string; title: string }) {
     const { completionActive } = this.cm.state;
     const originPick = completionActive.pick.bind(completionActive);
 
@@ -213,11 +225,31 @@ export class QuickLinker {
       const { text } = list[index];
       const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
 
+      const titleEnd = cursorCh - (text.length + noteId.length + 4);
       this.doc.replaceRange(text, {
         line: cursorLine,
-        ch: cursorCh - (text.length + noteId.length + 4),
+        ch: titleEnd,
       });
+
+      this.afterCompletion('element', [
+        { line: cursorLine, ch: titleEnd - title.length },
+        { line: cursorLine, ch: titleEnd + text.length },
+      ]);
     };
+  }
+
+  private afterCompletion(source: 'note' | 'element', range: [Position, Position]) {
+    if (this.actionAfterCompletion === ActionAfterCompletion.SelectText) {
+      this.doc.setSelection(...range);
+    }
+
+    if (
+      this.actionAfterCompletion === ActionAfterCompletion.MoveCursorToEnd &&
+      source === 'element'
+    ) {
+      const { line, ch } = this.doc.getCursor();
+      this.doc.setCursor({ line, ch: ch + 1 });
+    }
   }
 
   private async getHints() {
@@ -243,7 +275,12 @@ export class QuickLinker {
     return {
       from: this.symbolRange.from,
       to: { line, ch: ch + keyword.length },
-      list: notes.map(({ title, id }) => ({ text: `[${title}](:/${id})`, displayText: title, id })),
+      list: notes.map(({ title, id }) => ({
+        text: `[${title}](:/${id})`,
+        displayText: title,
+        title,
+        id,
+      })),
     };
   }
 }
