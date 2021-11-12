@@ -1,4 +1,5 @@
 import type { Editor, Position } from 'codemirror';
+import type CodeMirror from 'codemirror';
 import MarkdownIt from 'markdown-it';
 import uslug from 'uslug';
 import h1Icon from 'bootstrap-icons/icons/type-h1.svg';
@@ -6,23 +7,25 @@ import h2Icon from 'bootstrap-icons/icons/type-h2.svg';
 import h3Icon from 'bootstrap-icons/icons/type-h3.svg';
 import cardHeadingIcon from 'bootstrap-icons/icons/card-heading.svg';
 import boxIcon from 'bootstrap-icons/icons/box.svg';
+import plusIcon from 'bootstrap-icons/icons/plus.svg';
 import markdownItAnchor from 'markdown-it-anchor';
 import {
   QuerySettingRequest,
   SearchNotesRequest,
   FetchNoteRequest,
+  CreateNoteRequest,
   QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
   QUICK_LINK_AFTER_COMPLETION_SETTING,
+  QUICK_LINK_CREATE_NOTE_SETTING,
 } from 'driver/constants';
 import type { SearchedNote, Note } from 'model/Referrer';
 import { ActionAfterCompletion } from './constants';
-import CodeMirror from 'codemirror';
 
 export interface Context {
   postMessage: <T>(
-    request: QuerySettingRequest | SearchNotesRequest | FetchNoteRequest,
+    request: QuerySettingRequest | SearchNotesRequest | FetchNoteRequest | CreateNoteRequest,
   ) => Promise<T>;
 }
 
@@ -32,6 +35,7 @@ interface Hint {
   displayText?: string;
   className?: string;
   render?: (container: Element, completion: Completion, hint: Hint) => void;
+  hint?: (cm: typeof CodeMirror, completion: Completion, hint: Hint) => void;
   id?: string; // custom field for our app
   title?: string; // custom field for our app
 }
@@ -84,6 +88,10 @@ export class QuickLinker {
       event: 'querySetting',
       payload: { key: QUICK_LINK_AFTER_COMPLETION_SETTING },
     });
+    this.createNoteEnabled = await this.context.postMessage<boolean>({
+      event: 'querySetting',
+      payload: { key: QUICK_LINK_CREATE_NOTE_SETTING },
+    });
 
     // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
     this.md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
@@ -96,6 +104,7 @@ export class QuickLinker {
   private symbolRange?: { from: Position; to: Position };
   private linkToElementEnabled?: boolean;
   private actionAfterCompletion?: ActionAfterCompletion;
+  private createNoteEnabled?: boolean;
 
   private triggerHints() {
     if (!this.triggerSymbol) {
@@ -214,18 +223,62 @@ export class QuickLinker {
     });
   }
 
-  private afterCompletion(source: 'note' | 'element', range: [Position, Position]) {
+  private afterCompletion(source: 'note' | 'element', titleRange: [Position, Position]) {
     if (this.actionAfterCompletion === ActionAfterCompletion.SelectText) {
-      this.doc.setSelection(...range);
+      this.doc.setSelection(...titleRange);
     }
 
-    if (
-      this.actionAfterCompletion === ActionAfterCompletion.MoveCursorToEnd &&
-      source === 'element'
-    ) {
+    if (this.actionAfterCompletion === ActionAfterCompletion.MoveCursorToEnd) {
       const { line, ch } = this.doc.getCursor();
-      this.doc.setCursor({ line, ch: ch + 1 });
+
+      if (source === 'element') {
+        this.doc.setCursor({ line, ch: ch + 1 });
+      }
     }
+  }
+
+  private getNewNoteHints(keyword: string): Hint[] {
+    const afterCreate = (note: Note) => {
+      if (!this.symbolRange) {
+        throw new Error('no symbolRange');
+      }
+
+      const { from, to } = this.symbolRange;
+
+      this.doc.replaceRange(`[${note.title}](:/${note.id})`, from, {
+        line: to.line,
+        ch: to.ch + keyword.length,
+      });
+      this.afterCompletion('note', [
+        { line: from.line, ch: from.ch + 1 },
+        { line: from.line, ch: from.ch + 1 + note.title.length },
+      ]);
+    };
+
+    const hint = (type: 'todo' | 'note') => {
+      return async () => {
+        const note = await this.context.postMessage<Note>({
+          event: 'createNote',
+          payload: { title: keyword, type },
+        });
+        afterCreate(note);
+      };
+    };
+
+    return [
+      {
+        className: HINT_ITEM_CLASS,
+        text: '',
+        render: (containerEl) => (containerEl.innerHTML = `${plusIcon}new Note: ${keyword}`),
+        hint: hint('note'),
+      },
+      {
+        text: '',
+        className: HINT_ITEM_CLASS,
+        render: (containerEl) => (containerEl.innerHTML = `${plusIcon}new Todo: ${keyword}`),
+        hint: hint('todo'),
+      },
+    ];
   }
 
   private async getNoteCompletion(): Promise<Completion | undefined> {
@@ -245,40 +298,43 @@ export class QuickLinker {
       event: 'searchNotes',
       payload: { keyword: keyword },
     });
-
     const { from } = this.symbolRange;
     const to = { line, ch: ch + keyword.length };
+    const hintList: Hint[] = notes.map(({ title, id, path }) => ({
+      text: `[${title}](:/${id})`,
+      className: HINT_ITEM_CLASS,
+      render(container) {
+        container.innerHTML =
+          title + (path ? `<span class="${HINT_ITEM_PATH_CLASS}">${path}</span>` : '');
+      },
+      title,
+      id,
+    }));
+    const isCreatingNewNote = hintList.length === 0 && this.createNoteEnabled;
     const completion: Completion = {
       from,
       to,
-      list: notes.map(({ title, id, path }) => ({
-        text: `[${title}](:/${id})`,
-        className: HINT_ITEM_CLASS,
-        render(container) {
-          container.innerHTML =
-            title + (path ? `<span class="${HINT_ITEM_PATH_CLASS}">${path}</span>` : '');
-        },
-        title,
-        id,
-      })),
+      list: isCreatingNewNote ? this.getNewNoteHints(keyword) : hintList,
     };
 
-    this.cm.on(completion, 'pick', ((hint: Hint) => {
-      const titleRange = [
-        { line: to.line, ch: from.ch + 1 },
-        { line: to.line, ch: from.ch + hint.title!.length + 1 },
-      ] as [Position, Position];
+    if (!isCreatingNewNote) {
+      this.cm.on(completion, 'pick', ((hint: Hint) => {
+        const titleRange = [
+          { line: to.line, ch: from.ch + 1 },
+          { line: to.line, ch: from.ch + hint.title!.length + 1 },
+        ] as [Position, Position];
 
-      if (!this.linkToElementEnabled) {
-        this.afterCompletion('note', titleRange);
-        return;
-      }
+        if (!this.linkToElementEnabled) {
+          this.afterCompletion('note', titleRange);
+          return;
+        }
 
-      const positionAfterId = { line: to.line, ch: from.ch + hint.text.length - 1 };
+        const positionAfterId = { line: to.line, ch: from.ch + hint.text.length - 1 };
 
-      this.doc.setCursor(positionAfterId);
-      this.hintForElements({ id: hint.id!, title: hint.title! }, positionAfterId, titleRange);
-    }) as any);
+        this.doc.setCursor(positionAfterId);
+        this.hintForElements({ id: hint.id!, title: hint.title! }, positionAfterId, titleRange);
+      }) as any);
+    }
 
     return completion;
   }

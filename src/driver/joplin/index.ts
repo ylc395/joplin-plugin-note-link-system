@@ -21,6 +21,7 @@ import {
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
   QUICK_LINK_AFTER_COMPLETION_SETTING,
   QUICK_LINK_SHOW_PATH_SETTING,
+  QUICK_LINK_CREATE_NOTE_SETTING,
 } from 'driver/constants';
 import requestHandler from './requestHandler';
 import { PanelView } from '../panelView';
@@ -134,6 +135,13 @@ export async function setupSetting() {
       type: SettingItemType.Bool,
       public: true,
       value: true,
+      section: SECTION_NAME,
+    },
+    [QUICK_LINK_CREATE_NOTE_SETTING]: {
+      label: 'Quick Link: Enable Create New Note',
+      type: SettingItemType.Bool,
+      public: true,
+      value: false,
       section: SECTION_NAME,
     },
     [QUICK_LINK_SYMBOL_SETTING]: {

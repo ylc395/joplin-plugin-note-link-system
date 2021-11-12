@@ -1,5 +1,5 @@
 import joplin from 'api';
-import type { Request } from 'driver/constants';
+import type { Request, CreateNoteRequest } from 'driver/constants';
 import { SearchEngine } from './SearchEngine';
 
 let searchEngine: SearchEngine;
@@ -28,7 +28,20 @@ export default async function requestHandler(request: Request) {
       return searchEngine.searchNotes(request.payload.keyword);
     case 'fetchNote':
       return joplin.data.get(['notes', request.payload.id], { fields: 'body' });
+    case 'createNote':
+      return createNote(request.payload);
     default:
       break;
   }
+}
+
+async function createNote({ title, type }: CreateNoteRequest['payload']) {
+  const currentNote = await joplin.workspace.selectedNote();
+  const currentNotebook = await joplin.data.get(['folders', currentNote.parent_id]);
+
+  return joplin.data.post(['notes'], null, {
+    is_todo: type === 'todo',
+    title: title,
+    parent_id: currentNotebook.id,
+  });
 }
