@@ -114,6 +114,7 @@ export class QuickLinker {
   private async hintForElements(
     { id: noteId, title }: { id: string; title: string },
     start: Position,
+    titleRange: [Position, Position],
   ) {
     if (!this.md) {
       throw new Error('no md');
@@ -165,6 +166,11 @@ export class QuickLinker {
       };
     });
 
+    if (list.length === 0) {
+      this.afterCompletion('note', titleRange);
+      return;
+    }
+
     this.cm.showHint({
       completeSingle: false,
       hint: () => {
@@ -199,19 +205,24 @@ export class QuickLinker {
     ) => {
       originPick({ from, list, to }, index);
       const completion = list[index];
+      const titleRange = [
+        { line: to.line, ch: from.ch + 1 },
+        { line: to.line, ch: from.ch + completion.title!.length + 1 },
+      ] as [Position, Position];
 
       if (!this.linkToElementEnabled) {
-        this.afterCompletion('note', [
-          { line: to.line, ch: from.ch + 1 },
-          { line: to.line, ch: from.ch + completion.title!.length - 1 },
-        ]);
+        this.afterCompletion('note', titleRange);
         return;
       }
 
       const positionAfterId = { line: to.line, ch: from.ch + completion.text.length - 1 };
 
       this.doc.setCursor(positionAfterId);
-      this.hintForElements({ id: completion.id!, title: completion.title! }, positionAfterId);
+      this.hintForElements(
+        { id: completion.id!, title: completion.title! },
+        positionAfterId,
+        titleRange,
+      );
     };
   }
 
