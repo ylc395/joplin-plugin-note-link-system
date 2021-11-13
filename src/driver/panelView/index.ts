@@ -6,14 +6,16 @@ import {
   REFERRER_PANEL_TITLE_SETTING,
   REFERRER_PANEL_STYLESHEET_SETTING,
 } from 'driver/constants';
-import { SearchEngine } from '../joplin/SearchEngine';
+import type { SearchEngine } from '../joplin/SearchEngine';
 
 export class PanelView {
-  constructor(private readonly viewHandler: ViewHandle) {
+  constructor(
+    private readonly viewHandler: ViewHandle,
+    private readonly searchEngine: SearchEngine,
+  ) {
     this.init();
   }
 
-  private readonly searchEngine = new SearchEngine();
   private panelVisible = false;
   private currentNoteId?: string;
   private panelTitle?: string;

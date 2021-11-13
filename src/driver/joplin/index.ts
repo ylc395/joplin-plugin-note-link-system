@@ -23,7 +23,6 @@ import {
   QUICK_LINK_SHOW_PATH_SETTING,
   QUICK_LINK_CREATE_NOTE_SETTING,
 } from 'driver/constants';
-import requestHandler from './requestHandler';
 import { PanelView } from '../panelView';
 import {
   ReferrersAutoListPosition,
@@ -31,7 +30,8 @@ import {
   ReferrersListNumberType,
 } from '../markdownView/webview/constants';
 import { ActionAfterCompletion } from '../codeMirror/constants';
-
+import bootstrap, { RequestHandler } from './bootstrap';
+import type { SearchEngine } from './SearchEngine';
 export async function setupSetting() {
   const SECTION_NAME = 'Note Link';
 
@@ -193,6 +193,8 @@ export async function setupSetting() {
       description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
     },
   });
+
+  return bootstrap();
 }
 
 export async function setupToolbar() {
@@ -215,7 +217,7 @@ export async function setupToolbar() {
   );
 }
 
-export async function setupMarkdownView() {
+export async function setupMarkdownView(requestHandler: RequestHandler) {
   await joplin.contentScripts.register(
     ContentScriptType.MarkdownItPlugin,
     MARKDOWN_SCRIPT_ID,
@@ -225,16 +227,16 @@ export async function setupMarkdownView() {
   await joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, requestHandler);
 }
 
-export async function setupPanel() {
+export async function setupPanel(requestHandler: RequestHandler, searchEngine: SearchEngine) {
   const panelId = await joplin.views.panels.create('panel');
   await joplin.views.panels.addScript(panelId, './driver/panelView/script.js');
   await joplin.views.panels.addScript(panelId, './driver/panelView/style.css');
   await joplin.views.panels.onMessage(panelId, requestHandler);
 
-  new PanelView(panelId);
+  new PanelView(panelId, searchEngine);
 }
 
-export async function setupCodeMirror() {
+export async function setupCodeMirror(requestHandler: RequestHandler) {
   await joplin.contentScripts.register(
     ContentScriptType.CodeMirrorPlugin,
     CODE_MIRROR_SCRIPT_ID,

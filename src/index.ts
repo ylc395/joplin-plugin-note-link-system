@@ -9,10 +9,11 @@ import {
 
 joplin.plugins.register({
   onStart: async function () {
-    await setupSetting();
-    await setupCodeMirror();
+    const { requestHandler, searchEngine } = await setupSetting();
+
+    await setupCodeMirror(requestHandler);
     await setupToolbar();
-    await setupMarkdownView();
-    await setupPanel();
+    await setupMarkdownView(requestHandler);
+    await setupPanel(requestHandler, searchEngine);
   },
 });
