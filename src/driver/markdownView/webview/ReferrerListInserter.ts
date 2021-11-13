@@ -114,7 +114,7 @@ export class ReferrerListInserter {
     }
 
     const listHtml = this.referrers
-      .map((note) => `<li>${this.referrerToHtmlLink(note)}</li>`)
+      .map((note) => `<li>${this.renderReferrerHtml(note)}</li>`)
       .join('');
 
     for (const headingEl of this.refererHeadingEls) {
@@ -126,15 +126,15 @@ export class ReferrerListInserter {
     }
   }
 
-  private referrerToHtmlLink(note: Referrer) {
+  private renderReferrerHtml(note: Referrer) {
+    const mentionCount = note.mentions.length;
+
     return `<a data-note-link-referrer-id="${
       note.id
-    }"><span class="resource-icon fa-joplin"></span>${note.title}</a><span title="${
-      note.mentionCount
-    } reference${
-      note.mentionCount > 1 ? 's' : ''
-    } from this note" class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}">${
-      note.mentionCount
-    }</span>`;
+    }"><span class="resource-icon fa-joplin"></span>${
+      note.title
+    }</a><span title="${mentionCount} reference${
+      mentionCount > 1 ? 's' : ''
+    } from this note" class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}">${mentionCount}</span>`;
   }
 }

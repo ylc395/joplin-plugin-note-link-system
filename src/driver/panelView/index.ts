@@ -88,11 +88,11 @@ export class PanelView {
     if (notes.length > 0) {
       html += '<ol>';
       for (const note of notes) {
-        html += `<li><a class="title" data-note-id="${note.id}">${
-          note.title
-        }</a><span class="count" title="${note.mentionCount} reference${
-          note.mentionCount > 1 ? 's' : ''
-        } from this note">${note.mentionCount}</span></li>`;
+        html += `
+        <li>
+          <a class="title" data-note-id="${note.id}">${note.title}</a>
+          ${PanelView.renderMentionList(note.mentions)}
+        </li>`;
       }
       html += '</ol>';
     } else {
@@ -102,5 +102,17 @@ export class PanelView {
     html += '</div>';
 
     joplin.views.panels.setHtml(this.viewHandler, html);
+  }
+
+  private static renderMentionList(mentions: string[]) {
+    let html = '<ol>';
+
+    for (const mention of mentions) {
+      html += `<li>${mention}</li>`;
+    }
+
+    html += '</ol>';
+
+    return html;
   }
 }

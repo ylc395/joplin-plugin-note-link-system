@@ -98,7 +98,7 @@ export class ElementReferrerBuilder {
     iconEl.classList.add(ICON_CLASS_NAME);
     const content = (() => {
       const referencesCount = notes
-        .map(({ mentionCount }) => mentionCount)
+        .map(({ mentions }) => mentions.length)
         .reduce((count, num) => count + num, 0);
 
       const referrersCount = notes.length;
@@ -121,11 +121,12 @@ export class ElementReferrerBuilder {
     olEL.classList.add(LIST_CLASS_NAME);
 
     for (const note of notes) {
+      const mentionCount = note.mentions.length;
       olEL.innerHTML += `<li><a data-note-link-referrer-id="${note.id}">${
         note.title
-      }</a><span title="${note.mentionCount} reference${
-        note.mentionCount > 1 ? 's' : ''
-      } from this note" class="${LIST_ITEM_COUNT_CLASS_NAME}">${note.mentionCount}</span></li>`;
+      }</a><span title="${mentionCount} reference${
+        mentionCount > 1 ? 's' : ''
+      } from this note" class="${LIST_ITEM_COUNT_CLASS_NAME}">${mentionCount}</span></li>`;
     }
 
     return [iconEl, olEL];

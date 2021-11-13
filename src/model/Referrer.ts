@@ -7,7 +7,7 @@ export interface Note {
 }
 
 export type Referrer = Note & {
-  mentionCount: number;
+  mentions: string[];
 };
 
 export type SearchedNote = Pick<Note, 'id' | 'title'> & {

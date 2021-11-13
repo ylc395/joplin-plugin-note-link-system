@@ -16,6 +16,7 @@ export class SearchEngine {
   private noteSearchPattern?: string;
   private referrerSearchPattern?: string;
   private needNotebooks?: boolean;
+  private mentionTextLength = 200;
 
   private async buildNotebookIndex() {
     if (!this.needNotebooks || this.isBuildingIndex) {
@@ -128,7 +129,7 @@ export class SearchEngine {
 
       return notes.map((note) => ({
         ...note,
-        mentionCount: SearchEngine.getMentionCount(`:/${noteId}`, note.body),
+        mentions: this.extractMentions(noteId, note.body),
       }));
     } catch (error) {
       console.error(error);
@@ -167,7 +168,7 @@ export class SearchEngine {
         if (referrers.length > 0) {
           result[elementId] = referrers.map((referrer) => ({
             ...referrer,
-            mentionCount: SearchEngine.getMentionCount(`(:/${noteId}#${elementId})`, referrer.body),
+            mentions: this.extractMentions(`${noteId}#${elementId}`, referrer.body),
           }));
         }
       }
@@ -211,10 +212,10 @@ export class SearchEngine {
     ) as Promise<Note[]>;
   }
 
-  private static getMentionCount(keyword: string, content: string) {
+  private extractMentions(keyword: string, content: string) {
     const keywordLength = keyword.length;
+    const mentions = [];
     let index = 0;
-    let count = 0;
 
     while (true) {
       const currentIndex = content.indexOf(keyword, index);
@@ -223,10 +224,23 @@ export class SearchEngine {
         break;
       }
 
+      const textFragment = content.slice(
+        Math.max(0, currentIndex - Math.ceil(this.mentionTextLength / 2)),
+        Math.min(
+          content.length - 1,
+          currentIndex + keyword.length + Math.ceil(this.mentionTextLength / 2),
+        ),
+      );
+
+      const mention = textFragment.replace(
+        new RegExp(`\\[([^\\[\\]]*)\\]\\(:/${keyword}.*?\\)`, 'g'),
+        (_, $1) => `<mark>${$1}</mark>`,
+      );
+
+      mentions.push(mention);
       index = currentIndex + keywordLength;
-      count++;
     }
 
-    return count;
+    return mentions;
   }
 }
