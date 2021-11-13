@@ -19,6 +19,6 @@ delegate('[data-note-link-referrer-id]', 'click', (e: any) => {
   webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'openNote', payload: { noteId } });
 });
 
-new ElementReferrerListBuilder().init();
-new NoteReferrerListBuilder().init();
-new IdentifierBuilder().init();
+new ElementReferrerListBuilder();
+new NoteReferrerListBuilder();
+new IdentifierBuilder();

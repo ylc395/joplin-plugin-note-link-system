@@ -20,13 +20,16 @@ const REFERRER_LIST_HEADING_CLASS_NAME = 'note-link-referrers-list-heading';
 const REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME = 'note-link-referrers-list-count';
 
 export class NoteReferrerListBuilder {
+  constructor() {
+    this.init();
+  }
   private listHeadingText?: string;
   private listPosition?: ReferrersAutoListPosition;
   private autoInsertionEnabled?: ReferrersAutoListEnabled;
   private referrers?: Referrer[];
   private listHeadingEls?: HTMLElement[];
 
-  async init() {
+  private async init() {
     this.autoInsertionEnabled = await webviewApi.postMessage<ReferrersAutoListEnabled>(
       MARKDOWN_SCRIPT_ID,
       {

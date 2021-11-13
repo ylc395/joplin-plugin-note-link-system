@@ -20,7 +20,11 @@ declare const webviewApi: {
 };
 
 export class IdentifierBuilder {
-  async init() {
+  constructor() {
+    this.init();
+  }
+
+  private async init() {
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
       payload: { key: REFERRER_IDENTIFIER_ENABLED_SETTING },

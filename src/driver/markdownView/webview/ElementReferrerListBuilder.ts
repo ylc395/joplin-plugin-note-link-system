@@ -50,8 +50,11 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
 }
 
 export class ElementReferrerListBuilder {
+  constructor() {
+    this.init();
+  }
   private numberType?: ReferrersListNumberType;
-  async init() {
+  private async init() {
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
       payload: { key: REFERRER_ELEMENT_NUMBER_ENABLED },
