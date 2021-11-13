@@ -10,7 +10,12 @@ import {
   SearchReferrersRequest,
   SearchNoteReferrersResponse,
 } from 'driver/constants';
-import { ReferrersAutoListPosition, ReferrersAutoListEnabled } from './constants';
+import {
+  ReferrersAutoListPosition,
+  ReferrersAutoListEnabled,
+  MarkdownViewEvents,
+  ROOT_ELEMENT_ID,
+} from './constants';
 
 declare const webviewApi: {
   postMessage: <T>(id: string, payload: QuerySettingRequest | SearchReferrersRequest) => Promise<T>;
@@ -20,7 +25,7 @@ const REFERRER_LIST_HEADING_CLASS_NAME = 'note-link-referrers-list-heading';
 const REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME = 'note-link-referrers-list-count';
 
 export class NoteReferrerListBuilder {
-  constructor() {
+  constructor(private readonly view: EventTarget) {
     this.init();
   }
   private listHeadingText?: string;
@@ -51,12 +56,17 @@ export class NoteReferrerListBuilder {
       payload: { key: REFERRER_LIST_HEADING_SETTING },
     });
 
-    document.addEventListener('joplin-noteDidUpdate', debounce(this.insert.bind(this), 1500));
-    this.insert();
+    this.view.addEventListener(
+      MarkdownViewEvents.NoteDidUpdate,
+      debounce(this.insert.bind(this), 500),
+    );
   }
 
   private async insert() {
-    if (typeof this.autoInsertionEnabled === 'undefined') {
+    if (
+      typeof this.autoInsertionEnabled === 'undefined' ||
+      typeof this.listHeadingText === 'undefined'
+    ) {
       throw new Error('can not auto insert');
     }
 
@@ -64,7 +74,7 @@ export class NoteReferrerListBuilder {
       return;
     }
 
-    const rootEl = document.getElementById('rendered-md')!;
+    const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const allHeadingEls = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
 
     if (
@@ -99,7 +109,7 @@ export class NoteReferrerListBuilder {
       return;
     }
 
-    const rootEl = document.getElementById('rendered-md')!;
+    const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const allHeadingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
     const minLevel = Math.min(6, Math.min(...allHeadingELs.map((el) => Number(el.tagName[1]))));
     const headingEl = document.createElement(`h${minLevel}`);

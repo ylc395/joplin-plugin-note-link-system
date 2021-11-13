@@ -14,3 +14,9 @@ export enum ReferrersListNumberType {
   ReferencesCount,
   Both,
 }
+
+export enum MarkdownViewEvents {
+  NoteDidUpdate = 'NoteDidUpdate',
+}
+
+export const ROOT_ELEMENT_ID = 'rendered-md';

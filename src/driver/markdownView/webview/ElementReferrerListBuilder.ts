@@ -13,7 +13,7 @@ import {
   REFERRER_ELEMENT_NUMBER_ENABLED,
   REFERRER_ELEMENT_NUMBER_TYPE,
 } from 'driver/constants';
-import { ReferrersListNumberType } from './constants';
+import { MarkdownViewEvents, ReferrersListNumberType, ROOT_ELEMENT_ID } from './constants';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -50,7 +50,7 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
 }
 
 export class ElementReferrerListBuilder {
-  constructor() {
+  constructor(private readonly view: EventTarget) {
     this.init();
   }
   private numberType?: ReferrersListNumberType;
@@ -69,15 +69,14 @@ export class ElementReferrerListBuilder {
       payload: { key: REFERRER_ELEMENT_NUMBER_TYPE },
     });
 
-    document.addEventListener(
-      'joplin-noteDidUpdate',
-      debounce(this.attachReferrers.bind(this), 1500),
+    this.view.addEventListener(
+      MarkdownViewEvents.NoteDidUpdate,
+      debounce(this.attachReferrers.bind(this), 500) as EventListener,
     );
-    this.attachReferrers();
   }
 
   private async attachReferrers() {
-    const rootEl = document.getElementById('rendered-md')!;
+    const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const els = [...rootEl.querySelectorAll('[id]')] as HTMLElement[];
     const ids = els.map((el) => el.id);
     const referrersMap = await webviewApi.postMessage<SearchElementReferrersResponse>(

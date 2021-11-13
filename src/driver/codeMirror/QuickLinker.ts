@@ -66,7 +66,7 @@ export class QuickLinker {
     // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
     this.md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
     this.editor.on('cursorActivity', this.triggerHints.bind(this));
-    // hack: don't know fetching must happen in next micro task
+    // hack: don't know why fetching must happen in next micro task
     setTimeout(this.init.bind(this), 100);
   }
 

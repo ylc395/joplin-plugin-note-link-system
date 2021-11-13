@@ -1,7 +1,7 @@
 import delegate from 'delegate';
 import debounce from 'lodash.debounce';
 import hashIcon from 'bootstrap-icons/icons/hash.svg';
-import type { Referrer } from 'model/Referrer';
+import type { Note } from 'model/Referrer';
 import {
   MARKDOWN_SCRIPT_ID,
   WriteClipboardRequest,
@@ -9,6 +9,7 @@ import {
   QuerySettingRequest,
   REFERRER_IDENTIFIER_ENABLED_SETTING,
 } from 'driver/constants';
+import { MarkdownViewEvents, ROOT_ELEMENT_ID } from './constants';
 
 const IDENTIFIER_CLASS_NAME = 'note-link-identifier';
 
@@ -20,9 +21,11 @@ declare const webviewApi: {
 };
 
 export class IdentifierBuilder {
-  constructor() {
+  constructor(private readonly view: EventTarget) {
     this.init();
   }
+
+  private currentNote?: Note;
 
   private async init() {
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
@@ -39,14 +42,23 @@ export class IdentifierBuilder {
       this.copyUrl(target);
     });
 
-    document.addEventListener('joplin-noteDidUpdate', debounce(this.attach.bind(this), 1500));
-    this.attach();
+    this.view.addEventListener(
+      MarkdownViewEvents.NoteDidUpdate,
+      debounce(this.attach.bind(this), 500),
+    );
+    this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, (({
+      detail: note,
+    }: CustomEvent<Note>) => {
+      this.currentNote = note;
+    }) as EventListener);
   }
 
   private async copyUrl(identifier: HTMLElement) {
-    const { id, title } = await webviewApi.postMessage<Referrer>(MARKDOWN_SCRIPT_ID, {
-      event: 'queryCurrentNote',
-    });
+    if (!this.currentNote) {
+      throw new Error('no currentNote');
+    }
+
+    const { id, title } = this.currentNote;
 
     const elId = identifier.dataset.noteLinkElementId;
 
@@ -57,7 +69,7 @@ export class IdentifierBuilder {
   }
 
   private attach() {
-    const rootEl = document.getElementById('rendered-md')!;
+    const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const elsWithId = [...rootEl.querySelectorAll('[id]')];
 
     for (const el of elsWithId) {

@@ -4,6 +4,7 @@ import { SearchEngine } from './SearchEngine';
 
 export default function bootstrap() {
   const searchEngine = new SearchEngine();
+  let justStartApp = true;
 
   return {
     searchEngine,
@@ -29,6 +30,10 @@ export default function bootstrap() {
           return joplin.data.get(['notes', request.payload.id], { fields: 'body' });
         case 'createNote':
           return createNote(request.payload);
+        case 'queryJustStartApp':
+          const result = justStartApp;
+          justStartApp = false;
+          return result;
         default:
           break;
       }
