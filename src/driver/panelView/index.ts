@@ -83,11 +83,11 @@ export class PanelView {
     <div id="root">
       <h1><%= panelTitle %></h1>
       <% if (notes.length > 0) { %>
-        <ol>
+        <ol class="referrer-list">
           <% for (const note of notes) { %>
             <li>
               <a class="title" data-note-id="<%= note.id %>"><%= note.title %></a>
-              <ol>
+              <ol class="reference-list">
                 <% for (const mention of note.mentions) { %>
                   <li><%= mention %></li>
                 <% } %>

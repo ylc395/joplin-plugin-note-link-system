@@ -1,8 +1,10 @@
 #root {
   font-family: var(--joplin-font-family);
-  min-height: calc(100vh - 1em);
   background-color: var(--joplin-background-color);
   padding: 5px;
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
 }
 
 h1 {
@@ -17,10 +19,17 @@ ol {
   padding: 0;
 }
 
+.referrer-list {
+  overflow: auto;
+  flex-grow: 1;
+  padding: 0;
+}
+
 li {
   list-style: none;
   margin: 1em 0;
   white-space: pre-line;
+  overflow-wrap: break-word;
 }
 
 .title {
