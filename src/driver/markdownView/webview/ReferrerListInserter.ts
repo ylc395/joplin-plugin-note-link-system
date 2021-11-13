@@ -52,18 +52,35 @@ export class ReferrerListInserter {
   }
 
   private async insert() {
+    if (typeof this.autoInsertionEnabled === 'undefined') {
+      throw new Error('can not auto insert');
+    }
+
     if (!this.listHeadingText) {
       return;
     }
 
-    this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
-      event: 'searchReferrers',
-    });
-
     const rootEl = document.getElementById('rendered-md')!;
     const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
 
+    if (
+      this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled &&
+      headingELs.length === 0
+    ) {
+      return;
+    }
+
+    if (
+      this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual &&
+      headingELs.length > 0
+    ) {
+      return;
+    }
+
     this.refererHeadingEls = headingELs.filter((el) => el.innerText === this.listHeadingText);
+    this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
+      event: 'searchReferrers',
+    });
 
     await this.prepareHeadings();
     await this.insertListAfterHeadings();
@@ -72,23 +89,10 @@ export class ReferrerListInserter {
   private async prepareHeadings() {
     if (
       typeof this.listHeadingText === 'undefined' ||
-      typeof this.autoInsertionEnabled === 'undefined' ||
       typeof this.listPosition === 'undefined' ||
-      !this.refererHeadingEls ||
-      !this.referrers
+      !this.refererHeadingEls
     ) {
       throw new Error('can not auto insert');
-    }
-
-    if (this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled) {
-      return;
-    }
-
-    if (
-      this.refererHeadingEls.length > 0 &&
-      this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual
-    ) {
-      return;
     }
 
     const rootEl = document.getElementById('rendered-md')!;
