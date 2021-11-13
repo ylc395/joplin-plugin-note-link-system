@@ -87,13 +87,14 @@ export class ElementReferrerBuilder {
     for (const elId of Object.keys(referrersMap)) {
       const idEl = document.getElementById(elId)!;
       const referrers = referrersMap[elId];
-      const [iconEl, listEl] = this.createReferrerElements(referrers);
+      const iconEl = this.createReferrerIconElement(referrers);
+      const listEl = this.createReferrerListElement(referrers);
 
       attach(idEl, iconEl, listEl);
     }
   }
 
-  private createReferrerElements(notes: Referrer[]) {
+  private createReferrerIconElement(notes: Referrer[]) {
     const iconEl = document.createElement('span');
     iconEl.classList.add(ICON_CLASS_NAME);
     const content = (() => {
@@ -117,6 +118,11 @@ export class ElementReferrerBuilder {
     })();
 
     iconEl.innerHTML = `${content}${referenceIcon}`;
+
+    return iconEl;
+  }
+
+  private createReferrerListElement(notes: Referrer[]) {
     const olEL = document.createElement('ol');
     olEL.classList.add(LIST_CLASS_NAME);
 
@@ -129,6 +135,6 @@ export class ElementReferrerBuilder {
       } from this note" class="${LIST_ITEM_COUNT_CLASS_NAME}">${mentionCount}</span></li>`;
     }
 
-    return [iconEl, olEL];
+    return olEL;
   }
 }

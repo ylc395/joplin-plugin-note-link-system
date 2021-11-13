@@ -1,6 +1,7 @@
 import joplin from 'api';
 import type { ViewHandle } from 'api/types';
 import debounce from 'lodash.debounce';
+import template from 'lodash.template';
 import {
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
@@ -77,42 +78,39 @@ export class PanelView {
     joplin.views.panels.hide(this.viewHandler);
   }
 
+  private static render = template(`
+    <style><%= stylesheet %></style>
+    <div id="root">
+      <h1><%= panelTitle %></h1>
+      <% if (notes.length > 0) { %>
+        <ol>
+          <% for (const note of notes) { %>
+            <li>
+              <a class="title" data-note-id="<%= note.id %>"><%= note.title %></a>
+              <ol>
+                <% for (const mention of note.mentions) { %>
+                  <li><%= mention %></li>
+                <% } %>
+              <ol>
+          <% } %>
+        </ol>
+      <% } else { %>
+        <p class="no-referrers">No referrers.</p>
+      <% } %>
+    </div>
+  `);
+
   private async refresh() {
     if (!this.currentNoteId) {
       throw new Error('no current note id');
     }
 
     const notes = await this.searchEngine.searchReferrers(this.currentNoteId);
-    let html = `<style>${this.stylesheet}</style><div id="root"><h1>${this.panelTitle}</h1>`;
-
-    if (notes.length > 0) {
-      html += '<ol>';
-      for (const note of notes) {
-        html += `
-        <li>
-          <a class="title" data-note-id="${note.id}">${note.title}</a>
-          ${PanelView.renderMentionList(note.mentions)}
-        </li>`;
-      }
-      html += '</ol>';
-    } else {
-      html += '<p class="no-referrers">No referrers.</p>';
-    }
-
-    html += '</div>';
-
+    const html = PanelView.render({
+      notes,
+      stylesheet: this.stylesheet,
+      panelTitle: this.panelTitle,
+    });
     joplin.views.panels.setHtml(this.viewHandler, html);
-  }
-
-  private static renderMentionList(mentions: string[]) {
-    let html = '<ol>';
-
-    for (const mention of mentions) {
-      html += `<li>${mention}</li>`;
-    }
-
-    html += '</ol>';
-
-    return html;
   }
 }

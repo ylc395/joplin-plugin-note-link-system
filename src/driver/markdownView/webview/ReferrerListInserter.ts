@@ -1,4 +1,5 @@
 import debounce from 'lodash.debounce';
+import template from 'lodash.template';
 import { Referrer } from 'model/Referrer';
 import {
   REFERRER_LIST_HEADING_SETTING,
@@ -23,7 +24,7 @@ export class ReferrerListInserter {
   private listPosition?: ReferrersAutoListPosition;
   private autoInsertionEnabled?: ReferrersAutoListEnabled;
   private referrers?: Referrer[];
-  private refererHeadingEls?: HTMLElement[];
+  private listHeadingEls?: HTMLElement[];
 
   async init() {
     this.autoInsertionEnabled = await webviewApi.postMessage<ReferrersAutoListEnabled>(
@@ -61,23 +62,16 @@ export class ReferrerListInserter {
     }
 
     const rootEl = document.getElementById('rendered-md')!;
-    const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
+    const allHeadingEls = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
 
     if (
       this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled &&
-      headingELs.length === 0
+      allHeadingEls.length === 0
     ) {
       return;
     }
 
-    if (
-      this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual &&
-      headingELs.length > 0
-    ) {
-      return;
-    }
-
-    this.refererHeadingEls = headingELs.filter((el) => el.innerText === this.listHeadingText);
+    this.listHeadingEls = allHeadingEls.filter((el) => el.innerText === this.listHeadingText);
     this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
       event: 'searchReferrers',
     });
@@ -90,18 +84,25 @@ export class ReferrerListInserter {
     if (
       typeof this.listHeadingText === 'undefined' ||
       typeof this.listPosition === 'undefined' ||
-      !this.refererHeadingEls
+      !this.listHeadingEls
     ) {
       throw new Error('can not auto insert');
     }
 
-    const rootEl = document.getElementById('rendered-md')!;
-    const headingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
-    const minLevel = Math.min(6, Math.min(...headingELs.map((el) => Number(el.tagName[1]))));
-    const headingEl = document.createElement(`h${minLevel}`);
-    headingEl.innerText = this.listHeadingText;
+    if (
+      this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual &&
+      this.listHeadingEls.length > 0
+    ) {
+      return;
+    }
 
-    this.refererHeadingEls.push(headingEl);
+    const rootEl = document.getElementById('rendered-md')!;
+    const allHeadingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
+    const minLevel = Math.min(6, Math.min(...allHeadingELs.map((el) => Number(el.tagName[1]))));
+    const headingEl = document.createElement(`h${minLevel}`);
+
+    headingEl.innerText = this.listHeadingText;
+    this.listHeadingEls.push(headingEl);
     rootEl.insertAdjacentElement(
       this.listPosition === ReferrersAutoListPosition.Top ? 'afterbegin' : 'beforeend',
       headingEl,
@@ -109,32 +110,33 @@ export class ReferrerListInserter {
   }
 
   private async insertListAfterHeadings() {
-    if (!this.referrers || !this.refererHeadingEls) {
+    if (!this.referrers || !this.listHeadingEls) {
       throw new Error('can not insert list');
     }
 
-    const listHtml = this.referrers
-      .map((note) => `<li>${this.renderReferrerHtml(note)}</li>`)
-      .join('');
+    const hasReferrers = this.referrers.length > 0;
+    const listHtml = ReferrerListInserter.renderList({ notes: this.referrers });
 
-    for (const headingEl of this.refererHeadingEls) {
-      const listEl = listHtml ? document.createElement('ol') : document.createElement('p');
+    for (const headingEl of this.listHeadingEls) {
+      const sectionEl = hasReferrers ? document.createElement('ol') : document.createElement('p');
 
-      listEl.innerHTML = listHtml || '<p>No referrers.</p>';
+      sectionEl.innerHTML = hasReferrers ? listHtml : '<p>No referrers.</p>';
       headingEl.classList.add(REFERRER_LIST_HEADING_CLASS_NAME);
-      headingEl.insertAdjacentElement('afterend', listEl);
+      headingEl.insertAdjacentElement('afterend', sectionEl);
     }
   }
 
-  private renderReferrerHtml(note: Referrer) {
-    const mentionCount = note.mentions.length;
-
-    return `<a data-note-link-referrer-id="${
-      note.id
-    }"><span class="resource-icon fa-joplin"></span>${
-      note.title
-    }</a><span title="${mentionCount} reference${
-      mentionCount > 1 ? 's' : ''
-    } from this note" class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}">${mentionCount}</span>`;
-  }
+  private static renderList = template(`
+    <% for (const note of notes) { %>
+      <li>
+        <a data-note-link-referrer-id="<%= note.id %>">
+          <span class="resource-icon fa-joplin"></span>
+          <%= note.title  %>
+        </a>
+        <span
+          title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
+          class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}"><%= note.mentions.length %></span>
+      </li>
+    <% } %>
+  `);
 }
