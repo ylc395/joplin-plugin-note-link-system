@@ -48,7 +48,7 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
   });
 }
 
-export class ElementReferrerBuilder {
+export class ElementReferrerListBuilder {
   private numberType?: ReferrersListNumberType;
   async init() {
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {

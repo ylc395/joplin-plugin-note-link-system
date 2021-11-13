@@ -1,6 +1,6 @@
 import delegate from 'delegate';
-import { ElementReferrerBuilder } from './ElementReferrerBuilder';
-import { ReferrerListInserter } from './ReferrerListInserter';
+import { ElementReferrerListBuilder } from './ElementReferrerListBuilder';
+import { NoteReferrerListBuilder } from './NoteReferrerListBuilder';
 import { IdentifierBuilder } from './IdentifierBuilder';
 import { MARKDOWN_SCRIPT_ID, OpenNoteRequest } from 'driver/constants';
 
@@ -19,6 +19,6 @@ delegate('[data-note-link-referrer-id]', 'click', (e: any) => {
   webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'openNote', payload: { noteId } });
 });
 
-new ElementReferrerBuilder().init();
-new ReferrerListInserter().init();
+new ElementReferrerListBuilder().init();
+new NoteReferrerListBuilder().init();
 new IdentifierBuilder().init();

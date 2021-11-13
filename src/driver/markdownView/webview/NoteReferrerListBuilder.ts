@@ -19,7 +19,7 @@ declare const webviewApi: {
 const REFERRER_LIST_HEADING_CLASS_NAME = 'note-link-referrers-list-heading';
 const REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME = 'note-link-referrers-list-count';
 
-export class ReferrerListInserter {
+export class NoteReferrerListBuilder {
   private listHeadingText?: string;
   private listPosition?: ReferrersAutoListPosition;
   private autoInsertionEnabled?: ReferrersAutoListEnabled;
@@ -115,7 +115,7 @@ export class ReferrerListInserter {
     }
 
     const hasReferrers = this.referrers.length > 0;
-    const listHtml = ReferrerListInserter.renderList({ notes: this.referrers });
+    const listHtml = NoteReferrerListBuilder.renderList({ notes: this.referrers });
 
     for (const headingEl of this.listHeadingEls) {
       const sectionEl = hasReferrers ? document.createElement('ol') : document.createElement('p');
