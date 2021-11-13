@@ -1,5 +1,6 @@
 import tippy, { roundArrow } from 'tippy.js';
 import debounce from 'lodash.debounce';
+import template from 'lodash.template';
 import 'tippy.js/dist/svg-arrow.css';
 import referenceIcon from 'bootstrap-icons/icons/box-arrow-in-down-left.svg';
 import { Referrer } from 'model/Referrer';
@@ -124,17 +125,31 @@ export class ElementReferrerListBuilder {
 
   private createReferrerListElement(notes: Referrer[]) {
     const olEL = document.createElement('ol');
-    olEL.classList.add(LIST_CLASS_NAME);
 
-    for (const note of notes) {
-      const mentionCount = note.mentions.length;
-      olEL.innerHTML += `<li><a data-note-link-referrer-id="${note.id}">${
-        note.title
-      }</a><span title="${mentionCount} reference${
-        mentionCount > 1 ? 's' : ''
-      } from this note" class="${LIST_ITEM_COUNT_CLASS_NAME}">${mentionCount}</span></li>`;
-    }
+    olEL.classList.add(LIST_CLASS_NAME);
+    olEL.innerHTML = ElementReferrerListBuilder.renderList({ notes });
 
     return olEL;
   }
+
+  private static renderList = template(`
+    <% for (const note of notes) { %>
+      <li>
+        <a data-note-link-referrer-id="<%= note.id %>">
+          <%= note.title %>
+        </a>
+        <span
+          title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
+          class="${LIST_ITEM_COUNT_CLASS_NAME}"
+        >
+          <%= note.mentions.length %>
+        </span>
+        <ol>
+          <% for (const mention of note.mentions) { %>
+            <li><%= mention %></li>
+          <% } %>
+        </ol>
+      </li>
+    <% } %>
+  `);
 }

@@ -135,7 +135,15 @@ export class NoteReferrerListBuilder {
         </a>
         <span
           title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
-          class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}"><%= note.mentions.length %></span>
+          class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}"
+        >
+          <%= note.mentions.length %>
+        </span>
+        <ol>
+          <% for (const mention of note.mentions) { %>
+            <li><%= mention %></li>
+          <% } %>
+        </ol>
       </li>
     <% } %>
   `);
