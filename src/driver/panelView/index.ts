@@ -86,7 +86,15 @@ export class PanelView {
         <ol class="referrer-list">
           <% for (const note of notes) { %>
             <li>
-              <a class="title" data-note-id="<%= note.id %>"><%= note.title %></a>
+              <span class="title-container">
+                <a data-note-id="<%= note.id %>" class="title"><%= note.title %></a>
+                <span
+                  class="count"
+                  title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
+                >
+                  <%= note.mentions.length %>
+                </span>
+              </span>
               <ol class="reference-list">
                 <% for (const mention of note.mentions) { %>
                   <li><%= mention %></li>

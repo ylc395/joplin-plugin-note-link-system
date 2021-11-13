@@ -32,6 +32,10 @@ li {
   overflow-wrap: break-word;
 }
 
+.title-container {
+  white-space: normal;
+}
+
 .title {
   cursor: pointer;
 }
