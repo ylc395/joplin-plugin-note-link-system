@@ -1,247 +1,171 @@
 import joplin from 'api';
-import { ContentScriptType, SettingItemType, ToolbarButtonLocation } from 'api/types';
+import { ContentScriptType, ToolbarButtonLocation } from 'api/types';
 import {
-  NOTE_SEARCH_PATTERN_PLACEHOLDER,
-  REFERRER_SEARCH_PATTERN_PLACEHOLDER,
-  REFERRER_SEARCH_PATTERN_SETTING,
+  Request,
+  CreateNoteRequest,
+  SearchReferrersRequest,
+  OpenNoteRequest,
   MARKDOWN_SCRIPT_ID,
   CODE_MIRROR_SCRIPT_ID,
   REFERRER_LIST_HEADING_SETTING,
-  REFERRER_ELEMENT_NUMBER_ENABLED,
-  REFERRER_ELEMENT_NUMBER_TYPE,
-  REFERRER_AUTO_LIST_POSITION_SETTING,
-  REFERRER_AUTO_LIST_ENABLED_SETTING,
-  REFERRER_PANEL_ENABLED_SETTING,
-  REFERRER_PANEL_TITLE_SETTING,
-  REFERRER_PANEL_STYLESHEET_SETTING,
-  REFERRER_IDENTIFIER_ENABLED_SETTING,
-  QUICK_LINK_ENABLED_SETTING,
-  QUICK_LINK_SYMBOL_SETTING,
-  QUICK_LINK_SEARCH_PATTERN_SETTING,
-  QUICK_LINK_ELEMENTS_ENABLED_SETTING,
-  QUICK_LINK_AFTER_COMPLETION_SETTING,
-  QUICK_LINK_SHOW_PATH_SETTING,
-  QUICK_LINK_CREATE_NOTE_SETTING,
 } from 'driver/constants';
+import { SearchEngine } from './SearchEngine';
+import setting, { SECTION_NAME } from './setting';
 import { PanelView } from '../panelView';
-import {
-  ReferrersAutoListPosition,
-  ReferrersAutoListEnabled,
-  ReferrersListNumberType,
-} from '../markdownView/webview/constants';
-import { ActionAfterCompletion } from '../codeMirror/constants';
-import bootstrap, { RequestHandler } from './bootstrap';
-import type { SearchEngine } from './SearchEngine';
-export async function setupSetting() {
-  const SECTION_NAME = 'Note Link';
+import { Reference } from 'model/Referrer';
 
-  await joplin.settings.registerSection(SECTION_NAME, {
-    label: SECTION_NAME,
-  });
+export default class App {
+  private searchEngine?: SearchEngine;
+  private justStartApp = true;
+  private reference?: Reference;
+  async init() {
+    await this.setupSetting();
 
-  await joplin.settings.registerSettings({
-    [REFERRER_LIST_HEADING_SETTING]: {
-      label: 'View: Referrers List Heading Text',
-      type: SettingItemType.String,
-      public: true,
-      value: 'Backlinks', // compatible with [Automatic backlinks Plugin](https://discourse.joplinapp.org/t/insert-referencing-notes-backlinks-plugin/13632)
-      section: SECTION_NAME,
-      description: 'Text in Headings(h1-h6) for auto & manually inserted referrers list',
-    },
-    [REFERRER_AUTO_LIST_ENABLED_SETTING]: {
-      label: 'View: Enable/Disable Auto Referrers List Insertion',
-      type: SettingItemType.Int,
-      isEnum: true,
-      public: true,
-      value: ReferrersAutoListEnabled.EnabledWhenNoManual,
-      section: SECTION_NAME,
-      options: {
-        [ReferrersAutoListEnabled.Enabled]: 'Always enabled',
-        [ReferrersAutoListEnabled.EnabledWhenNoManual]:
-          'Enabled only when no manual insertion is existing',
-        [ReferrersAutoListEnabled.Disabled]: 'Always disabled',
+    this.searchEngine = new SearchEngine();
+
+    await this.setupCodeMirror();
+    await this.setupToolbar();
+    await this.setupMarkdownView();
+    await this.setupPanel();
+  }
+
+  private async openNote({ noteId, reference }: OpenNoteRequest['payload']) {
+    const selectedNoteId = (await joplin.workspace.selectedNote()).id;
+
+    if (reference) {
+      this.reference = { ...reference, toNoteId: selectedNoteId };
+    }
+
+    joplin.commands.execute('openNote', noteId);
+  }
+
+  private getReference() {
+    const reference = this.reference;
+    this.reference = undefined;
+
+    return reference;
+  }
+
+  private async searchReferrers(payload: SearchReferrersRequest['payload']) {
+    if (!this.searchEngine) {
+      throw new Error('no search engine');
+    }
+
+    const selectedNoteId = (await joplin.workspace.selectedNote()).id;
+
+    return payload?.elementIds
+      ? this.searchEngine.searchReferrersOfElements(selectedNoteId, payload.elementIds)
+      : this.searchEngine.searchReferrers(selectedNoteId);
+  }
+
+  private queryIsJustStart() {
+    const result = this.justStartApp;
+    this.justStartApp = false;
+
+    return result;
+  }
+
+  async requestHandler(request: Request) {
+    if (!this.searchEngine) {
+      throw new Error('no search engine');
+    }
+
+    switch (request.event) {
+      case 'querySetting':
+        return joplin.settings.value(request.payload.key);
+      case 'openNote':
+        return this.openNote(request.payload);
+      case 'queryFromReference':
+        return this.getReference();
+      case 'writeClipboard':
+        return joplin.clipboard.writeText(request.payload.content);
+      case 'searchReferrers':
+        return this.searchReferrers(request.payload);
+      case 'queryCurrentNote':
+        return joplin.workspace.selectedNote();
+      case 'searchNotes':
+        return this.searchEngine.searchNotes(request.payload.keyword);
+      case 'fetchNote':
+        return joplin.data.get(['notes', request.payload.id], { fields: 'body' });
+      case 'createNote':
+        return App.createNote(request.payload);
+      case 'queryJustStartApp':
+        return this.queryIsJustStart();
+      case 'scrollToHash':
+        return joplin.commands.execute('scrollToHash', request.payload.hash);
+      default:
+        break;
+    }
+  }
+
+  async setupMarkdownView() {
+    await joplin.contentScripts.register(
+      ContentScriptType.MarkdownItPlugin,
+      MARKDOWN_SCRIPT_ID,
+      './driver/markdownView/index.js',
+    );
+
+    await joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, this.requestHandler.bind(this));
+  }
+
+  async setupPanel() {
+    if (!this.searchEngine) {
+      throw new Error('no search engine');
+    }
+
+    const panelId = await joplin.views.panels.create('panel');
+    await joplin.views.panels.addScript(panelId, './driver/panelView/script.js');
+    await joplin.views.panels.addScript(panelId, './driver/panelView/style.css');
+    await joplin.views.panels.onMessage(panelId, this.requestHandler.bind(this));
+
+    new PanelView(panelId, this.searchEngine);
+  }
+
+  async setupCodeMirror() {
+    await joplin.contentScripts.register(
+      ContentScriptType.CodeMirrorPlugin,
+      CODE_MIRROR_SCRIPT_ID,
+      './driver/codeMirror/index.js',
+    );
+
+    await joplin.contentScripts.onMessage(CODE_MIRROR_SCRIPT_ID, this.requestHandler.bind(this));
+  }
+
+  async setupSetting() {
+    await joplin.settings.registerSection(SECTION_NAME, {
+      label: SECTION_NAME,
+    });
+
+    await joplin.settings.registerSettings(setting);
+  }
+
+  async setupToolbar() {
+    const commandName = 'insertReferrersList';
+
+    await joplin.commands.register({
+      name: commandName,
+      label: 'Insert a referrers list',
+      iconName: 'fas fa-hand-point-left',
+      execute: async () => {
+        const text = await joplin.settings.value(REFERRER_LIST_HEADING_SETTING);
+        joplin.commands.execute('replaceSelection', `# ${text}`);
       },
-    },
-    [REFERRER_AUTO_LIST_POSITION_SETTING]: {
-      label: 'View: Auto Inserted Referrers List Position',
-      type: SettingItemType.Int,
-      isEnum: true,
-      public: true,
-      value: ReferrersAutoListPosition.Bottom,
-      section: SECTION_NAME,
-      options: {
-        [ReferrersAutoListPosition.Top]: 'Note Top',
-        [ReferrersAutoListPosition.Bottom]: 'Note Bottom',
-      },
-    },
-    [REFERRER_ELEMENT_NUMBER_ENABLED]: {
-      label: 'View: Enable Referrers Count Of Elements',
-      type: SettingItemType.Bool,
-      public: true,
-      value: true,
-      section: SECTION_NAME,
-    },
-    [REFERRER_ELEMENT_NUMBER_TYPE]: {
-      label: 'View: Which Number Should Be Displayed For Referred Elements',
-      type: SettingItemType.Int,
-      isEnum: true,
-      public: true,
-      value: ReferrersListNumberType.ReferencesCount,
-      section: SECTION_NAME,
-      options: {
-        [ReferrersListNumberType.ReferrersCount]: "Referrers' Count",
-        [ReferrersListNumberType.ReferencesCount]: "References' Count",
-        [ReferrersListNumberType.Both]: 'Both',
-      },
-    },
-    [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
-      label: 'View: Enable Identifier Icon For Copying Url',
-      type: SettingItemType.Bool,
-      public: true,
-      value: true,
-      section: SECTION_NAME,
-    },
-    [REFERRER_PANEL_ENABLED_SETTING]: {
-      label: 'Panel: Enable',
-      type: SettingItemType.Bool,
-      public: true,
-      value: false,
-      section: SECTION_NAME,
-      description: 'Display referrers in panel',
-    },
-    [REFERRER_PANEL_TITLE_SETTING]: {
-      label: 'Panel: Title',
-      type: SettingItemType.String,
-      public: true,
-      value: 'REFERRERS',
-      section: SECTION_NAME,
-    },
-    [QUICK_LINK_ENABLED_SETTING]: {
-      label: 'Quick Link: Enable',
-      type: SettingItemType.Bool,
-      public: true,
-      value: true,
-      section: SECTION_NAME,
-    },
-    [QUICK_LINK_SHOW_PATH_SETTING]: {
-      label: 'Quick Link: Display Path Of Note',
-      type: SettingItemType.Bool,
-      public: true,
-      value: false,
-      section: SECTION_NAME,
-    },
-    [QUICK_LINK_ELEMENTS_ENABLED_SETTING]: {
-      label: 'Quick Link: Enable Link To Element',
-      type: SettingItemType.Bool,
-      public: true,
-      value: true,
-      section: SECTION_NAME,
-    },
-    [QUICK_LINK_CREATE_NOTE_SETTING]: {
-      label: 'Quick Link: Enable Create New Note',
-      type: SettingItemType.Bool,
-      public: true,
-      value: false,
-      section: SECTION_NAME,
-    },
-    [QUICK_LINK_SYMBOL_SETTING]: {
-      label: 'Quick Link: Symbols To Trigger',
-      type: SettingItemType.String,
-      public: true,
-      value: '@@',
-      section: SECTION_NAME,
-    },
-    [QUICK_LINK_AFTER_COMPLETION_SETTING]: {
-      label: 'Quick Link: What Happen After Completion',
-      isEnum: true,
-      type: SettingItemType.Int,
-      public: true,
-      value: ActionAfterCompletion.SelectText,
-      options: {
-        [ActionAfterCompletion.MoveCursorToEnd]: 'Move cursor to link end',
-        [ActionAfterCompletion.SelectText]: 'Select title of link',
-      },
-      section: SECTION_NAME,
-    },
+    });
 
-    // below are advanced
-    [REFERRER_PANEL_STYLESHEET_SETTING]: {
-      label: 'Panel: Stylesheet',
-      type: SettingItemType.String,
-      public: true,
-      advanced: true,
-      section: SECTION_NAME,
-      value: '',
-      description: 'CSS For panel',
-    },
-    [QUICK_LINK_SEARCH_PATTERN_SETTING]: {
-      section: SECTION_NAME,
-      label: 'Filter For Quick Link',
-      type: SettingItemType.String,
-      public: true,
-      value: 'title: $keyword*',
-      advanced: true,
-      description: `Search filter for making quick links in editor. Filters can be found at https://joplinapp.org/help/#search-filters. ${NOTE_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for keyword you typed in.`,
-    },
-    [REFERRER_SEARCH_PATTERN_SETTING]: {
-      label: 'Filter For Searching Referrers',
-      type: SettingItemType.String,
-      public: true,
-      advanced: true,
-      section: SECTION_NAME,
-      value: '/:/$noteId',
-      description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
-    },
-  });
+    await joplin.views.toolbarButtons.create(
+      'insert-referrers-list',
+      commandName,
+      ToolbarButtonLocation.EditorToolbar,
+    );
+  }
+  private static async createNote({ title, type }: CreateNoteRequest['payload']) {
+    const currentNote = await joplin.workspace.selectedNote();
+    const currentNotebook = await joplin.data.get(['folders', currentNote.parent_id]);
 
-  return bootstrap();
-}
-
-export async function setupToolbar() {
-  const commandName = 'insertReferrersList';
-
-  await joplin.commands.register({
-    name: commandName,
-    label: 'Insert a referrers list',
-    iconName: 'fas fa-hand-point-left',
-    execute: async () => {
-      const text = await joplin.settings.value(REFERRER_LIST_HEADING_SETTING);
-      joplin.commands.execute('replaceSelection', `# ${text}`);
-    },
-  });
-
-  await joplin.views.toolbarButtons.create(
-    'insert-referrers-list',
-    commandName,
-    ToolbarButtonLocation.EditorToolbar,
-  );
-}
-
-export async function setupMarkdownView(requestHandler: RequestHandler) {
-  await joplin.contentScripts.register(
-    ContentScriptType.MarkdownItPlugin,
-    MARKDOWN_SCRIPT_ID,
-    './driver/markdownView/index.js',
-  );
-
-  await joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, requestHandler);
-}
-
-export async function setupPanel(requestHandler: RequestHandler, searchEngine: SearchEngine) {
-  const panelId = await joplin.views.panels.create('panel');
-  await joplin.views.panels.addScript(panelId, './driver/panelView/script.js');
-  await joplin.views.panels.addScript(panelId, './driver/panelView/style.css');
-  await joplin.views.panels.onMessage(panelId, requestHandler);
-
-  new PanelView(panelId, searchEngine);
-}
-
-export async function setupCodeMirror(requestHandler: RequestHandler) {
-  await joplin.contentScripts.register(
-    ContentScriptType.CodeMirrorPlugin,
-    CODE_MIRROR_SCRIPT_ID,
-    './driver/codeMirror/index.js',
-  );
-
-  await joplin.contentScripts.onMessage(CODE_MIRROR_SCRIPT_ID, requestHandler);
+    return joplin.data.post(['notes'], null, {
+      is_todo: type === 'todo',
+      title: title,
+      parent_id: currentNotebook.id,
+    });
+  }
 }

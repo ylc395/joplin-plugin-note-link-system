@@ -17,6 +17,7 @@ export enum ReferrersListNumberType {
 
 export enum MarkdownViewEvents {
   NoteDidUpdate = 'NoteDidUpdate',
+  NewNoteOpen = 'NewNoteOpen',
 }
 
 export const ROOT_ELEMENT_ID = 'rendered-md';

@@ -79,3 +79,7 @@ h6 > .note-link-element-referrers-icon {
 #rendered-md [id]:hover > .note-link-identifier {
   display: inline-block;
 }
+
+#joplin-container-content {
+  overflow-anchor: none; /* prevent inserted content from scrolling out our reference anchor */
+}

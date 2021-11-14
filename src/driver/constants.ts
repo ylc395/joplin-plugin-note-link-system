@@ -1,4 +1,4 @@
-import type { Referrer } from 'model/Referrer';
+import type { Reference, Referrer } from 'model/Referrer';
 
 export const QUICK_LINK_SEARCH_PATTERN_SETTING = 'QUICK_LINK_SEARCH_PATTERN_SETTING';
 export const REFERRER_SEARCH_PATTERN_SETTING = 'REFERRER_SEARCH_PATTERN_SETTING';
@@ -29,10 +29,12 @@ export type Request =
   | QueryJustStartApp
   | SearchReferrersRequest
   | OpenNoteRequest
+  | QueryFromReferenceRequest
   | QuerySettingRequest
   | WriteClipboardRequest
   | FetchNoteRequest
   | CreateNoteRequest
+  | ScrollToHashRequest
   | QueryCurrentNoteRequest;
 
 export interface SearchNotesRequest {
@@ -51,7 +53,17 @@ export interface OpenNoteRequest {
   event: 'openNote';
   payload: {
     noteId: string;
+    reference?: Reference;
   };
+}
+
+export interface QueryFromReferenceRequest {
+  event: 'queryFromReference';
+}
+
+export interface ScrollToHashRequest {
+  event: 'scrollToHash';
+  payload: { hash: string };
 }
 
 export interface WriteClipboardRequest {

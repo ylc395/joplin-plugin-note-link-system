@@ -1,19 +1,8 @@
 import joplin from 'api';
-import {
-  setupCodeMirror,
-  setupToolbar,
-  setupMarkdownView,
-  setupSetting,
-  setupPanel,
-} from './driver/joplin';
+import App from './driver/joplin';
+
+const app = new App();
 
 joplin.plugins.register({
-  onStart: async function () {
-    const { requestHandler, searchEngine } = await setupSetting();
-
-    await setupCodeMirror(requestHandler);
-    await setupToolbar();
-    await setupMarkdownView(requestHandler);
-    await setupPanel(requestHandler, searchEngine);
-  },
+  onStart: app.init.bind(app),
 });

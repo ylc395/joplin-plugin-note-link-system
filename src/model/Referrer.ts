@@ -21,3 +21,9 @@ export interface Notebook {
   title: string;
   children?: Notebook[];
 }
+
+export interface Reference {
+  toNoteId?: string;
+  toElementId?: string;
+  index: number; // start from 1
+}

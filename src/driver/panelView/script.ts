@@ -8,12 +8,14 @@ declare const webviewApi: {
 delegate('[data-note-id]', 'click', (e: any) => {
   const target = e.delegateTarget as HTMLElement;
   const noteId = target.dataset.noteId;
+  const referenceIndex = Number(target.dataset.referenceIndex);
 
   if (!noteId) {
     throw new Error('no noteId');
   }
 
-  webviewApi.postMessage({ event: 'openNote', payload: { noteId } });
+  const reference = referenceIndex ? { index: referenceIndex } : undefined;
+  webviewApi.postMessage({ event: 'openNote', payload: { noteId, reference } });
 });
 
 delegate('[data-note-id]', 'contextmenu', (e: any) => {

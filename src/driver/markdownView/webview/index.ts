@@ -1,45 +1,26 @@
-import delegate from 'delegate';
 import { ElementReferrerListBuilder } from './ElementReferrerListBuilder';
 import { NoteReferrerListBuilder } from './NoteReferrerListBuilder';
 import { IdentifierBuilder } from './IdentifierBuilder';
-import {
-  MARKDOWN_SCRIPT_ID,
-  OpenNoteRequest,
-  QueryCurrentNoteRequest,
-  QueryJustStartApp,
-} from 'driver/constants';
+import { MARKDOWN_SCRIPT_ID, QueryCurrentNoteRequest, QueryJustStartApp } from 'driver/constants';
 import type { Note } from 'model/Referrer';
 import { MarkdownViewEvents } from './constants';
+import { NoteRouter } from './NoteRouter';
 
 declare const webviewApi: {
-  postMessage: <T>(
-    id: string,
-    payload: OpenNoteRequest | QueryCurrentNoteRequest | QueryJustStartApp,
-  ) => Promise<T>;
+  postMessage: <T>(id: string, payload: QueryCurrentNoteRequest | QueryJustStartApp) => Promise<T>;
 };
 
-delegate('[data-note-link-referrer-id]', 'click', (e: any) => {
-  const target = e.delegateTarget as HTMLElement;
-  const noteId = target.dataset.noteLinkReferrerId;
-
-  if (!noteId) {
-    throw new Error('no noteId');
-  }
-
-  webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'openNote', payload: { noteId } });
-});
-
 class MarkdownView extends EventTarget {
-  private readonly builders = [
-    new ElementReferrerListBuilder(this),
-    new NoteReferrerListBuilder(this),
-    new IdentifierBuilder(this),
-  ];
-
   constructor() {
     super();
+    new NoteRouter(this);
+    new ElementReferrerListBuilder(this);
+    new NoteReferrerListBuilder(this);
+    new IdentifierBuilder(this);
     this.init();
   }
+
+  private timer?: ReturnType<typeof setTimeout>;
 
   // `init` will be trigger when:
   // 1. start App
@@ -59,19 +40,24 @@ class MarkdownView extends EventTarget {
       if (currentNote.id === currentNoteId) {
         currentNoteIdTimes++;
 
-        // joplin-noteDidUpdate fires twice when switch to another note
+        // hack: joplin-noteDidUpdate fires twice when switch to another note
         if (currentNoteIdTimes >= 2) {
+          if (currentNoteIdTimes === 2) {
+            this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
+          }
+
           this.dispatchEvent(
             new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: currentNote }),
           );
+          this.timer && clearTimeout(this.timer);
         }
       } else {
         currentNoteId = currentNote.id;
         currentNoteIdTimes = 1;
 
-        // don't know why sometimes joplin-noteDidUpdate just fire once.
+        // hack: don't know why sometimes joplin-noteDidUpdate just fire once when switch.
         // use timer to make sure it fire
-        setTimeout(() => {
+        this.timer = setTimeout(() => {
           if (currentNoteId === currentNoteId && currentNoteIdTimes < 2) {
             this.dispatchEvent(
               new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: currentNote }),
