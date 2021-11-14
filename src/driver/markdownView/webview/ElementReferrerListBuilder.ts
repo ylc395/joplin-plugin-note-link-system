@@ -91,7 +91,7 @@ export class ElementReferrerListBuilder {
       const idEl = document.getElementById(elId)!;
       const referrers = referrersMap[elId];
       const iconEl = this.createReferrerIconElement(referrers);
-      const listEl = this.createReferrerListElement(referrers);
+      const listEl = this.createReferrerListElement(referrers, elId);
 
       attach(idEl, iconEl, listEl);
     }
@@ -125,11 +125,11 @@ export class ElementReferrerListBuilder {
     return iconEl;
   }
 
-  private createReferrerListElement(notes: Referrer[]) {
+  private createReferrerListElement(notes: Referrer[], elId: string) {
     const olEL = document.createElement('ol');
 
     olEL.classList.add(LIST_CLASS_NAME);
-    olEL.innerHTML = ElementReferrerListBuilder.renderList({ notes });
+    olEL.innerHTML = ElementReferrerListBuilder.renderList({ notes, elId });
 
     return olEL;
   }
@@ -137,7 +137,7 @@ export class ElementReferrerListBuilder {
   private static renderList = template(`
     <% for (const note of notes) { %>
       <li>
-        <a data-note-link-referrer-id="<%= note.id %>">
+        <a data-referrer-id="<%= note.id %>">
           <%= note.title %>
         </a>
         <span
@@ -147,8 +147,16 @@ export class ElementReferrerListBuilder {
           <%= note.mentions.length %>
         </span>
         <ol>
-          <% for (const mention of note.mentions) { %>
-            <li><%= mention %></li>
+          <% for (const [index, mention] of note.mentions.entries()) { %>
+            <li>
+              <a
+                data-note-link-referrer-id="<%= note.id %>"
+                data-note-link-reference-index="<%= index + 1 %>"
+                data-note-link-to-element-id="<%= elId  %>"
+              >
+                <%= mention %>
+              </a>
+            </li>
           <% } %>
         </ol>
       </li>

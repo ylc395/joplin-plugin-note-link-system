@@ -25,12 +25,25 @@ export class NoteRouter {
   private handleLinkClick(e: any) {
     const target = e.delegateTarget as HTMLElement;
     const noteId = target.dataset.noteLinkReferrerId;
+    const referenceIndex = Number(target.dataset.noteLinkReferenceIndex);
+    const toElementId = target.dataset.noteLinkToElementId;
 
     if (!noteId) {
       throw new Error('no noteId');
     }
 
-    webviewApi.postMessage(MARKDOWN_SCRIPT_ID, { event: 'openNote', payload: { noteId } });
+    webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'openNote',
+      payload: {
+        noteId,
+        reference: referenceIndex
+          ? {
+              index: referenceIndex,
+              toElementId,
+            }
+          : undefined,
+      },
+    });
   }
 
   private async focusOnReference() {

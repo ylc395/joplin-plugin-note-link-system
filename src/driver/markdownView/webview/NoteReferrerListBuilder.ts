@@ -153,8 +153,15 @@ export class NoteReferrerListBuilder {
           <%= note.mentions.length %>
         </span>
         <ol>
-          <% for (const mention of note.mentions) { %>
-            <li><%= mention %></li>
+          <% for (const [index, mention] of note.mentions.entries()) { %>
+            <li>
+              <a
+                data-note-link-referrer-id="<%= note.id %>"
+                data-note-link-reference-index="<%= index + 1 %>"
+              >
+                <%= mention %>
+              </a>
+            </li>
           <% } %>
         </ol>
       </li>
