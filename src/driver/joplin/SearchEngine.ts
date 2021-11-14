@@ -80,12 +80,14 @@ export class SearchEngine {
       const _keyword = this.noteSearchPattern.replaceAll(NOTE_SEARCH_PATTERN_PLACEHOLDER, keyword);
       notes = await SearchEngine.fetchAll<SearchedNote>(['search'], { query: _keyword });
     } else {
-      notes = await SearchEngine.fetchAll<SearchedNote>(['notes'], {
-        fields: 'id,title,parent_id',
-        order_by: 'updated_time',
-        order_dir: 'DESC',
-        limit: 20,
-      });
+      notes = (
+        await joplin.data.get(['notes'], {
+          fields: 'id,title,parent_id',
+          order_by: 'updated_time',
+          order_dir: 'DESC',
+          limit: 20,
+        })
+      ).items;
     }
 
     if (this.needNotebooks) {
