@@ -6,7 +6,7 @@ import {
   ScrollToHashRequest,
 } from 'driver/constants';
 import { Reference } from 'model/Referrer';
-import { MarkdownViewEvents } from './constants';
+import { MarkdownViewEvents, SCROLL_ANCHOR_ID } from './constants';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -14,8 +14,6 @@ declare const webviewApi: {
     payload: OpenNoteRequest | QueryFromReferenceRequest | ScrollToHashRequest,
   ) => Promise<T>;
 };
-
-const SCROLL_ANCHOR_ID = 'note-link-scroll-anchor';
 
 export class NoteRouter {
   constructor(view: EventTarget) {

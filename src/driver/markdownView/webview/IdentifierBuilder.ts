@@ -9,7 +9,7 @@ import {
   QuerySettingRequest,
   REFERRER_IDENTIFIER_ENABLED_SETTING,
 } from 'driver/constants';
-import { MarkdownViewEvents, ROOT_ELEMENT_ID } from './constants';
+import { MarkdownViewEvents, ROOT_ELEMENT_ID, SCROLL_ANCHOR_ID } from './constants';
 
 const IDENTIFIER_CLASS_NAME = 'note-link-identifier';
 
@@ -37,10 +37,17 @@ export class IdentifierBuilder {
       return;
     }
 
-    delegate(`.${IDENTIFIER_CLASS_NAME}`, 'click', (e: any) => {
-      const target = e.delegateTarget as HTMLElement;
-      this.copyUrl(target);
-    });
+    delegate(
+      `.${IDENTIFIER_CLASS_NAME}`,
+      'click',
+      (e: any) => {
+        const target = e.delegateTarget as HTMLElement;
+        this.copyUrl(target);
+        e.stopPropagation();
+        e.preventDefault();
+      },
+      true,
+    );
 
     this.view.addEventListener(
       MarkdownViewEvents.NoteDidUpdate,
@@ -73,7 +80,7 @@ export class IdentifierBuilder {
     const elsWithId = [...rootEl.querySelectorAll('[id]')];
 
     for (const el of elsWithId) {
-      if (!el.id) {
+      if (!el.id || el.id === SCROLL_ANCHOR_ID) {
         continue;
       }
 

@@ -21,3 +21,5 @@ export enum MarkdownViewEvents {
 }
 
 export const ROOT_ELEMENT_ID = 'rendered-md';
+
+export const SCROLL_ANCHOR_ID = 'note-link-scroll-anchor';
