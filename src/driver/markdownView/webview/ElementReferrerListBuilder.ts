@@ -29,6 +29,7 @@ const LIST_ITEM_COUNT_CLASS_NAME = 'note-link-element-referrer-count';
 function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLElement) {
   attachTargetEl.appendChild(iconEl);
 
+  // todo: handle iconEl in <a>...
   tippy(iconEl, {
     duration: [300, 0],
     content: listEl,

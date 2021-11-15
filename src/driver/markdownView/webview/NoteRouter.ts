@@ -15,7 +15,10 @@ declare const webviewApi: {
   ) => Promise<T>;
 };
 
+export const OVERFLOW_ANCHOR_NONE_CLASS_NAME = 'note-link-overflow-anchor-none';
+
 export class NoteRouter {
+  private recoveryIdTimer?: ReturnType<typeof setTimeout>;
   constructor(view: EventTarget) {
     delegate('[data-note-link-referrer-id]', 'click', this.handleLinkClick);
     delegate(
@@ -24,8 +27,7 @@ export class NoteRouter {
       this.handleMarkClick.bind(this),
       true,
     );
-    view.addEventListener(MarkdownViewEvents.NoteDidUpdate, () => {});
-    view.addEventListener(MarkdownViewEvents.NewNoteOpen, this.focusOnReference.bind(this));
+    view.addEventListener(MarkdownViewEvents.NewNoteOpen, this.scrollToReference.bind(this));
   }
 
   private handleLinkClick(e: any) {
@@ -52,7 +54,9 @@ export class NoteRouter {
     });
   }
 
-  private async focusOnReference() {
+  private async scrollToReference() {
+    this.recoveryIdTimer && clearTimeout(this.recoveryIdTimer);
+
     const reference = await webviewApi.postMessage<Reference | undefined>(MARKDOWN_SCRIPT_ID, {
       event: 'queryFromReference',
     });
@@ -78,11 +82,24 @@ export class NoteRouter {
       throw new Error('can not find referenceEl');
     }
 
-    referenceEls[index - 1].id = SCROLL_ANCHOR_ID;
+    const originId = referenceEl.id;
+
+    referenceEl.id = SCROLL_ANCHOR_ID;
+    const containerEl = document.getElementById('joplin-container-content')!;
+    containerEl.classList.add(OVERFLOW_ANCHOR_NONE_CLASS_NAME);
     await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'scrollToHash',
       payload: { hash: SCROLL_ANCHOR_ID },
     });
+
+    this.recoveryIdTimer = setTimeout(() => {
+      containerEl.classList.remove(OVERFLOW_ANCHOR_NONE_CLASS_NAME);
+      if (originId) {
+        referenceEl.id = originId;
+      } else {
+        referenceEl.removeAttribute('id');
+      }
+    }, 3000);
   }
 
   private handleMarkClick(e: any) {
