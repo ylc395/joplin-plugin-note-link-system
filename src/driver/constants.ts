@@ -27,7 +27,6 @@ export const CODE_MIRROR_SCRIPT_ID = 'ylc395.noteLinkSystem.CODE_MIRROR_SCRIPT_I
 
 export type Request =
   | SearchNotesRequest
-  | QueryJustStartApp
   | SearchReferrersRequest
   | OpenNoteRequest
   | QueryFromReferenceRequest
@@ -97,8 +96,4 @@ export interface FetchNoteHtmlRequest {
 export interface CreateNoteRequest {
   event: 'createNote';
   payload: { title: string; type: 'todo' | 'note' };
-}
-
-export interface QueryJustStartApp {
-  event: 'queryJustStartApp';
 }

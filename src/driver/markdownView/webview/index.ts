@@ -5,7 +5,6 @@ import {
   MARKDOWN_SCRIPT_ID,
   REFERRER_VIEW_REFERENCE_LIST_SETTING,
   QueryCurrentNoteRequest,
-  QueryJustStartApp,
   QuerySettingRequest,
 } from 'driver/constants';
 import type { Note } from 'model/Referrer';
@@ -15,7 +14,7 @@ import { NoteRouter } from './NoteRouter';
 declare const webviewApi: {
   postMessage: <T>(
     id: string,
-    payload: QueryCurrentNoteRequest | QueryJustStartApp | QuerySettingRequest,
+    payload: QueryCurrentNoteRequest | QuerySettingRequest,
   ) => Promise<T>;
 };
 
@@ -46,6 +45,7 @@ export class MarkdownView extends EventTarget {
     let currentNoteIdTimes = 1;
     let timer: ReturnType<typeof setTimeout>;
 
+    // this event doesn't fire on app start
     document.addEventListener('joplin-noteDidUpdate', async () => {
       const currentNote = await webviewApi.postMessage<Note>(MARKDOWN_SCRIPT_ID, {
         event: 'queryCurrentNote',
@@ -82,18 +82,12 @@ export class MarkdownView extends EventTarget {
       }
     });
 
-    // if just started, joplin-noteDidUpdate won't fire. So we fire it manually
-    const justStartApp = await webviewApi.postMessage<boolean>(MARKDOWN_SCRIPT_ID, {
-      event: 'queryJustStartApp',
-    });
-
-    if (justStartApp) {
-      // hack: don't know why dispatching must happen in next micro task
-      setTimeout(() => {
-        currentNoteIdTimes++;
-        this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
-      }, 10);
-    }
+    // hack: don't know why event must be dispatched in next micro task
+    setTimeout(() => {
+      currentNoteIdTimes++;
+      this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
+      this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
+    }, 10);
   }
 }
 

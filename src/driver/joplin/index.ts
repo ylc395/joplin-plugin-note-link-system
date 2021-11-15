@@ -19,7 +19,6 @@ import { Reference } from 'model/Referrer';
 
 export default class App {
   private searchEngine?: SearchEngine;
-  private justStartApp = true;
   private reference?: Reference;
   // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
   private readonly md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
@@ -63,13 +62,6 @@ export default class App {
       : this.searchEngine.searchReferrers(selectedNoteId);
   }
 
-  private queryIsJustStart() {
-    const result = this.justStartApp;
-    this.justStartApp = false;
-
-    return result;
-  }
-
   private async getNoteHtml(noteId: string) {
     const { body } = await joplin.data.get(['notes', noteId], { fields: 'body' });
     return this.md.render(body);
@@ -99,8 +91,6 @@ export default class App {
         return this.getNoteHtml(request.payload.id);
       case 'createNote':
         return App.createNote(request.payload);
-      case 'queryJustStartApp':
-        return this.queryIsJustStart();
       case 'scrollToHash':
         return joplin.commands.execute('scrollToHash', request.payload.hash);
       default:
