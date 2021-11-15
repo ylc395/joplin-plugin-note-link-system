@@ -137,7 +137,7 @@ export class ElementReferrerListBuilder {
   private static renderList = template(`
     <% for (const note of notes) { %>
       <li>
-        <a data-referrer-id="<%= note.id %>">
+        <a data-note-link-referrer-id="<%= note.id %>">
           <%= note.title %>
         </a>
         <span
