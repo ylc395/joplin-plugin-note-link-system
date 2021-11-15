@@ -20,8 +20,6 @@ class MarkdownView extends EventTarget {
     this.init();
   }
 
-  private timer?: ReturnType<typeof setTimeout>;
-
   // `init` will be trigger when:
   // 1. start App
   // 2. switch to note in another notebook
@@ -31,6 +29,7 @@ class MarkdownView extends EventTarget {
     });
     let currentNoteId = note.id;
     let currentNoteIdTimes = 1;
+    let timer: ReturnType<typeof setTimeout>;
 
     document.addEventListener('joplin-noteDidUpdate', async () => {
       const currentNote = await webviewApi.postMessage<Note>(MARKDOWN_SCRIPT_ID, {
@@ -42,6 +41,8 @@ class MarkdownView extends EventTarget {
 
         // hack: joplin-noteDidUpdate fires twice when switch to another note
         if (currentNoteIdTimes >= 2) {
+          timer && clearTimeout(timer);
+
           if (currentNoteIdTimes === 2) {
             this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
           }
@@ -49,20 +50,19 @@ class MarkdownView extends EventTarget {
           this.dispatchEvent(
             new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: currentNote }),
           );
-          this.timer && clearTimeout(this.timer);
         }
       } else {
+        timer && clearTimeout(timer);
         currentNoteId = currentNote.id;
         currentNoteIdTimes = 1;
 
-        // hack: don't know why sometimes joplin-noteDidUpdate just fire once when switch.
+        // hack: don't know why sometimes joplin-noteDidUpdate just fire once when switching note.
         // use timer to make sure it fire
-        this.timer = setTimeout(() => {
-          if (currentNoteId === currentNoteId && currentNoteIdTimes < 2) {
-            this.dispatchEvent(
-              new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: currentNote }),
-            );
-          }
+        timer = setTimeout(() => {
+          this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
+          this.dispatchEvent(
+            new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: currentNote }),
+          );
         }, 2000);
       }
     });
@@ -75,6 +75,7 @@ class MarkdownView extends EventTarget {
     if (justStartApp) {
       // hack: don't know why dispatching must happen in next micro task
       setTimeout(() => {
+        currentNoteIdTimes++;
         this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
       }, 10);
     }
