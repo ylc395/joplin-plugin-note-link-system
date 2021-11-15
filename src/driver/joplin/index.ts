@@ -1,5 +1,8 @@
 import joplin from 'api';
 import { ContentScriptType, ToolbarButtonLocation } from 'api/types';
+import MarkdownIt from 'markdown-it';
+import uslug from 'uslug';
+import markdownItAnchor from 'markdown-it-anchor';
 import {
   Request,
   CreateNoteRequest,
@@ -18,6 +21,8 @@ export default class App {
   private searchEngine?: SearchEngine;
   private justStartApp = true;
   private reference?: Reference;
+  // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
+  private readonly md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
   async init() {
     await this.setupSetting();
 
@@ -65,6 +70,11 @@ export default class App {
     return result;
   }
 
+  private async getNoteHtml(noteId: string) {
+    const { body } = await joplin.data.get(['notes', noteId], { fields: 'body' });
+    return this.md.render(body);
+  }
+
   async requestHandler(request: Request) {
     if (!this.searchEngine) {
       throw new Error('no search engine');
@@ -85,8 +95,8 @@ export default class App {
         return joplin.workspace.selectedNote();
       case 'searchNotes':
         return this.searchEngine.searchNotes(request.payload.keyword);
-      case 'fetchNote':
-        return joplin.data.get(['notes', request.payload.id], { fields: 'body' });
+      case 'fetchNoteHtml':
+        return this.getNoteHtml(request.payload.id);
       case 'createNote':
         return App.createNote(request.payload);
       case 'queryJustStartApp':

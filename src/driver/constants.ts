@@ -32,7 +32,7 @@ export type Request =
   | QueryFromReferenceRequest
   | QuerySettingRequest
   | WriteClipboardRequest
-  | FetchNoteRequest
+  | FetchNoteHtmlRequest
   | CreateNoteRequest
   | ScrollToHashRequest
   | QueryCurrentNoteRequest;
@@ -88,8 +88,8 @@ export interface QueryCurrentNoteRequest {
   event: 'queryCurrentNote';
 }
 
-export interface FetchNoteRequest {
-  event: 'fetchNote';
+export interface FetchNoteHtmlRequest {
+  event: 'fetchNoteHtml';
   payload: { id: string };
 }
 

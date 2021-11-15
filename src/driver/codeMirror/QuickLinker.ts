@@ -1,18 +1,15 @@
 import type { Editor, Position } from 'codemirror';
 import type CodeMirror from 'codemirror';
-import MarkdownIt from 'markdown-it';
-import uslug from 'uslug';
 import h1Icon from 'bootstrap-icons/icons/type-h1.svg';
 import h2Icon from 'bootstrap-icons/icons/type-h2.svg';
 import h3Icon from 'bootstrap-icons/icons/type-h3.svg';
 import cardHeadingIcon from 'bootstrap-icons/icons/card-heading.svg';
 import boxIcon from 'bootstrap-icons/icons/box.svg';
 import plusIcon from 'bootstrap-icons/icons/file-earmark-plus.svg';
-import markdownItAnchor from 'markdown-it-anchor';
 import {
   QuerySettingRequest,
   SearchNotesRequest,
-  FetchNoteRequest,
+  FetchNoteHtmlRequest,
   CreateNoteRequest,
   QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
@@ -25,7 +22,7 @@ import { ActionAfterCompletion } from './constants';
 
 export interface Context {
   postMessage: <T>(
-    request: QuerySettingRequest | SearchNotesRequest | FetchNoteRequest | CreateNoteRequest,
+    request: QuerySettingRequest | SearchNotesRequest | FetchNoteHtmlRequest | CreateNoteRequest,
   ) => Promise<T>;
 }
 
@@ -63,8 +60,6 @@ export class QuickLinker {
     private readonly editor: ExtendedEditor,
     private readonly cm: typeof CodeMirror,
   ) {
-    // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
-    this.md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
     this.editor.on('cursorActivity', this.triggerHints.bind(this));
     // hack: don't know why fetching must happen in next micro task
     setTimeout(this.init.bind(this), 100);
@@ -98,7 +93,6 @@ export class QuickLinker {
     });
   }
 
-  private md?: MarkdownIt;
   private readonly doc = this.editor.getDoc();
   private enabled?: boolean;
   private triggerSymbol?: string;
@@ -131,16 +125,11 @@ export class QuickLinker {
     start: Position,
     titleRange: [Position, Position],
   ) {
-    if (!this.md) {
-      throw new Error('no md');
-    }
-
-    const { body } = await this.context.postMessage<Pick<Note, 'body'>>({
-      event: 'fetchNote',
+    const html = await this.context.postMessage<string>({
+      event: 'fetchNoteHtml',
       payload: { id: noteId },
     });
 
-    const html = this.md.render(body);
     const document = new DOMParser().parseFromString(html, 'text/html');
     const isHeading = (el: Element) => ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(el.tagName);
     const list: Hint[] = [...document.querySelectorAll('[id]')].map((el, index, els) => {
