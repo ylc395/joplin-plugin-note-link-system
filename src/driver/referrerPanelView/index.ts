@@ -6,6 +6,7 @@ import {
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
   REFERRER_PANEL_STYLESHEET_SETTING,
+  REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
 } from 'driver/constants';
 import type { SearchEngine } from '../joplin/SearchEngine';
 
@@ -21,12 +22,16 @@ export class ReferrerPanelView {
   private currentNoteId?: string;
   private panelTitle?: string;
   private stylesheet?: string;
+  private isExpandingReference?: boolean;
 
   private async init() {
     const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
 
     this.panelTitle = await joplin.settings.value(REFERRER_PANEL_TITLE_SETTING);
     this.stylesheet = await joplin.settings.value(REFERRER_PANEL_STYLESHEET_SETTING);
+    this.isExpandingReference = await joplin.settings.value(
+      REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
+    );
     this.currentNoteId = (await joplin.workspace.selectedNote()).id;
 
     if (enabled) {
@@ -59,10 +64,14 @@ export class ReferrerPanelView {
 
       if (
         keys.includes(REFERRER_PANEL_TITLE_SETTING) ||
+        keys.includes(REFERRER_PANEL_REFERENCE_EXPAND_SETTING) ||
         keys.includes(REFERRER_PANEL_STYLESHEET_SETTING)
       ) {
         this.panelTitle = await joplin.settings.value(REFERRER_PANEL_TITLE_SETTING);
         this.stylesheet = await joplin.settings.value(REFERRER_PANEL_STYLESHEET_SETTING);
+        this.isExpandingReference = await joplin.settings.value(
+          REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
+        );
         this.refresh();
       }
     });
@@ -86,7 +95,7 @@ export class ReferrerPanelView {
         <ol class="referrer-list">
           <% for (const note of notes) { %>
             <li>
-              <details>
+              <details<%= expand ? ' open' : '' %>>
                 <summary>
                   <span class="title-container">
                     <a
@@ -133,6 +142,7 @@ export class ReferrerPanelView {
       notes,
       stylesheet: this.stylesheet,
       panelTitle: this.panelTitle,
+      expand: this.isExpandingReference,
     });
     joplin.views.panels.setHtml(this.viewHandler, html);
   }

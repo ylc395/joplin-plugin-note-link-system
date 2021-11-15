@@ -8,10 +8,11 @@ import {
   REFERRER_LIST_HEADING_SETTING,
   REFERRER_AUTO_LIST_POSITION_SETTING,
   REFERRER_AUTO_LIST_ENABLED_SETTING,
-  REFERRER_VIEW_REFERENCE_LIST_SETTING,
+  REFERRER_VIEW_REFERENCE_EXPAND_SETTING,
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
   REFERRER_PANEL_STYLESHEET_SETTING,
+  REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
   REFERRER_IDENTIFIER_ENABLED_SETTING,
   QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
@@ -86,7 +87,7 @@ const setting: Record<string, SettingItem> = {
       [ReferrersListNumberType.Both]: 'Both',
     },
   },
-  [REFERRER_VIEW_REFERENCE_LIST_SETTING]: {
+  [REFERRER_VIEW_REFERENCE_EXPAND_SETTING]: {
     section: SECTION_NAME,
     public: true,
     label: 'Markdown View: Expand reference list by default',
@@ -120,6 +121,13 @@ const setting: Record<string, SettingItem> = {
     type: SettingItemType.String,
     public: true,
     value: 'REFERRERS',
+    section: SECTION_NAME,
+  },
+  [REFERRER_PANEL_REFERENCE_EXPAND_SETTING]: {
+    label: 'Panel: Expand Reference List By Default',
+    type: SettingItemType.Bool,
+    public: true,
+    value: false,
     section: SECTION_NAME,
   },
   [QUICK_LINK_ENABLED_SETTING]: {

@@ -3,7 +3,7 @@ import { NoteReferrerListBuilder } from './NoteReferrerListBuilder';
 import { IdentifierBuilder } from './IdentifierBuilder';
 import {
   MARKDOWN_SCRIPT_ID,
-  REFERRER_VIEW_REFERENCE_LIST_SETTING,
+  REFERRER_VIEW_REFERENCE_EXPAND_SETTING,
   QueryCurrentNoteRequest,
   QuerySettingRequest,
 } from 'driver/constants';
@@ -35,7 +35,7 @@ export class MarkdownView extends EventTarget {
   private async init() {
     this.expandMode = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
-      payload: { key: REFERRER_VIEW_REFERENCE_LIST_SETTING },
+      payload: { key: REFERRER_VIEW_REFERENCE_EXPAND_SETTING },
     });
 
     const note = await webviewApi.postMessage<Note>(MARKDOWN_SCRIPT_ID, {
