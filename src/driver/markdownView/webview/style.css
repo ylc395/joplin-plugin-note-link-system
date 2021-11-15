@@ -83,3 +83,8 @@ h6 > .note-link-element-referrers-icon {
 #joplin-container-content {
   overflow-anchor: none; /* prevent inserted content from scrolling out our reference anchor */
 }
+
+.note-link-mark > [data-note-link-element-id] > svg {
+  height: 1em;
+  width: 1em;
+}

@@ -18,6 +18,12 @@ declare const webviewApi: {
 export class NoteRouter {
   constructor(view: EventTarget) {
     delegate('[data-note-link-referrer-id]', 'click', this.handleLinkClick);
+    delegate(
+      '.note-link-mark > [data-note-link-element-id] ',
+      'click',
+      this.handleMarkClick.bind(this),
+      true,
+    );
     view.addEventListener(MarkdownViewEvents.NoteDidUpdate, () => {});
     view.addEventListener(MarkdownViewEvents.NewNoteOpen, this.focusOnReference.bind(this));
   }
@@ -76,6 +82,27 @@ export class NoteRouter {
     await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'scrollToHash',
       payload: { hash: SCROLL_ANCHOR_ID },
+    });
+  }
+
+  private handleMarkClick(e: any) {
+    e.stopPropagation();
+
+    const target = e.delegateTarget as HTMLElement;
+    const elId = target.dataset.noteLinkElementId;
+
+    if (!elId) {
+      throw new Error('no element id');
+    }
+
+    if (!document.getElementById(elId)) {
+      alert(`No such id in current note: ${elId}`);
+      return;
+    }
+
+    webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'scrollToHash',
+      payload: { hash: elId },
     });
   }
 }

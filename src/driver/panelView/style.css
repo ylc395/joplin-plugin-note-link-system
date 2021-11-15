@@ -57,3 +57,8 @@ li {
 .no-referrers {
   color: rgb(145, 145, 145);
 }
+
+.note-link-mark > [data-note-link-element-id] > svg {
+  height: 1em;
+  width: 1em;
+}

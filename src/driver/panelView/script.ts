@@ -1,8 +1,19 @@
 import delegate from 'delegate';
-import type { OpenNoteRequest, WriteClipboardRequest } from 'driver/constants';
+import type {
+  OpenNoteRequest,
+  WriteClipboardRequest,
+  ScrollToHashRequest,
+  QueryCurrentNoteRequest,
+} from 'driver/constants';
 
 declare const webviewApi: {
-  postMessage: <T>(payload: OpenNoteRequest | WriteClipboardRequest) => Promise<T>;
+  postMessage: <T>(
+    payload:
+      | OpenNoteRequest
+      | WriteClipboardRequest
+      | ScrollToHashRequest
+      | QueryCurrentNoteRequest,
+  ) => Promise<T>;
 };
 
 delegate('[data-note-id]', 'click', (e: any) => {
@@ -41,3 +52,22 @@ delegate('[data-note-id]', 'contextmenu', (e: any) => {
     }, 1000);
   }
 });
+
+delegate(
+  'mark > [data-note-link-element-id]',
+  'click',
+  async (e: any) => {
+    e.stopPropagation();
+
+    const target = e.delegateTarget as HTMLElement;
+    const elId = target.dataset.noteLinkElementId;
+
+    if (!elId) {
+      throw new Error('no element id');
+    }
+
+    // todo: if elId is not existing in note...
+    webviewApi.postMessage({ event: 'scrollToHash', payload: { hash: elId } });
+  },
+  true,
+);

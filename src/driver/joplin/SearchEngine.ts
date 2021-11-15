@@ -1,5 +1,6 @@
 import joplin from 'api';
 import debounce from 'lodash.debounce';
+import targetIcon from 'bootstrap-icons/icons/box-arrow-in-left.svg';
 import type { Referrer, SearchedNote, Note, Notebook } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
@@ -9,6 +10,12 @@ import {
   QUICK_LINK_SHOW_PATH_SETTING,
   SearchElementReferrersResponse,
 } from 'driver/constants';
+
+function escapeHtml(html: string) {
+  return html.replace(/[\u00A0-\u9999<>&]/gim, (i) => {
+    return '&#' + i.charCodeAt(0) + ';';
+  });
+}
 
 export class SearchEngine {
   private notebooksIndex: Record<string, Notebook> = {};
@@ -226,17 +233,25 @@ export class SearchEngine {
         break;
       }
 
-      const textFragment = content.slice(
-        Math.max(0, currentIndex - Math.ceil(this.mentionTextLength / 2)),
-        Math.min(
-          content.length - 1,
-          currentIndex + keyword.length + Math.ceil(this.mentionTextLength / 2),
+      const textFragment = escapeHtml(
+        content.slice(
+          Math.max(0, currentIndex - Math.ceil(this.mentionTextLength / 2)),
+          Math.min(
+            content.length - 1,
+            currentIndex + keyword.length + Math.ceil(this.mentionTextLength / 2),
+          ),
         ),
       );
 
       const mention = textFragment.replace(
-        new RegExp(`\\[([^\\[\\]]*)\\]\\(:/${keyword}.*?\\)`, 'g'),
-        (_, $1) => `<mark>${$1}</mark>`,
+        new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g'),
+        (_, $1, $2) => {
+          const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
+          const button = elementId
+            ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
+            : '';
+          return `<mark class="note-link-mark">${$1}${button}</mark>`;
+        },
       );
 
       mentions.push(mention);
