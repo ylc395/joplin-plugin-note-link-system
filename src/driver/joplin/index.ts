@@ -114,8 +114,8 @@ export default class App {
     }
 
     const panelId = await joplin.views.panels.create('panel');
-    await joplin.views.panels.addScript(panelId, './driver/panelView/script.js');
-    await joplin.views.panels.addScript(panelId, './driver/panelView/style.css');
+    await joplin.views.panels.addScript(panelId, './driver/referrerPanelView/script.js');
+    await joplin.views.panels.addScript(panelId, './driver/referrerPanelView/style.css');
     await joplin.views.panels.onMessage(panelId, this.requestHandler.bind(this));
 
     new ReferrerPanelView(panelId, this.searchEngine);

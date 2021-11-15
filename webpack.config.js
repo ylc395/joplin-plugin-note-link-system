@@ -225,7 +225,7 @@ function resolveExtraScriptPath(name) {
   const s = name.split('.');
   s.pop();
   const nameNoExt = s.join('.');
-  const isWebview = ['markdownView/webview/index', 'panelView/script'].some((page) =>
+  const isWebview = ['markdownView/webview/index', 'referrerPanelView/script'].some((page) =>
     nameNoExt.endsWith(page),
   );
 
