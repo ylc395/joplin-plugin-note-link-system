@@ -2,7 +2,7 @@
   "extraScripts": [
     "driver/markdownView/index.ts",
     "driver/markdownView/webview/index.ts",
-    "driver/panelView/script.ts",
+    "driver/referrerPanelView/script.ts",
     "driver/codeMirror/index.ts"
   ]
 }

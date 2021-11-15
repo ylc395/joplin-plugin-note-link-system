@@ -9,7 +9,7 @@ import {
 } from 'driver/constants';
 import type { SearchEngine } from '../joplin/SearchEngine';
 
-export class PanelView {
+export class ReferrerPanelView {
   constructor(
     private readonly viewHandler: ViewHandle,
     private readonly searchEngine: SearchEngine,
@@ -125,7 +125,7 @@ export class PanelView {
     }
 
     const notes = await this.searchEngine.searchReferrers(this.currentNoteId);
-    const html = PanelView.render({
+    const html = ReferrerPanelView.render({
       notes,
       stylesheet: this.stylesheet,
       panelTitle: this.panelTitle,

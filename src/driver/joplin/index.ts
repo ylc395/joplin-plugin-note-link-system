@@ -11,7 +11,7 @@ import {
 } from 'driver/constants';
 import { SearchEngine } from './SearchEngine';
 import setting, { SECTION_NAME } from './setting';
-import { PanelView } from '../panelView';
+import { ReferrerPanelView } from '../referrerPanelView';
 import { Reference } from 'model/Referrer';
 
 export default class App {
@@ -118,7 +118,7 @@ export default class App {
     await joplin.views.panels.addScript(panelId, './driver/panelView/style.css');
     await joplin.views.panels.onMessage(panelId, this.requestHandler.bind(this));
 
-    new PanelView(panelId, this.searchEngine);
+    new ReferrerPanelView(panelId, this.searchEngine);
   }
 
   async setupCodeMirror() {
