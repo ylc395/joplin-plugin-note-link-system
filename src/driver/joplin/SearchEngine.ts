@@ -1,5 +1,6 @@
 import joplin from 'api';
 import debounce from 'lodash.debounce';
+import { escape } from 'html-escaper';
 import targetIcon from 'bootstrap-icons/icons/box-arrow-in-left.svg';
 import type { Referrer, SearchedNote, Note, Notebook } from 'model/Referrer';
 import {
@@ -10,12 +11,6 @@ import {
   QUICK_LINK_SHOW_PATH_SETTING,
   SearchElementReferrersResponse,
 } from 'driver/constants';
-
-function escapeHtml(html: string) {
-  return html.replace(/[\u00A0-\u9999<>&]/gim, (i) => {
-    return '&#' + i.charCodeAt(0) + ';';
-  });
-}
 
 export class SearchEngine {
   private notebooksIndex: Record<string, Notebook> = {};
@@ -222,7 +217,6 @@ export class SearchEngine {
   }
 
   private extractMentions(keyword: string, content: string) {
-    const keywordLength = keyword.length;
     const mentions = [];
     let index = 0;
 
@@ -233,29 +227,39 @@ export class SearchEngine {
         break;
       }
 
-      const textFragment = escapeHtml(
-        content.slice(
-          Math.max(0, currentIndex - Math.ceil(this.mentionTextLength / 2)),
-          Math.min(
-            content.length - 1,
-            currentIndex + keyword.length + Math.ceil(this.mentionTextLength / 2),
-          ),
-        ),
+      const start = Math.max(0, currentIndex - Math.ceil(this.mentionTextLength / 2));
+      const end = Math.min(
+        content.length,
+        currentIndex + keyword.length + Math.ceil(this.mentionTextLength / 2),
       );
+      const textFragment = escape(content.slice(start, end));
+      const prefixLength = currentIndex - start;
 
+      let mainMarkFound = false;
       const mention = textFragment.replace(
         new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g'),
-        (_, $1, $2) => {
+        (_, $1, $2, offset) => {
+          const realOffset = offset + `${$1}](${$2})`.length;
+          let isMainMark = false;
+
+          if (realOffset >= prefixLength && !mainMarkFound) {
+            mainMarkFound = true;
+            isMainMark = true;
+          }
+
           const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
-          const button = elementId
-            ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
-            : '';
-          return `<mark class="note-link-mark">${$1}${button}</mark>`;
+          const button =
+            elementId && isMainMark
+              ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
+              : '';
+          return `<mark class="note-link-mark${
+            isMainMark ? ' note-link-mark-main' : ''
+          }">${$1}${button}</mark>`;
         },
       );
 
       mentions.push(mention);
-      index = currentIndex + keywordLength;
+      index = currentIndex + keyword.length;
     }
 
     return mentions;
