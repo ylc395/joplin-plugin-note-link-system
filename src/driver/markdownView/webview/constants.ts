@@ -20,6 +20,13 @@ export enum MarkdownViewEvents {
   NewNoteOpen = 'NewNoteOpen',
 }
 
+export enum ReferenceListExpandMode {
+  ExpandNoteListOnly,
+  ExpandElementListOnly,
+  ExpandBoth,
+  ExpandNone,
+}
+
 export const ROOT_ELEMENT_ID = 'rendered-md';
 
 export const SCROLL_ANCHOR_ID = 'note-link-scroll-anchor';

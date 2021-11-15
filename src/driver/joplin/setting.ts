@@ -8,6 +8,7 @@ import {
   REFERRER_LIST_HEADING_SETTING,
   REFERRER_AUTO_LIST_POSITION_SETTING,
   REFERRER_AUTO_LIST_ENABLED_SETTING,
+  REFERRER_VIEW_REFERENCE_LIST_SETTING,
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
   REFERRER_PANEL_STYLESHEET_SETTING,
@@ -24,6 +25,7 @@ import {
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
   ReferrersListNumberType,
+  ReferenceListExpandMode,
 } from '../markdownView/webview/constants';
 import { ActionAfterCompletion } from '../codeMirror/constants';
 
@@ -31,7 +33,7 @@ export const SECTION_NAME = 'Note Link';
 
 const setting: Record<string, SettingItem> = {
   [REFERRER_LIST_HEADING_SETTING]: {
-    label: 'View: Referrers List Heading Text',
+    label: 'Markdown View: Referrers List Heading Text',
     type: SettingItemType.String,
     public: true,
     value: 'Backlinks', // compatible with [Automatic backlinks Plugin](https://discourse.joplinapp.org/t/insert-referencing-notes-backlinks-plugin/13632)
@@ -39,7 +41,7 @@ const setting: Record<string, SettingItem> = {
     description: 'Text in Headings(h1-h6) for auto & manually inserted referrers list',
   },
   [REFERRER_AUTO_LIST_ENABLED_SETTING]: {
-    label: 'View: Enable/Disable Auto Referrers List Insertion',
+    label: 'Markdown View: Enable/Disable Auto Referrers List Insertion',
     type: SettingItemType.Int,
     isEnum: true,
     public: true,
@@ -53,7 +55,7 @@ const setting: Record<string, SettingItem> = {
     },
   },
   [REFERRER_AUTO_LIST_POSITION_SETTING]: {
-    label: 'View: Auto Inserted Referrers List Position',
+    label: 'Markdown View: Auto Inserted Referrers List Position',
     type: SettingItemType.Int,
     isEnum: true,
     public: true,
@@ -65,14 +67,14 @@ const setting: Record<string, SettingItem> = {
     },
   },
   [REFERRER_ELEMENT_NUMBER_ENABLED]: {
-    label: 'View: Enable Referrers Count Of Elements',
+    label: 'Markdown View: Enable Referrers Count Of Elements',
     type: SettingItemType.Bool,
     public: true,
     value: true,
     section: SECTION_NAME,
   },
   [REFERRER_ELEMENT_NUMBER_TYPE]: {
-    label: 'View: Which Number Should Be Displayed For Referred Elements',
+    label: 'Markdown View: Which Number Should Be Displayed For Referred Elements',
     type: SettingItemType.Int,
     isEnum: true,
     public: true,
@@ -84,8 +86,22 @@ const setting: Record<string, SettingItem> = {
       [ReferrersListNumberType.Both]: 'Both',
     },
   },
+  [REFERRER_VIEW_REFERENCE_LIST_SETTING]: {
+    section: SECTION_NAME,
+    public: true,
+    label: 'Markdown View: Expand reference list by default',
+    type: SettingItemType.Int,
+    isEnum: true,
+    value: ReferenceListExpandMode.ExpandNone,
+    options: {
+      [ReferenceListExpandMode.ExpandBoth]: 'Expand all reference list',
+      [ReferenceListExpandMode.ExpandNone]: "Don't expand any reference list",
+      [ReferenceListExpandMode.ExpandElementListOnly]: 'Only expand reference list for elements',
+      [ReferenceListExpandMode.ExpandNoteListOnly]: 'Only expand reference list for note',
+    },
+  },
   [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
-    label: 'View: Enable Identifier Icon For Copying Url',
+    label: 'Markdown View: Enable Identifier Icon For Copying Url',
     type: SettingItemType.Bool,
     public: true,
     value: true,

@@ -13,7 +13,13 @@ import {
   REFERRER_ELEMENT_NUMBER_ENABLED,
   REFERRER_ELEMENT_NUMBER_TYPE,
 } from 'driver/constants';
-import { MarkdownViewEvents, ReferrersListNumberType, ROOT_ELEMENT_ID } from './constants';
+import {
+  MarkdownViewEvents,
+  ReferrersListNumberType,
+  ReferenceListExpandMode,
+  ROOT_ELEMENT_ID,
+} from './constants';
+import type { MarkdownView } from './index';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -51,7 +57,7 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
 }
 
 export class ElementReferrerListBuilder {
-  constructor(private readonly view: EventTarget) {
+  constructor(private readonly view: MarkdownView) {
     this.init();
   }
   private numberType?: ReferrersListNumberType;
@@ -127,10 +133,21 @@ export class ElementReferrerListBuilder {
   }
 
   private createReferrerListElement(notes: Referrer[], elId: string) {
+    if (typeof this.view.expandMode === 'undefined') {
+      throw new Error('no expand mode');
+    }
+
     const olEL = document.createElement('ol');
 
     olEL.classList.add(LIST_CLASS_NAME);
-    olEL.innerHTML = ElementReferrerListBuilder.renderList({ notes, elId });
+    olEL.innerHTML = ElementReferrerListBuilder.renderList({
+      notes,
+      elId,
+      expand: [
+        ReferenceListExpandMode.ExpandBoth,
+        ReferenceListExpandMode.ExpandElementListOnly,
+      ].includes(this.view.expandMode),
+    });
 
     return olEL;
   }
@@ -138,28 +155,32 @@ export class ElementReferrerListBuilder {
   private static renderList = template(`
     <% for (const note of notes) { %>
       <li>
-        <a data-note-link-referrer-id="<%= note.id %>">
-          <%= note.title %>
-        </a>
-        <span
-          title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
-          class="${LIST_ITEM_COUNT_CLASS_NAME}"
-        >
-          <%= note.mentions.length %>
-        </span>
-        <ol>
-          <% for (const [index, mention] of note.mentions.entries()) { %>
-            <li>
-              <a
-                data-note-link-referrer-id="<%= note.id %>"
-                data-note-link-reference-index="<%= index + 1 %>"
-                data-note-link-to-element-id="<%= elId  %>"
-              >
-                <%= mention %>
-              </a>
-            </li>
-          <% } %>
-        </ol>
+        <details<%= expand ? ' open' : '' %>>
+          <summary>
+            <a data-note-link-referrer-id="<%= note.id %>">
+              <%= note.title %>
+            </a>
+            <span
+              title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
+              class="${LIST_ITEM_COUNT_CLASS_NAME}"
+            >
+              <%= note.mentions.length %>
+            </span>
+          </summary>
+          <ol>
+            <% for (const [index, mention] of note.mentions.entries()) { %>
+              <li>
+                <a
+                  data-note-link-referrer-id="<%= note.id %>"
+                  data-note-link-reference-index="<%= index + 1 %>"
+                  data-note-link-to-element-id="<%= elId  %>"
+                >
+                  <%= mention %>
+                </a>
+              </li>
+            <% } %>
+          </ol>
+        </details>
       </li>
     <% } %>
   `);

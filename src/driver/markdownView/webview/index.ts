@@ -1,16 +1,25 @@
 import { ElementReferrerListBuilder } from './ElementReferrerListBuilder';
 import { NoteReferrerListBuilder } from './NoteReferrerListBuilder';
 import { IdentifierBuilder } from './IdentifierBuilder';
-import { MARKDOWN_SCRIPT_ID, QueryCurrentNoteRequest, QueryJustStartApp } from 'driver/constants';
+import {
+  MARKDOWN_SCRIPT_ID,
+  REFERRER_VIEW_REFERENCE_LIST_SETTING,
+  QueryCurrentNoteRequest,
+  QueryJustStartApp,
+  QuerySettingRequest,
+} from 'driver/constants';
 import type { Note } from 'model/Referrer';
-import { MarkdownViewEvents } from './constants';
+import { MarkdownViewEvents, ReferenceListExpandMode } from './constants';
 import { NoteRouter } from './NoteRouter';
 
 declare const webviewApi: {
-  postMessage: <T>(id: string, payload: QueryCurrentNoteRequest | QueryJustStartApp) => Promise<T>;
+  postMessage: <T>(
+    id: string,
+    payload: QueryCurrentNoteRequest | QueryJustStartApp | QuerySettingRequest,
+  ) => Promise<T>;
 };
 
-class MarkdownView extends EventTarget {
+export class MarkdownView extends EventTarget {
   constructor() {
     super();
     new NoteRouter(this);
@@ -20,10 +29,16 @@ class MarkdownView extends EventTarget {
     this.init();
   }
 
+  expandMode?: ReferenceListExpandMode;
   // `init` will be trigger when:
-  // 1. start App
+  // 1. start App(including return from setting panel)
   // 2. switch to note in another notebook
   private async init() {
+    this.expandMode = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_VIEW_REFERENCE_LIST_SETTING },
+    });
+
     const note = await webviewApi.postMessage<Note>(MARKDOWN_SCRIPT_ID, {
       event: 'queryCurrentNote',
     });

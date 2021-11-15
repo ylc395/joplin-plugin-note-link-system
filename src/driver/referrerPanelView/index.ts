@@ -86,31 +86,35 @@ export class ReferrerPanelView {
         <ol class="referrer-list">
           <% for (const note of notes) { %>
             <li>
-              <span class="title-container">
-                <a
-                  data-note-id="<%= note.id %>"
-                  class="title"
-                >
-                  <%= note.title %>
-                </a>
-                <span
-                  class="count"
-                  title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
-                >
-                  <%= note.mentions.length %>
-                </span>
-              </span>
-              <ol class="reference-list">
-                <% for (const [index, mention] of note.mentions.entries()) { %>
-                  <li>
+              <details>
+                <summary>
+                  <span class="title-container">
                     <a
                       data-note-id="<%= note.id %>"
-                      data-reference-index="<%= index + 1 %>">
-                        <%= mention %>
+                      class="title"
+                    >
+                      <%= note.title %>
                     </a>
-                  </li>
-                <% } %>
-              <ol>
+                    <span
+                      class="count"
+                      title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
+                    >
+                      <%= note.mentions.length %>
+                    </span>
+                  </span>
+                </summary>
+                <ol class="reference-list">
+                  <% for (const [index, mention] of note.mentions.entries()) { %>
+                    <li>
+                      <a
+                        data-note-id="<%= note.id %>"
+                        data-reference-index="<%= index + 1 %>">
+                          <%= mention %>
+                      </a>
+                    </li>
+                  <% } %>
+                <ol>
+              </details>
           <% } %>
         </ol>
       <% } else { %>

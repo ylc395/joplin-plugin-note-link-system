@@ -13,9 +13,11 @@ import {
 import {
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
+  ReferenceListExpandMode,
   MarkdownViewEvents,
   ROOT_ELEMENT_ID,
 } from './constants';
+import type { MarkdownView } from './index';
 
 declare const webviewApi: {
   postMessage: <T>(id: string, payload: QuerySettingRequest | SearchReferrersRequest) => Promise<T>;
@@ -25,7 +27,7 @@ const REFERRER_LIST_HEADING_CLASS_NAME = 'note-link-referrers-list-heading';
 const REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME = 'note-link-referrers-list-count';
 
 export class NoteReferrerListBuilder {
-  constructor(private readonly view: EventTarget) {
+  constructor(private readonly view: MarkdownView) {
     this.init();
   }
   private listHeadingText?: string;
@@ -123,12 +125,18 @@ export class NoteReferrerListBuilder {
   }
 
   private async insertListAfterHeadings() {
-    if (!this.referrers || !this.listHeadingEls) {
+    if (!this.referrers || !this.listHeadingEls || typeof this.view.expandMode === 'undefined') {
       throw new Error('can not insert list');
     }
 
     const hasReferrers = this.referrers.length > 0;
-    const listHtml = NoteReferrerListBuilder.renderList({ notes: this.referrers });
+    const listHtml = NoteReferrerListBuilder.renderList({
+      notes: this.referrers,
+      expand: [
+        ReferenceListExpandMode.ExpandBoth,
+        ReferenceListExpandMode.ExpandNoteListOnly,
+      ].includes(this.view.expandMode),
+    });
 
     for (const headingEl of this.listHeadingEls) {
       const sectionEl = hasReferrers ? document.createElement('ol') : document.createElement('p');
@@ -142,28 +150,32 @@ export class NoteReferrerListBuilder {
   private static renderList = template(`
     <% for (const note of notes) { %>
       <li>
-        <a data-note-link-referrer-id="<%= note.id %>">
-          <span class="resource-icon fa-joplin"></span>
-          <%= note.title  %>
-        </a>
-        <span
-          title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
-          class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}"
-        >
-          <%= note.mentions.length %>
-        </span>
-        <ol>
-          <% for (const [index, mention] of note.mentions.entries()) { %>
-            <li>
-              <a
-                data-note-link-referrer-id="<%= note.id %>"
-                data-note-link-reference-index="<%= index + 1 %>"
-              >
-                <%= mention %>
-              </a>
-            </li>
-          <% } %>
-        </ol>
+        <details<%= expand ? ' open' : '' %>>
+          <summary>
+            <a data-note-link-referrer-id="<%= note.id %>">
+              <span class="resource-icon fa-joplin"></span>
+              <%= note.title  %>
+            </a>
+            <span
+              title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
+              class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}"
+            >
+              <%= note.mentions.length %>
+            </span>
+          </summary>
+          <ol>
+            <% for (const [index, mention] of note.mentions.entries()) { %>
+              <li>
+                <a
+                  data-note-link-referrer-id="<%= note.id %>"
+                  data-note-link-reference-index="<%= index + 1 %>"
+                >
+                  <%= mention %>
+                </a>
+              </li>
+            <% } %>
+          </ol>
+        </details>
       </li>
     <% } %>
   `);
