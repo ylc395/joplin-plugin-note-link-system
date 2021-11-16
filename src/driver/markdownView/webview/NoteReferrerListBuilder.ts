@@ -122,8 +122,8 @@ export class NoteReferrerListBuilder {
 
     const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const allHeadingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
-    const minLevel = Math.min(6, Math.min(...allHeadingELs.map((el) => Number(el.tagName[1]))));
-    const headingEl = document.createElement(`h${minLevel}`);
+    const minLevel = Math.min(...allHeadingELs.map((el) => Number(el.tagName[1])));
+    const headingEl = document.createElement(`h${Number.isFinite(minLevel) ? minLevel : 1}`);
 
     headingEl.innerText = this.listHeadingText;
     this.listHeadingEls.push(headingEl);

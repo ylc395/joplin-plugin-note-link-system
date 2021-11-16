@@ -148,10 +148,7 @@ export default class App {
       name: insertList,
       label: 'Insert a referrers list',
       iconName: 'fas fa-hand-point-left',
-      execute: async () => {
-        const text = await joplin.settings.value(REFERRER_LIST_HEADING_SETTING);
-        joplin.commands.execute('replaceSelection', `# ${text}`);
-      },
+      execute: this.insertReferrerList.bind(this),
     });
 
     await joplin.commands.register({
@@ -188,5 +185,21 @@ export default class App {
       title: title,
       parent_id: currentNotebook.id,
     });
+  }
+
+  private async insertReferrerList() {
+    const text = await joplin.settings.value(REFERRER_LIST_HEADING_SETTING);
+    const noteContent = (await joplin.workspace.selectedNote()).body;
+    const tokens = this.md.parse(noteContent, {});
+    const minLevel = Math.min(
+      ...tokens
+        .filter(({ tag }) => ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag))
+        .map(({ tag }) => Number(tag[1])),
+    );
+
+    joplin.commands.execute(
+      'replaceSelection',
+      `\n${'#'.repeat(Number.isFinite(minLevel) ? minLevel : 1)} ${text}`,
+    );
   }
 }
