@@ -19,19 +19,22 @@ declare const webviewApi: {
 };
 
 export class MarkdownView extends EventTarget {
+  // `this class will be instantiated when :
+  // 1. start App(including return from setting panel)
+  // 2. switch to note in another notebook
   constructor() {
     super();
     new NoteRouter(this);
-    new ElementReferrerListBuilder(this);
-    new NoteReferrerListBuilder(this);
-    new IdentifierBuilder(this);
-    this.init();
+    const { ready: listBuilderReady } = new ElementReferrerListBuilder(this);
+    const { ready: referenceBuilderReady } = new NoteReferrerListBuilder(this);
+    const { ready: identifierBuilderReady } = new IdentifierBuilder(this);
+
+    Promise.all([listBuilderReady, referenceBuilderReady, identifierBuilderReady]).then(
+      this.init.bind(this),
+    );
   }
 
   expandMode?: ReferenceListExpandMode;
-  // `init` will be trigger when:
-  // 1. start App(including return from setting panel)
-  // 2. switch to note in another notebook
   private async init() {
     this.expandMode = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
@@ -47,6 +50,8 @@ export class MarkdownView extends EventTarget {
 
     // this event doesn't fire on app start
     document.addEventListener('joplin-noteDidUpdate', async () => {
+      timer && clearTimeout(timer);
+
       const currentNote = await webviewApi.postMessage<Note>(MARKDOWN_SCRIPT_ID, {
         event: 'queryCurrentNote',
       });
@@ -56,8 +61,6 @@ export class MarkdownView extends EventTarget {
 
         // hack: joplin-noteDidUpdate fires twice when switch to another note
         if (currentNoteIdTimes >= 2) {
-          timer && clearTimeout(timer);
-
           if (currentNoteIdTimes === 2) {
             this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
           }
@@ -82,7 +85,6 @@ export class MarkdownView extends EventTarget {
       }
     });
 
-    currentNoteIdTimes++;
     this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
     this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
   }

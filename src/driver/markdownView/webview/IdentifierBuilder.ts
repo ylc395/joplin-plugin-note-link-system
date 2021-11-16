@@ -22,10 +22,11 @@ declare const webviewApi: {
 
 export class IdentifierBuilder {
   constructor(private readonly view: EventTarget) {
-    this.init();
+    this.ready = this.init();
   }
 
   private currentNote?: Note;
+  ready?: Promise<void>;
 
   private async init() {
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {

@@ -30,12 +30,13 @@ const REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME = 'note-link-referrers-list-count
 
 export class NoteReferrerListBuilder {
   constructor(private readonly view: MarkdownView) {
-    this.init();
+    this.ready = this.init();
   }
   private listHeadingText?: string;
   private listPosition?: ReferrersAutoListPosition;
   private autoInsertionEnabled?: ReferrersAutoListEnabled;
   private referrers?: Referrer[];
+  ready?: Promise<void>;
   private maxTextLength?: number;
   private listHeadingEls?: HTMLElement[];
 

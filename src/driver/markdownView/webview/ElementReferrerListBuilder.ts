@@ -60,8 +60,9 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
 
 export class ElementReferrerListBuilder {
   constructor(private readonly view: MarkdownView) {
-    this.init();
+    this.ready = this.init();
   }
+  ready?: Promise<void>;
   private numberType?: ReferrersListNumberType;
   private maxTextLength?: number;
   private async init() {
