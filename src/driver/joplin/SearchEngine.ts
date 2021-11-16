@@ -9,6 +9,10 @@ import {
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
   QUICK_LINK_SHOW_PATH_SETTING,
+  REFERRER_LIST_MENTION_TEXT_MAX_LENGTH,
+  REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
+  REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH,
+  MAIN_MARK_CLASS_NAME,
   SearchElementReferrersResponse,
 } from 'driver/constants';
 
@@ -18,7 +22,7 @@ export class SearchEngine {
   private noteSearchPattern?: string;
   private referrerSearchPattern?: string;
   private needNotebooks?: boolean;
-  private mentionTextLength = 200;
+  private mentionTextLength?: number;
 
   private async buildNotebookIndex() {
     if (!this.needNotebooks || this.isBuildingIndex) {
@@ -49,6 +53,11 @@ export class SearchEngine {
     this.noteSearchPattern = await joplin.settings.value(QUICK_LINK_SEARCH_PATTERN_SETTING);
     this.referrerSearchPattern = await joplin.settings.value(REFERRER_SEARCH_PATTERN_SETTING);
     this.needNotebooks = await joplin.settings.value(QUICK_LINK_SHOW_PATH_SETTING);
+    this.mentionTextLength = Math.max(
+      await joplin.settings.value(REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH),
+      await joplin.settings.value(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH),
+      await joplin.settings.value(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH),
+    );
     buildNoteIndex();
 
     if (isFirstTime) {
@@ -57,6 +66,9 @@ export class SearchEngine {
 
       joplin.settings.onChange(({ keys }) => {
         const needInit =
+          keys.includes(REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH) ||
+          keys.includes(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH) ||
+          keys.includes(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH) ||
           keys.includes(REFERRER_SEARCH_PATTERN_SETTING) ||
           keys.includes(QUICK_LINK_SHOW_PATH_SETTING) ||
           keys.includes(QUICK_LINK_SEARCH_PATTERN_SETTING);
@@ -227,6 +239,12 @@ export class SearchEngine {
         break;
       }
 
+      if (!this.mentionTextLength) {
+        mentions.push('');
+        index = currentIndex + keyword.length;
+        continue;
+      }
+
       const start = Math.max(0, currentIndex - Math.ceil(this.mentionTextLength / 2));
       const end = Math.min(
         content.length,
@@ -252,8 +270,8 @@ export class SearchEngine {
             elementId && isMainMark
               ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
               : '';
-          return `<mark class="note-link-mark${
-            isMainMark ? ' note-link-mark-main' : ''
+          return `<mark class="${
+            isMainMark ? MAIN_MARK_CLASS_NAME : 'note-link-mark'
           }">${$1}${button}</mark>`;
         },
       );

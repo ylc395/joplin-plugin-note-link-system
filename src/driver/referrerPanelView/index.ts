@@ -7,7 +7,9 @@ import {
   REFERRER_PANEL_TITLE_SETTING,
   REFERRER_PANEL_STYLESHEET_SETTING,
   REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
+  REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
 } from 'driver/constants';
+import { truncateMention } from 'driver/utils';
 import type { SearchEngine } from '../joplin/SearchEngine';
 
 export class ReferrerPanelView {
@@ -23,12 +25,14 @@ export class ReferrerPanelView {
   private panelTitle?: string;
   private stylesheet?: string;
   private isExpandingReference?: boolean;
+  private maxTextLength?: number;
 
   private async init() {
     const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
 
     this.panelTitle = await joplin.settings.value(REFERRER_PANEL_TITLE_SETTING);
     this.stylesheet = await joplin.settings.value(REFERRER_PANEL_STYLESHEET_SETTING);
+    this.maxTextLength = await joplin.settings.value(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH);
     this.isExpandingReference = await joplin.settings.value(
       REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
     );
@@ -65,10 +69,12 @@ export class ReferrerPanelView {
       if (
         keys.includes(REFERRER_PANEL_TITLE_SETTING) ||
         keys.includes(REFERRER_PANEL_REFERENCE_EXPAND_SETTING) ||
+        keys.includes(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH) ||
         keys.includes(REFERRER_PANEL_STYLESHEET_SETTING)
       ) {
         this.panelTitle = await joplin.settings.value(REFERRER_PANEL_TITLE_SETTING);
         this.stylesheet = await joplin.settings.value(REFERRER_PANEL_STYLESHEET_SETTING);
+        this.maxTextLength = await joplin.settings.value(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH);
         this.isExpandingReference = await joplin.settings.value(
           REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
         );
@@ -95,8 +101,10 @@ export class ReferrerPanelView {
         <ol class="referrer-list">
           <% for (const note of notes) { %>
             <li>
+              <% if (textLength) { %>
               <details<%= expand ? ' open' : '' %>>
                 <summary>
+              <% } %>
                   <span class="title-container">
                     <a
                       data-note-id="<%= note.id %>"
@@ -111,6 +119,7 @@ export class ReferrerPanelView {
                       <%= note.mentions.length %>
                     </span>
                   </span>
+                <% if (textLength) { %>
                 </summary>
                 <ol class="reference-list">
                   <% for (const [index, mention] of note.mentions.entries()) { %>
@@ -118,12 +127,13 @@ export class ReferrerPanelView {
                       <a
                         data-note-id="<%= note.id %>"
                         data-reference-index="<%= index + 1 %>">
-                          <%= mention %>
+                          <%= truncateMention(mention, textLength) %>
                       </a>
                     </li>
                   <% } %>
                 <ol>
               </details>
+                <% } %>
           <% } %>
         </ol>
       <% } else { %>
@@ -143,6 +153,8 @@ export class ReferrerPanelView {
       stylesheet: this.stylesheet,
       panelTitle: this.panelTitle,
       expand: this.isExpandingReference,
+      textLength: this.maxTextLength,
+      truncateMention,
     });
     joplin.views.panels.setHtml(this.viewHandler, html);
   }

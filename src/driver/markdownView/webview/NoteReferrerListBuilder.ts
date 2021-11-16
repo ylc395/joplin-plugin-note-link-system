@@ -6,10 +6,12 @@ import {
   REFERRER_AUTO_LIST_POSITION_SETTING,
   MARKDOWN_SCRIPT_ID,
   REFERRER_AUTO_LIST_ENABLED_SETTING,
+  REFERRER_LIST_MENTION_TEXT_MAX_LENGTH,
   QuerySettingRequest,
   SearchReferrersRequest,
   SearchNoteReferrersResponse,
 } from 'driver/constants';
+import { truncateMention } from 'driver/utils';
 import {
   ReferrersAutoListPosition,
   ReferrersAutoListEnabled,
@@ -34,6 +36,7 @@ export class NoteReferrerListBuilder {
   private listPosition?: ReferrersAutoListPosition;
   private autoInsertionEnabled?: ReferrersAutoListEnabled;
   private referrers?: Referrer[];
+  private maxTextLength?: number;
   private listHeadingEls?: HTMLElement[];
 
   private async init() {
@@ -44,6 +47,11 @@ export class NoteReferrerListBuilder {
         payload: { key: REFERRER_AUTO_LIST_ENABLED_SETTING },
       },
     );
+
+    this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_LIST_MENTION_TEXT_MAX_LENGTH },
+    });
 
     this.listPosition = await webviewApi.postMessage<ReferrersAutoListPosition>(
       MARKDOWN_SCRIPT_ID,
@@ -132,6 +140,8 @@ export class NoteReferrerListBuilder {
     const hasReferrers = this.referrers.length > 0;
     const listHtml = NoteReferrerListBuilder.renderList({
       notes: this.referrers,
+      truncateMention,
+      textLength: this.maxTextLength,
       expand: [
         ReferenceListExpandMode.ExpandBoth,
         ReferenceListExpandMode.ExpandNoteListOnly,
@@ -150,8 +160,10 @@ export class NoteReferrerListBuilder {
   private static renderList = template(`
     <% for (const note of notes) { %>
       <li>
+        <% if (textLength) { %>
         <details<%= expand ? ' open' : '' %>>
           <summary>
+        <% } %>
             <a data-note-link-referrer-id="<%= note.id %>">
               <span class="resource-icon fa-joplin"></span>
               <%= note.title  %>
@@ -162,6 +174,7 @@ export class NoteReferrerListBuilder {
             >
               <%= note.mentions.length %>
             </span>
+        <% if (textLength) { %>
           </summary>
           <ol>
             <% for (const [index, mention] of note.mentions.entries()) { %>
@@ -170,12 +183,13 @@ export class NoteReferrerListBuilder {
                   data-note-link-referrer-id="<%= note.id %>"
                   data-note-link-reference-index="<%= index + 1 %>"
                 >
-                  <%= mention %>
+                    <%= truncateMention(mention, textLength) %>
                 </a>
               </li>
             <% } %>
           </ol>
         </details>
+        <% } %>
       </li>
     <% } %>
   `);

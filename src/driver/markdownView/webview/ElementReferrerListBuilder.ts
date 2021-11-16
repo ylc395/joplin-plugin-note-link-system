@@ -12,7 +12,9 @@ import {
   QuerySettingRequest,
   REFERRER_ELEMENT_NUMBER_ENABLED,
   REFERRER_ELEMENT_NUMBER_TYPE,
+  REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH,
 } from 'driver/constants';
+import { truncateMention } from 'driver/utils';
 import {
   MarkdownViewEvents,
   ReferrersListNumberType,
@@ -61,6 +63,7 @@ export class ElementReferrerListBuilder {
     this.init();
   }
   private numberType?: ReferrersListNumberType;
+  private maxTextLength?: number;
   private async init() {
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
@@ -70,6 +73,11 @@ export class ElementReferrerListBuilder {
     if (!enabled) {
       return;
     }
+
+    this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH },
+    });
 
     this.numberType = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
@@ -142,6 +150,8 @@ export class ElementReferrerListBuilder {
     olEL.classList.add(LIST_CLASS_NAME);
     olEL.innerHTML = ElementReferrerListBuilder.renderList({
       notes,
+      truncateMention,
+      textLength: this.maxTextLength,
       elId,
       expand: [
         ReferenceListExpandMode.ExpandBoth,
@@ -155,8 +165,10 @@ export class ElementReferrerListBuilder {
   private static renderList = template(`
     <% for (const note of notes) { %>
       <li>
+        <% if (textLength) { %>
         <details<%= expand ? ' open' : '' %>>
           <summary>
+        <% } %>
             <a data-note-link-referrer-id="<%= note.id %>">
               <%= note.title %>
             </a>
@@ -166,6 +178,7 @@ export class ElementReferrerListBuilder {
             >
               <%= note.mentions.length %>
             </span>
+        <% if (textLength) { %>
           </summary>
           <ol>
             <% for (const [index, mention] of note.mentions.entries()) { %>
@@ -175,12 +188,13 @@ export class ElementReferrerListBuilder {
                   data-note-link-reference-index="<%= index + 1 %>"
                   data-note-link-to-element-id="<%= elId  %>"
                 >
-                  <%= mention %>
+                    <%= truncateMention(mention, textLength) %>
                 </a>
               </li>
             <% } %>
           </ol>
         </details>
+        <% } %>
       </li>
     <% } %>
   `);

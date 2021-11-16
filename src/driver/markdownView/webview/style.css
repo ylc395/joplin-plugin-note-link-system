@@ -84,7 +84,7 @@ h6 > .note-link-element-referrers-icon {
   overflow-anchor: none; /* prevent inserted content from scrolling out our reference anchor */
 }
 
-.note-link-mark > [data-note-link-element-id] > svg {
+.note-link-mark-main .bi {
   height: 1em;
   width: 1em;
 }
