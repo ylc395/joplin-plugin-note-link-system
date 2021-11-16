@@ -39,7 +39,7 @@ export class ReferrerPanelView {
     this.currentNoteId = (await joplin.workspace.selectedNote()).id;
 
     if (enabled) {
-      await this.show();
+      this.show();
     }
 
     joplin.workspace.onNoteSelectionChange(
@@ -49,23 +49,14 @@ export class ReferrerPanelView {
         }
 
         this.currentNoteId = value[0];
-        this.refresh();
+
+        if (this.panelVisible) {
+          this.refresh();
+        }
       }, 500),
     );
 
     joplin.settings.onChange(async ({ keys }) => {
-      if (keys.includes(REFERRER_PANEL_ENABLED_SETTING)) {
-        const enabled = await joplin.settings.value(REFERRER_PANEL_ENABLED_SETTING);
-
-        if (!enabled && this.panelVisible) {
-          this.hide();
-        }
-
-        if (enabled && !this.panelVisible) {
-          this.show();
-        }
-      }
-
       if (
         keys.includes(REFERRER_PANEL_TITLE_SETTING) ||
         keys.includes(REFERRER_PANEL_REFERENCE_EXPAND_SETTING) ||
@@ -83,14 +74,24 @@ export class ReferrerPanelView {
     });
   }
 
-  show() {
+  private show() {
     this.panelVisible = true;
     joplin.views.panels.show(this.viewHandler);
     this.refresh();
   }
-  hide() {
+  private hide() {
     this.panelVisible = false;
     joplin.views.panels.hide(this.viewHandler);
+  }
+
+  toggle() {
+    if (this.panelVisible) {
+      this.hide();
+      joplin.settings.setValue(REFERRER_PANEL_ENABLED_SETTING, false);
+    } else {
+      this.show();
+      joplin.settings.setValue(REFERRER_PANEL_ENABLED_SETTING, true);
+    }
   }
 
   private static render = template(`

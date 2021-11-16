@@ -130,7 +130,7 @@ const setting: Record<string, SettingItem> = {
   [REFERRER_PANEL_ENABLED_SETTING]: {
     label: 'Panel: Enable',
     type: SettingItemType.Bool,
-    public: true,
+    public: false,
     value: false,
     section: SECTION_NAME,
     description: 'Display referrers in panel',

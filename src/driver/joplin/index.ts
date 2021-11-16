@@ -22,6 +22,7 @@ export default class App {
   private reference?: Reference;
   // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
   private readonly md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
+  private referrerPanel?: ReferrerPanelView;
   async init() {
     await this.setupSetting();
 
@@ -118,7 +119,7 @@ export default class App {
     await joplin.views.panels.addScript(panelId, './driver/referrerPanelView/style.css');
     await joplin.views.panels.onMessage(panelId, this.requestHandler.bind(this));
 
-    new ReferrerPanelView(panelId, this.searchEngine);
+    this.referrerPanel = new ReferrerPanelView(panelId, this.searchEngine);
   }
 
   async setupCodeMirror() {
@@ -140,10 +141,11 @@ export default class App {
   }
 
   async setupToolbar() {
-    const commandName = 'insertReferrersList';
+    const insertList = 'insertReferrersList';
+    const toggleReferrersPanel = 'toggleReferrersPanel';
 
     await joplin.commands.register({
-      name: commandName,
+      name: insertList,
       label: 'Insert a referrers list',
       iconName: 'fas fa-hand-point-left',
       execute: async () => {
@@ -152,10 +154,29 @@ export default class App {
       },
     });
 
+    await joplin.commands.register({
+      name: toggleReferrersPanel,
+      label: 'Toggle referrers panel ',
+      iconName: 'fas fa-hand-point-left',
+      execute: async () => {
+        if (!this.referrerPanel) {
+          throw new Error('no referrer panel');
+        }
+
+        this.referrerPanel.toggle();
+      },
+    });
+
     await joplin.views.toolbarButtons.create(
       'insert-referrers-list',
-      commandName,
+      insertList,
       ToolbarButtonLocation.EditorToolbar,
+    );
+
+    await joplin.views.toolbarButtons.create(
+      'toggle-referrers-panel',
+      toggleReferrersPanel,
+      ToolbarButtonLocation.NoteToolbar,
     );
   }
   private static async createNote({ title, type }: CreateNoteRequest['payload']) {
