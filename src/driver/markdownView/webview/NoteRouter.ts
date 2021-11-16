@@ -1,5 +1,6 @@
 import delegate from 'delegate';
 import {
+  MAIN_MARK_CLASS_NAME,
   MARKDOWN_SCRIPT_ID,
   OpenNoteRequest,
   QueryFromReferenceRequest,
@@ -22,7 +23,7 @@ export class NoteRouter {
   constructor(view: EventTarget) {
     delegate('[data-note-link-referrer-id]', 'click', this.handleLinkClick);
     delegate(
-      '.note-link-mark > [data-note-link-element-id] ',
+      `.${MAIN_MARK_CLASS_NAME} [data-note-link-element-id] `,
       'click',
       this.handleMarkClick.bind(this),
       true,
