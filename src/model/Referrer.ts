@@ -12,6 +12,7 @@ export type Referrer = Note & {
 
 export type SearchedNote = Pick<Note, 'id' | 'title'> & {
   parent_id: string;
+  isCurrent?: boolean;
   path?: string;
 };
 

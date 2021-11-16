@@ -62,7 +62,7 @@ export class QuickLinker {
   ) {
     this.editor.on('cursorActivity', this.triggerHints.bind(this));
     // hack: don't know why fetching must happen in next micro task
-    setTimeout(this.init.bind(this), 0);
+    setTimeout(this.init.bind(this), 100);
   }
 
   async init() {

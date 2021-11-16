@@ -20,6 +20,7 @@ export class SearchEngine {
   private notebooksIndex: Record<string, Notebook> = {};
   private isBuildingIndex = false;
   private noteSearchPattern?: string;
+  private currentNoteId?: string;
   private referrerSearchPattern?: string;
   private needNotebooks?: boolean;
   private mentionTextLength?: number;
@@ -61,8 +62,14 @@ export class SearchEngine {
     buildNoteIndex();
 
     if (isFirstTime) {
+      this.currentNoteId = (await joplin.workspace.selectedNote()).id;
       joplin.workspace.onSyncComplete(buildNoteIndex);
       joplin.workspace.onNoteSelectionChange(buildNoteIndex);
+      joplin.workspace.onNoteSelectionChange(({ value }: { value: string[] }) => {
+        if (value.length === 1) {
+          this.currentNoteId = value[0];
+        }
+      });
 
       joplin.settings.onChange(({ keys }) => {
         const needInit =
@@ -104,8 +111,9 @@ export class SearchEngine {
       ).items;
     }
 
-    if (this.needNotebooks) {
-      for (const note of notes) {
+    for (const note of notes) {
+      note.isCurrent = note.id === this.currentNoteId;
+      if (this.needNotebooks) {
         note.path = this.getPathOfNote(note);
       }
     }
