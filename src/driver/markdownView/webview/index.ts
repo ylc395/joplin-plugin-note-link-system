@@ -82,12 +82,9 @@ export class MarkdownView extends EventTarget {
       }
     });
 
-    // hack: don't know why event must be dispatched in next micro task
-    setTimeout(() => {
-      currentNoteIdTimes++;
-      this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
-      this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
-    }, 10);
+    currentNoteIdTimes++;
+    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
+    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
   }
 }
 

@@ -40,6 +40,11 @@ export class NoteReferrerListBuilder {
   private listHeadingEls?: HTMLElement[];
 
   private async init() {
+    this.view.addEventListener(
+      MarkdownViewEvents.NoteDidUpdate,
+      debounce(this.insert.bind(this), 500),
+    );
+
     this.autoInsertionEnabled = await webviewApi.postMessage<ReferrersAutoListEnabled>(
       MARKDOWN_SCRIPT_ID,
       {
@@ -65,11 +70,6 @@ export class NoteReferrerListBuilder {
       event: 'querySetting',
       payload: { key: REFERRER_LIST_HEADING_SETTING },
     });
-
-    this.view.addEventListener(
-      MarkdownViewEvents.NoteDidUpdate,
-      debounce(this.insert.bind(this), 500),
-    );
   }
 
   private async insert() {

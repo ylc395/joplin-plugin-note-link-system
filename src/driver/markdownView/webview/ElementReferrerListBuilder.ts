@@ -74,6 +74,11 @@ export class ElementReferrerListBuilder {
       return;
     }
 
+    this.view.addEventListener(
+      MarkdownViewEvents.NoteDidUpdate,
+      debounce(this.attachReferrers.bind(this), 500) as EventListener,
+    );
+
     this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
       payload: { key: REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH },
@@ -83,11 +88,6 @@ export class ElementReferrerListBuilder {
       event: 'querySetting',
       payload: { key: REFERRER_ELEMENT_NUMBER_TYPE },
     });
-
-    this.view.addEventListener(
-      MarkdownViewEvents.NoteDidUpdate,
-      debounce(this.attachReferrers.bind(this), 500) as EventListener,
-    );
   }
 
   private async attachReferrers() {
