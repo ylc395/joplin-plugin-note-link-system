@@ -108,6 +108,7 @@ export class ReferrerPanelView {
               <% } %>
                   <span class="title-container">
                     <a
+                      <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                       data-note-id="<%= note.id %>"
                       class="title"
                     >
@@ -126,6 +127,7 @@ export class ReferrerPanelView {
                   <% for (const [index, mention] of note.mentions.entries()) { %>
                     <li>
                       <a
+                        <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                         data-note-id="<%= note.id %>"
                         data-reference-index="<%= index + 1 %>">
                           <%= truncateMention(mention, textLength) %>
@@ -151,6 +153,7 @@ export class ReferrerPanelView {
     const notes = await this.searchEngine.searchReferrers(this.currentNoteId);
     const html = ReferrerPanelView.render({
       notes,
+      currentNoteId: this.currentNoteId,
       stylesheet: this.stylesheet,
       panelTitle: this.panelTitle,
       expand: this.isExpandingReference,

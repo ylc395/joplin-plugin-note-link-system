@@ -140,6 +140,7 @@ export class NoteReferrerListBuilder {
 
     const hasReferrers = this.referrers.length > 0;
     const listHtml = NoteReferrerListBuilder.renderList({
+      currentNoteId: this.view.currentNoteId,
       notes: this.referrers,
       truncateMention,
       textLength: this.maxTextLength,
@@ -165,7 +166,10 @@ export class NoteReferrerListBuilder {
         <details<%= expand ? ' open' : '' %>>
           <summary>
         <% } %>
-            <a data-note-link-referrer-id="<%= note.id %>">
+            <a 
+              data-note-link-referrer-id="<%= note.id %>"
+              <%= currentNoteId === note.id ? 'data-is-self' : '' %>
+            >
               <span class="resource-icon fa-joplin"></span>
               <%= note.title  %>
             </a>
@@ -183,6 +187,7 @@ export class NoteReferrerListBuilder {
                 <a
                   data-note-link-referrer-id="<%= note.id %>"
                   data-note-link-reference-index="<%= index + 1 %>"
+                  <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                 >
                     <%= truncateMention(mention, textLength) %>
                 </a>

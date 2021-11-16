@@ -152,6 +152,7 @@ export class ElementReferrerListBuilder {
     olEL.innerHTML = ElementReferrerListBuilder.renderList({
       notes,
       truncateMention,
+      currentNoteId: this.view.currentNoteId,
       textLength: this.maxTextLength,
       elId,
       expand: [
@@ -170,7 +171,10 @@ export class ElementReferrerListBuilder {
         <details<%= expand ? ' open' : '' %>>
           <summary>
         <% } %>
-            <a data-note-link-referrer-id="<%= note.id %>">
+            <a 
+              <%= currentNoteId === note.id ? 'data-is-self' : '' %>
+              data-note-link-referrer-id="<%= note.id %>"
+            >
               <%= note.title %>
             </a>
             <span
@@ -188,6 +192,7 @@ export class ElementReferrerListBuilder {
                   data-note-link-referrer-id="<%= note.id %>"
                   data-note-link-reference-index="<%= index + 1 %>"
                   data-note-link-to-element-id="<%= elId  %>"
+                  <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                 >
                     <%= truncateMention(mention, textLength) %>
                 </a>

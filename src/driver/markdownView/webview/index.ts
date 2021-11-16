@@ -34,6 +34,7 @@ export class MarkdownView extends EventTarget {
     );
   }
 
+  currentNoteId?: string;
   expandMode?: ReferenceListExpandMode;
   private async init() {
     this.expandMode = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
@@ -44,7 +45,7 @@ export class MarkdownView extends EventTarget {
     const note = await webviewApi.postMessage<Note>(MARKDOWN_SCRIPT_ID, {
       event: 'queryCurrentNote',
     });
-    let currentNoteId = note.id;
+    this.currentNoteId = note.id;
     let currentNoteIdTimes = 1;
     let timer: ReturnType<typeof setTimeout>;
 
@@ -56,7 +57,7 @@ export class MarkdownView extends EventTarget {
         event: 'queryCurrentNote',
       });
 
-      if (currentNote.id === currentNoteId) {
+      if (currentNote.id === this.currentNoteId) {
         currentNoteIdTimes++;
 
         // hack: joplin-noteDidUpdate fires twice when switch to another note
@@ -71,7 +72,7 @@ export class MarkdownView extends EventTarget {
         }
       } else {
         timer && clearTimeout(timer);
-        currentNoteId = currentNote.id;
+        this.currentNoteId = currentNote.id;
         currentNoteIdTimes = 1;
 
         // hack: don't know why sometimes joplin-noteDidUpdate just fire once when switching note.
