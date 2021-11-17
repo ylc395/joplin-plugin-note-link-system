@@ -21,11 +21,16 @@ export function truncateMention(mention: string, maxLength: number) {
 
     if (text.length + prefix.length < halfLength) {
       htmlFragments.unshift(isElement(node) ? node.outerHTML : node.textContent!);
+      prefix = text + prefix;
     } else if (isElement(node)) {
       break;
     } else {
       const offset = halfLength - prefix.length;
-      htmlFragments.unshift(node.textContent!.slice(-offset));
+      const slicedText = node.textContent!.slice(-offset);
+
+      htmlFragments.unshift(slicedText);
+      prefix = slicedText + text;
+      break;
     }
   }
 
@@ -36,12 +41,25 @@ export function truncateMention(mention: string, maxLength: number) {
 
     if (text.length + suffix.length < halfLength) {
       htmlFragments.push(isElement(node) ? node.outerHTML : node.textContent!);
+      suffix += text;
     } else if (isElement(node)) {
       break;
     } else {
       const offset = halfLength - suffix.length;
-      htmlFragments.push(node.textContent!.slice(0, offset));
+      const slicedText = node.textContent!.slice(0, offset);
+
+      htmlFragments.push(slicedText);
+      suffix += slicedText;
+      break;
     }
+  }
+
+  if (prefix) {
+    htmlFragments.unshift('...');
+  }
+
+  if (suffix) {
+    htmlFragments.push('...');
   }
 
   return htmlFragments.join('');
