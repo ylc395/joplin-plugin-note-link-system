@@ -2,7 +2,7 @@
   "manifest_version": 1,
   "id": "ylc395.noteLinkSystem",
   "app_min_version": "2.2",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "name": "Note Link System",
   "description": "A complete Link System for Joplin. Referrer(aka. backlink), Quick Link, Copy Anchor, and much more feature",
   "author": "ylc395",
