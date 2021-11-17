@@ -21,7 +21,7 @@ export const OVERFLOW_ANCHOR_NONE_CLASS_NAME = 'note-link-overflow-anchor-none';
 export class NoteRouter {
   private recoveryIdTimer?: ReturnType<typeof setTimeout>;
   constructor(view: EventTarget) {
-    delegate('[data-note-link-referrer-id]', 'click', this.handleLinkClick.bind(this));
+    delegate('[data-note-link-referrer-id]', 'click', this.handleReferrerClick.bind(this));
     delegate(
       `.${MAIN_MARK_CLASS_NAME} [data-note-link-element-id] `,
       'click',
@@ -31,7 +31,7 @@ export class NoteRouter {
     view.addEventListener(MarkdownViewEvents.NewNoteOpen, () => this.scrollToReference());
   }
 
-  private handleLinkClick(e: any) {
+  private handleReferrerClick(e: any) {
     const target = e.delegateTarget as HTMLElement;
     const noteId = target.dataset.noteLinkReferrerId;
     const referenceIndex = Number(target.dataset.noteLinkReferenceIndex);

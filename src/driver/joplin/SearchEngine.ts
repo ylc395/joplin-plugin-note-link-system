@@ -262,27 +262,29 @@ export class SearchEngine {
       const prefixLength = currentIndex - start;
 
       let mainMarkFound = false;
-      const mention = textFragment.replace(
-        new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g'),
-        (_, $1, $2, offset) => {
-          const realOffset = offset + `${$1}](${$2})`.length;
-          let isMainMark = false;
+      const mention = textFragment
+        .replace(
+          new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g'),
+          (_, $1, $2, offset) => {
+            const realOffset = offset + `${$1}](${$2})`.length;
+            let isMainMark = false;
 
-          if (realOffset >= prefixLength && !mainMarkFound) {
-            mainMarkFound = true;
-            isMainMark = true;
-          }
+            if (realOffset >= prefixLength && !mainMarkFound) {
+              mainMarkFound = true;
+              isMainMark = true;
+            }
 
-          const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
-          const button =
-            elementId && isMainMark
-              ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
-              : '';
-          return `<mark class="${
-            isMainMark ? MAIN_MARK_CLASS_NAME : 'note-link-mark'
-          }">${$1}${button}</mark>`;
-        },
-      );
+            const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
+            const button =
+              elementId && isMainMark
+                ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
+                : '';
+            return `<mark class="${
+              isMainMark ? MAIN_MARK_CLASS_NAME : 'note-link-mark'
+            }">${$1}${button}</mark>`;
+          },
+        )
+        .trim();
 
       mentions.push(mention);
       index = currentIndex + keyword.length;

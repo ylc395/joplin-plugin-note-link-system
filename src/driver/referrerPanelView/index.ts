@@ -104,13 +104,13 @@ export class ReferrerPanelView {
             <li>
               <% if (textLength) { %>
               <details<%= expand ? ' open' : '' %>>
-                <summary>
+                <summary class="title-container">
               <% } %>
-                  <span class="title-container">
+                  <span>
                     <a
+                      class="referrer-title"
                       <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                       data-note-id="<%= note.id %>"
-                      class="title"
                     >
                       <%= note.title %>
                     </a>
@@ -125,16 +125,15 @@ export class ReferrerPanelView {
                 </summary>
                 <ol class="reference-list">
                   <% for (const [index, mention] of note.mentions.entries()) { %>
-                    <li>
+                    <li class="reference-item">
                       <a
+                        class="reference"
                         <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                         data-note-id="<%= note.id %>"
-                        data-reference-index="<%= index + 1 %>">
-                          <%= truncateMention(mention, textLength) %>
-                      </a>
+                        data-reference-index="<%= index + 1 %>"><%= truncateMention(mention, textLength) %></a>
                     </li>
                   <% } %>
-                <ol>
+                </ol>
               </details>
                 <% } %>
           <% } %>

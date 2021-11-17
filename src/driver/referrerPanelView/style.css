@@ -28,20 +28,29 @@ ol {
 li {
   list-style: none;
   margin: 1em 0;
-  white-space: pre-line;
-  overflow-wrap: break-word;
 }
 
 .title-container {
-  white-space: normal;
-}
-
-.title {
   cursor: pointer;
 }
 
-.title:hover {
+.referrer-title[data-is-self]::before {
+  content: 'LOCAL';
+  border: solid 1px #b7eb8f;
+  background: #f6ffed;
+  color: #389e0d;
+  margin-right: 0.5em;
+  line-height: 1.1;
+  padding: 0 7px;
+}
+
+.referrer-title:hover {
   text-decoration: underline;
+}
+
+.referrer-title[data-is-self]:hover {
+  text-decoration: none;
+  cursor: auto;
 }
 
 .count {
@@ -52,6 +61,46 @@ li {
   padding: 0.1em 0.3em;
   border-radius: 0.4em;
   vertical-align: middle;
+}
+
+.reference-item {
+  margin: 0;
+  padding: 20px 0;
+  border-bottom: 1px solid rgb(94, 94, 94);
+}
+
+.reference-item:last-child {
+  border-bottom: none;
+}
+
+.reference {
+  display: block;
+  color: rgb(145, 145, 145);
+  cursor: pointer;
+  white-space: pre-line;
+  word-break: break-all;
+}
+
+.reference[data-is-self] {
+  cursor: auto;
+}
+
+.reference > mark {
+  color: inherit;
+  background: transparent;
+  font-style: italic;
+  font-weight: bold;
+}
+
+mark > button {
+  vertical-align: top;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.reference > .note-link-mark-main {
+  color: #000;
 }
 
 .no-referrers {
