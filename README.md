@@ -1,24 +1,42 @@
-# Joplin Plugin
+# Joplin Note Link System
 
-This is a template to create a new Joplin plugin.
+## Features
 
-The main two files you will want to look at are:
+### Main Feature 1: Referrers
 
-- `/src/index.ts`, which contains the entry point for the plugin source code.
-- `/src/manifest.json`, which is the plugin manifest. It contains information such as the plugin a name, version, etc.
+- Show referrer list on panel or markdown view(auto or manually)
+- Display reference's detail of every referrer
+- Show referrer of every element with id
+- Jump and scroll to reference
 
-## Building the plugin
+![](./doc/referrer.png)
 
-The plugin is built using Webpack, which creates the compiled code in `/dist`. A JPL archive will also be created at the root, which can use to distribute the plugin.
+### Main Feature 2: Quick Link
 
-To build the plugin, simply run `npm run dist`.
+This feature helps you make quick link to note or element with id, and auto select title text so you can updated it.
 
-The project is setup to use TypeScript, although you can change the configuration to use plain JavaScript.
+![](./doc/quick-link.gif)
 
-## Updating the plugin framework
+### Main Feature 2: Quick Copy Element URL
 
-To update the plugin framework, run `npm run update`.
+![](./doc/quick-copy.png)
 
-In general this command tries to do the right thing - in particular it's going to merge the changes in package.json and .gitignore instead of overwriting. It will also leave "/src" as well as README.md untouched.
+## Thanks
 
-The file that may cause problem is "webpack.config.js" because it's going to be overwritten. For that reason, if you want to change it, consider creating a separate JavaScript file and include it in webpack.config.js. That way, when you update, you only have to restore the line that include your file.
+Basically, this plugin is inspired by:
+
+- [Automatic backlinks (with manual insert option)](https://discourse.joplinapp.org/t/automatic-backlinks-with-manual-insert-option/13632)
+- [Plugin: Copy Anchor Link](https://discourse.joplinapp.org/t/plugin-copy-anchor-link/21690)
+- [Quick Links Plugin](https://discourse.joplinapp.org/t/quick-links-plugin/14214)
+- [Plugin: Links Metadata 4](https://discourse.joplinapp.org/t/plugin-links-metadata/14915) (not implement yet)
+
+## RoadMap
+
+- Style beautifying
+- Support Quick Link to current note
+- Support finding referrer of current note
+- An Outlink panel to show links(to other Joplin note or Web page) in current note.
+- Preview link when hover
+- ...
+
+Any PR / Issue / Discussion is welcome!
