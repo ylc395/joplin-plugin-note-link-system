@@ -20,6 +20,10 @@ import {
   ReferrersListNumberType,
   ReferenceListExpandMode,
   ROOT_ELEMENT_ID,
+  REFERRER_TITLE_CONTAINER_CLASS_NAME,
+  REFERRER_TITLE_CLASS_NAME,
+  REFERENCE_CLASS_NAME,
+  REFERENCE_ITEM_CLASS_NAME,
 } from './constants';
 import type { MarkdownView } from './index';
 
@@ -169,12 +173,12 @@ export class ElementReferrerListBuilder {
       <li>
         <% if (textLength) { %>
         <details<%= expand ? ' open' : '' %>>
-          <summary class="note-link-referrer-title-container">
+          <summary class="${REFERRER_TITLE_CONTAINER_CLASS_NAME}">
         <% } %>
             <a 
               <%= currentNoteId === note.id ? 'data-is-self' : '' %>
               data-note-link-referrer-id="<%= note.id %>"
-              class="note-link-referrer-title"
+              class="${REFERRER_TITLE_CLASS_NAME}"
             >
               <%= note.title %>
             </a>
@@ -188,9 +192,9 @@ export class ElementReferrerListBuilder {
           </summary>
           <ol>
             <% for (const [index, mention] of note.mentions.entries()) { %>
-              <li class="note-link-reference-item">
+              <li class="${REFERENCE_ITEM_CLASS_NAME}">
                 <a
-                  class="note-link-reference"
+                  class="${REFERENCE_CLASS_NAME}"
                   data-note-link-referrer-id="<%= note.id %>"
                   data-note-link-reference-index="<%= index + 1 %>"
                   data-note-link-to-element-id="<%= elId  %>"
