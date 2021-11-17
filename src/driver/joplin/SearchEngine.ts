@@ -151,10 +151,12 @@ export class SearchEngine {
         await SearchEngine.fetchAll(['search'], { query: keyword }),
       );
 
-      return notes.map((note) => ({
-        ...note,
-        mentions: this.extractMentions(noteId, note.body),
-      }));
+      return notes
+        .map((note) => ({
+          ...note,
+          mentions: this.extractMentions(noteId, note.body),
+        }))
+        .filter(({ mentions }) => mentions.length > 0);
     } catch (error) {
       console.error(error);
       return [];
@@ -190,10 +192,12 @@ export class SearchEngine {
         );
 
         if (referrers.length > 0) {
-          result[elementId] = referrers.map((referrer) => ({
-            ...referrer,
-            mentions: this.extractMentions(`${noteId}#${elementId}`, referrer.body),
-          }));
+          result[elementId] = referrers
+            .map((referrer) => ({
+              ...referrer,
+              mentions: this.extractMentions(`${noteId}#${elementId}`, referrer.body),
+            }))
+            .filter(({ mentions }) => mentions.length > 0);
         }
       }
 
@@ -286,7 +290,10 @@ export class SearchEngine {
         )
         .trim();
 
-      mentions.push(mention);
+      if (mainMarkFound) {
+        mentions.push(mention);
+      }
+
       index = currentIndex + keyword.length;
     }
 
