@@ -2,6 +2,8 @@
 
 ## Features
 
+All features can be turn on/off.
+
 ### Main Feature 1: Referrers
 
 - Show referrer list on panel or markdown view(auto or manually)
