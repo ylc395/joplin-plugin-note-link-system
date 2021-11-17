@@ -89,8 +89,8 @@ export class NoteReferrerListBuilder {
     const allHeadingEls = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
 
     if (
-      this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled &&
-      allHeadingEls.length === 0
+      allHeadingEls.length === 0 &&
+      this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled
     ) {
       return;
     }
@@ -114,8 +114,9 @@ export class NoteReferrerListBuilder {
     }
 
     if (
-      this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual &&
-      this.listHeadingEls.length > 0
+      this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled ||
+      (this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual &&
+        this.listHeadingEls.length > 0)
     ) {
       return;
     }
