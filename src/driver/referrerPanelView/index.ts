@@ -40,6 +40,8 @@ export class ReferrerPanelView {
 
     if (enabled) {
       this.show();
+    } else {
+      this.hide();
     }
 
     joplin.workspace.onNoteSelectionChange(
