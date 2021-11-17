@@ -164,11 +164,12 @@ export class NoteReferrerListBuilder {
       <li>
         <% if (textLength) { %>
         <details<%= expand ? ' open' : '' %>>
-          <summary>
+          <summary class="note-link-referrer-title-container">
         <% } %>
             <a 
               data-note-link-referrer-id="<%= note.id %>"
               <%= currentNoteId === note.id ? 'data-is-self' : '' %>
+              class="note-link-referrer-title"
             >
               <span class="resource-icon fa-joplin"></span>
               <%= note.title  %>
@@ -183,8 +184,9 @@ export class NoteReferrerListBuilder {
           </summary>
           <ol>
             <% for (const [index, mention] of note.mentions.entries()) { %>
-              <li>
+              <li class="note-link-reference-item">
                 <a
+                  class="note-link-reference"
                   data-note-link-referrer-id="<%= note.id %>"
                   data-note-link-reference-index="<%= index + 1 %>"
                   <%= currentNoteId === note.id ? 'data-is-self' : '' %>

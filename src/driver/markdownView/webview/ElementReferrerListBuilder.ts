@@ -169,11 +169,12 @@ export class ElementReferrerListBuilder {
       <li>
         <% if (textLength) { %>
         <details<%= expand ? ' open' : '' %>>
-          <summary>
+          <summary class="note-link-referrer-title-container">
         <% } %>
             <a 
               <%= currentNoteId === note.id ? 'data-is-self' : '' %>
               data-note-link-referrer-id="<%= note.id %>"
+              class="note-link-referrer-title"
             >
               <%= note.title %>
             </a>
@@ -187,8 +188,9 @@ export class ElementReferrerListBuilder {
           </summary>
           <ol>
             <% for (const [index, mention] of note.mentions.entries()) { %>
-              <li>
+              <li class="note-link-reference-item">
                 <a
+                  class="note-link-reference"
                   data-note-link-referrer-id="<%= note.id %>"
                   data-note-link-reference-index="<%= index + 1 %>"
                   data-note-link-to-element-id="<%= elId  %>"

@@ -88,3 +88,29 @@ h6 > .note-link-element-referrers-icon {
   height: 1em;
   width: 1em;
 }
+
+.note-link-reference {
+  color: rgb(145, 145, 145);
+}
+
+.note-link-mark,
+.note-link-mark-main {
+  background: transparent;
+  font-family: initial;
+  font-weight: bold;
+  color: inherit;
+}
+
+.note-link-mark-main {
+  color: #000;
+}
+
+.note-link-mark-main > button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+#note-link-scroll-anchor {
+  background-color: yellow;
+}
