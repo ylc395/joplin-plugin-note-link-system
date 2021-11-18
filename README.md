@@ -42,3 +42,5 @@ Basically, this plugin is inspired by:
 - ...
 
 Any PR / Issue / Discussion is welcome!
+
+Discussion: https://discourse.joplinapp.org/t/plugin-note-link-system/21768/19
