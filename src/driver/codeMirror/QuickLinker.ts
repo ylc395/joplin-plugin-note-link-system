@@ -47,6 +47,7 @@ interface Completion {
 export type ExtendedEditor = Editor & {
   showHint(options: {
     completeSingle: boolean;
+    closeCharacters: RegExp;
     hint: (cm: Editor) => Completion | undefined | Promise<Completion | undefined>;
   }): void;
 };
@@ -114,6 +115,7 @@ export class QuickLinker {
     if (chars === this.triggerSymbol) {
       this.symbolRange = { from: symbolRange[0], to: symbolRange[1] };
       this.editor.showHint({
+        closeCharacters: /[()\[\]{};:>,]/,
         completeSingle: false,
         hint: this.getNoteCompletion.bind(this),
       });
@@ -177,6 +179,7 @@ export class QuickLinker {
 
     this.editor.showHint({
       completeSingle: false,
+      closeCharacters: /[()\[\]{};:>,]/,
       hint: () => {
         const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
         const { line, ch } = start;

@@ -4,12 +4,12 @@ import { Context, QuickLinker, ExtendedEditor } from './QuickLinker';
 export default function (context: Context) {
   return {
     plugin: function (codemirror: typeof CodeMirror) {
-      codemirror.defineOption('quickLinks', false, (cm) => {
+      codemirror.defineOption('noteLinkQuickLinks', false, (cm) => {
         new QuickLinker(context, cm as ExtendedEditor, codemirror);
       });
     },
     codeMirrorOptions: {
-      quickLinks: true,
+      noteLinkQuickLinks: true,
     },
     codeMirrorResources: ['addon/hint/show-hint'],
     assets: () => [{ name: './style.css' }],
