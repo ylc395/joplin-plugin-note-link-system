@@ -242,59 +242,54 @@ export class SearchEngine {
 
   private extractMentions(keyword: string, content: string) {
     const mentions = [];
-    let index = 0;
+    const regex = new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g');
+    const matches = [...content.matchAll(regex)];
 
-    while (true) {
-      const currentIndex = content.indexOf(keyword, index);
+    for (const match of matches) {
+      const { index } = match;
 
-      if (currentIndex < 0) {
-        break;
+      if (typeof index === 'undefined') {
+        continue;
       }
 
       if (!this.mentionTextLength) {
         mentions.push('');
-        index = currentIndex + keyword.length;
         continue;
       }
 
-      const start = Math.max(0, currentIndex - Math.ceil(this.mentionTextLength / 2));
+      const start = Math.max(0, index - Math.ceil(this.mentionTextLength / 2));
       const end = Math.min(
         content.length,
-        currentIndex + keyword.length + Math.ceil(this.mentionTextLength / 2),
+        index + match[0].length + Math.ceil(this.mentionTextLength / 2),
       );
       const textFragment = escape(content.slice(start, end));
-      const prefixLength = currentIndex - start;
+      const prefixLength = index - start;
 
       let mainMarkFound = false;
       const mention = textFragment
-        .replace(
-          new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g'),
-          (_, $1, $2, offset) => {
-            const realOffset = offset + `${$1}](${$2})`.length;
-            let isMainMark = false;
+        .replace(regex, (_, $1, $2, offset) => {
+          const realOffset = offset + `${$1}](${$2})`.length;
+          let isMainMark = false;
 
-            if (realOffset >= prefixLength && !mainMarkFound) {
-              mainMarkFound = true;
-              isMainMark = true;
-            }
+          if (realOffset >= prefixLength && !mainMarkFound) {
+            mainMarkFound = true;
+            isMainMark = true;
+          }
 
-            const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
-            const button =
-              elementId && isMainMark
-                ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
-                : '';
-            return `<mark class="${
-              isMainMark ? MAIN_MARK_CLASS_NAME : 'note-link-mark'
-            }">${$1}${button}</mark>`;
-          },
-        )
+          const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
+          const button =
+            elementId && isMainMark
+              ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
+              : '';
+          return `<mark class="${
+            isMainMark ? MAIN_MARK_CLASS_NAME : 'note-link-mark'
+          }">${$1}${button}</mark>`;
+        })
         .trim();
 
       if (mainMarkFound) {
         mentions.push(mention);
       }
-
-      index = currentIndex + keyword.length;
     }
 
     return mentions;
