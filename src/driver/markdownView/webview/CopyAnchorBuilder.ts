@@ -20,24 +20,14 @@ declare const webviewApi: {
   ) => Promise<T>;
 };
 
-export class IdentifierBuilder {
-  constructor(private readonly view: EventTarget) {
-    this.ready = this.init();
-  }
+export class CopyAnchorBuilder {
+  constructor(private readonly view: EventTarget) {}
 
   private currentNote?: Note;
-  ready?: Promise<void>;
+  private enabled?: Boolean;
+  private readonly ready = this.init();
 
   private async init() {
-    const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
-      event: 'querySetting',
-      payload: { key: REFERRER_IDENTIFIER_ENABLED_SETTING },
-    });
-
-    if (!enabled) {
-      return;
-    }
-
     delegate(
       `.${IDENTIFIER_CLASS_NAME}`,
       'click',
@@ -50,15 +40,22 @@ export class IdentifierBuilder {
       true,
     );
 
-    this.view.addEventListener(
-      MarkdownViewEvents.NoteDidUpdate,
-      debounce(this.attach.bind(this), 500),
-    );
+    const attach = debounce(this.attach.bind(this), 500);
+    this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
     this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, (({
       detail: note,
     }: CustomEvent<Note>) => {
       this.currentNote = note;
     }) as EventListener);
+
+    this.enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_IDENTIFIER_ENABLED_SETTING },
+    });
+
+    if (!this.enabled) {
+      this.view.removeEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
+    }
   }
 
   private async copyUrl(identifier: HTMLElement) {
@@ -76,7 +73,13 @@ export class IdentifierBuilder {
     });
   }
 
-  private attach() {
+  private async attach() {
+    await this.ready;
+
+    if (!this.enabled) {
+      return;
+    }
+
     const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const elsWithId = [...rootEl.querySelectorAll('[id]')];
 

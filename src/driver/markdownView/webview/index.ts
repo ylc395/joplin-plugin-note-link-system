@@ -1,6 +1,6 @@
 import { ElementReferrerListBuilder } from './ElementReferrerListBuilder';
 import { NoteReferrerListBuilder } from './NoteReferrerListBuilder';
-import { IdentifierBuilder } from './IdentifierBuilder';
+import { CopyAnchorBuilder } from './CopyAnchorBuilder';
 import {
   MARKDOWN_SCRIPT_ID,
   REFERRER_VIEW_REFERENCE_EXPAND_SETTING,
@@ -25,15 +25,12 @@ export class MarkdownView extends EventTarget {
   constructor() {
     super();
     new NoteRouter(this);
-    const { ready: listBuilderReady } = new ElementReferrerListBuilder(this);
-    const { ready: referenceBuilderReady } = new NoteReferrerListBuilder(this);
-    const { ready: identifierBuilderReady } = new IdentifierBuilder(this);
-
-    Promise.all([listBuilderReady, referenceBuilderReady, identifierBuilderReady]).then(
-      this.init.bind(this),
-    );
+    new ElementReferrerListBuilder(this);
+    new NoteReferrerListBuilder(this);
+    new CopyAnchorBuilder(this);
   }
 
+  ready = this.init();
   currentNoteId?: string;
   expandMode?: ReferenceListExpandMode;
   private async init() {
@@ -48,6 +45,9 @@ export class MarkdownView extends EventTarget {
     this.currentNoteId = note.id;
     let currentNoteIdTimes = 1;
     let timer: ReturnType<typeof setTimeout>;
+
+    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
+    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
 
     // this event doesn't fire on app start
     document.addEventListener('joplin-noteDidUpdate', async () => {
@@ -85,9 +85,6 @@ export class MarkdownView extends EventTarget {
         }, 2000);
       }
     });
-
-    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
-    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
   }
 }
 

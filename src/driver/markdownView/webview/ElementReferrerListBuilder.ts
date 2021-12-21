@@ -63,39 +63,47 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
 }
 
 export class ElementReferrerListBuilder {
-  constructor(private readonly view: MarkdownView) {
-    this.ready = this.init();
-  }
-  ready?: Promise<void>;
+  constructor(private readonly view: MarkdownView) {}
+
+  private readonly ready = this.init();
+
+  private maxTextLength?: Number;
+
   private numberType?: ReferrersListNumberType;
-  private maxTextLength?: number;
+
+  private enabled?: Boolean;
+
   private async init() {
-    const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
-      event: 'querySetting',
-      payload: { key: REFERRER_ELEMENT_NUMBER_ENABLED },
-    });
-
-    if (!enabled) {
-      return;
-    }
-
-    this.view.addEventListener(
-      MarkdownViewEvents.NoteDidUpdate,
-      debounce(this.attachReferrers.bind(this), 500) as EventListener,
-    );
+    const attach = debounce(this.attachReferrers.bind(this), 500);
+    this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, attach as EventListener);
 
     this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
       payload: { key: REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH },
     });
 
+    this.enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: REFERRER_ELEMENT_NUMBER_ENABLED },
+    });
+
     this.numberType = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
       payload: { key: REFERRER_ELEMENT_NUMBER_TYPE },
     });
+
+    if (!this.enabled) {
+      this.view.removeEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
+    }
   }
 
   private async attachReferrers() {
+    await this.ready;
+
+    if (!this.enabled) {
+      return;
+    }
+
     const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const els = [...rootEl.querySelectorAll('[id]')] as HTMLElement[];
     const ids = els.map((el) => el.id);

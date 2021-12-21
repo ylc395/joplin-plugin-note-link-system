@@ -33,14 +33,12 @@ const REFERRER_LIST_HEADING_CLASS_NAME = 'note-link-referrers-list-heading';
 const REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME = 'note-link-referrers-list-count';
 
 export class NoteReferrerListBuilder {
-  constructor(private readonly view: MarkdownView) {
-    this.ready = this.init();
-  }
+  constructor(private readonly view: MarkdownView) {}
   private listHeadingText?: string;
   private listPosition?: ReferrersAutoListPosition;
   private autoInsertionEnabled?: ReferrersAutoListEnabled;
   private referrers?: Referrer[];
-  ready?: Promise<void>;
+  private readonly ready = this.init();
   private maxTextLength?: number;
   private listHeadingEls?: HTMLElement[];
 
@@ -78,6 +76,8 @@ export class NoteReferrerListBuilder {
   }
 
   private async insert() {
+    await this.ready;
+
     if (
       typeof this.autoInsertionEnabled === 'undefined' ||
       typeof this.listHeadingText === 'undefined'
