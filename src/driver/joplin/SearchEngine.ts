@@ -1,20 +1,25 @@
 import joplin from 'api';
 import debounce from 'lodash.debounce';
 import { escape } from 'html-escaper';
-import targetIcon from 'bootstrap-icons/icons/box-arrow-in-left.svg';
 import type { Referrer, SearchedNote, Note, Notebook } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
+  REFERRER_SEARCH_HIGH_ACCURACY_SETTING,
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
   QUICK_LINK_SHOW_PATH_SETTING,
   REFERRER_LIST_MENTION_TEXT_MAX_LENGTH,
   REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
   REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH,
-  MAIN_MARK_CLASS_NAME,
   SearchElementReferrersResponse,
 } from 'driver/constants';
+import {
+  getMatchesWithRegex,
+  extractMentionsWithRegex,
+  getMatchesWithParser,
+  extractMentionsWithParser,
+} from './extract';
 
 export class SearchEngine {
   private notebooksIndex: Record<string, Notebook> = {};
@@ -24,6 +29,7 @@ export class SearchEngine {
   private referrerSearchPattern?: string;
   private needNotebooks?: boolean;
   private mentionTextLength?: number;
+  private highReferrerAccuracy?: boolean;
 
   private async buildNotebookIndex() {
     if (!this.needNotebooks || this.isBuildingIndex) {
@@ -59,6 +65,7 @@ export class SearchEngine {
       await joplin.settings.value(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH),
       await joplin.settings.value(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH),
     );
+    this.highReferrerAccuracy = await joplin.settings.value(REFERRER_SEARCH_HIGH_ACCURACY_SETTING);
     buildNoteIndex();
 
     if (isFirstTime) {
@@ -78,6 +85,7 @@ export class SearchEngine {
           keys.includes(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH) ||
           keys.includes(REFERRER_SEARCH_PATTERN_SETTING) ||
           keys.includes(QUICK_LINK_SHOW_PATH_SETTING) ||
+          keys.includes(REFERRER_SEARCH_HIGH_ACCURACY_SETTING) ||
           keys.includes(QUICK_LINK_SEARCH_PATTERN_SETTING);
 
         if (needInit) {
@@ -241,12 +249,14 @@ export class SearchEngine {
   }
 
   private extractMentions(keyword: string, content: string) {
-    const mentions = [];
-    const regex = new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g');
-    const matches = [...content.matchAll(regex)];
+    const mentions: string[] = [];
+    const matches = (this.highReferrerAccuracy ? getMatchesWithParser : getMatchesWithRegex)(
+      keyword,
+      content,
+    );
 
     for (const match of matches) {
-      const { index } = match;
+      const { index, length } = match;
 
       if (typeof index === 'undefined') {
         continue;
@@ -258,37 +268,15 @@ export class SearchEngine {
       }
 
       const start = Math.max(0, index - Math.ceil(this.mentionTextLength / 2));
-      const end = Math.min(
-        content.length,
-        index + match[0].length + Math.ceil(this.mentionTextLength / 2),
-      );
+      const end = Math.min(content.length, index + length + Math.ceil(this.mentionTextLength / 2));
       const textFragment = escape(content.slice(start, end));
       const prefixLength = index - start;
-
-      let mainMarkFound = false;
-      const mention = textFragment
-        .replace(regex, (_, $1, $2, offset) => {
-          const realOffset = offset + `${$1}](${$2})`.length;
-          let isMainMark = false;
-
-          if (realOffset >= prefixLength && !mainMarkFound) {
-            mainMarkFound = true;
-            isMainMark = true;
-          }
-
-          const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
-          const button =
-            elementId && isMainMark
-              ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
-              : '';
-          return `<mark class="${
-            isMainMark ? MAIN_MARK_CLASS_NAME : 'note-link-mark'
-          }">${$1}${button}</mark>`;
-        })
-        .trim();
+      const { text, mainMarkFound } = (
+        this.highReferrerAccuracy ? extractMentionsWithParser : extractMentionsWithRegex
+      )(keyword, textFragment, prefixLength);
 
       if (mainMarkFound) {
-        mentions.push(mention);
+        mentions.push(text);
       }
     }
 

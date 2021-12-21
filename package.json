@@ -48,7 +48,9 @@
     "lodash.template": "^4.5.0",
     "markdown-it": "^12.2.0",
     "markdown-it-anchor": "^8.4.1",
+    "remark-parse": "^10.0.1",
     "tippy.js": "^6.3.5",
+    "unified": "^10.1.1",
     "uslug": "^1.0.4"
   }
 }
