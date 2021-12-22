@@ -23,6 +23,12 @@ This feature helps you make quick link to note or element with id, and auto sele
 
 ![](./doc/quick-copy.png)
 
+### Main Feature 3: Preview local/remote URL
+
+![](./doc/preview-local.png)
+
+![](./doc/preview-remote.png)
+
 ## Thanks
 
 Basically, this plugin is inspired by:
@@ -38,7 +44,6 @@ Basically, this plugin is inspired by:
 - Support Quick Link to current note
 - Support finding referrer of current note
 - An Outlink panel to show links(to other Joplin note or Web page) in current note.
-- Preview link when hover
 - ...
 
 Any PR / Issue / Discussion is welcome!
