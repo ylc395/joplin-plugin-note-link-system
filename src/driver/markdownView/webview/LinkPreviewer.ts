@@ -89,15 +89,21 @@ export class LinkPreviewer {
     this.tooltip.show();
   }
 
-  private addRemotePreviewerOf(linkEl: HTMLAnchorElement, containerEl: HTMLElement) {
+  private async addRemotePreviewerOf(linkEl: HTMLAnchorElement, containerEl: HTMLElement) {
     const url = linkEl.href;
     const iframeEl = document.createElement('iframe');
 
     iframeEl.src = url;
-    containerEl.appendChild(iframeEl);
+    containerEl.append(iframeEl);
     containerEl.classList.add(REMOTE_PREVIEWER_CLASS);
 
-    // todo: handle websites which hax x-frame-options
+    const { headers } = await fetch(url);
+
+    if (headers.has('x-frame-options')) {
+      iframeEl.remove();
+      containerEl.append('This website prevents us from previewing.');
+    }
+
     // todo: prefetch webpage
   }
 
