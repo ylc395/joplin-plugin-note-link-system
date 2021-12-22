@@ -43,6 +43,7 @@ export class NoteReferrerListBuilder {
   private listHeadingEls?: HTMLElement[];
 
   private async init() {
+    this.view.addEventListener(MarkdownViewEvents.NewNoteOpen, () => (this.referrers = undefined));
     this.view.addEventListener(
       MarkdownViewEvents.NoteDidUpdate,
       debounce(this.insert.bind(this), 500),
@@ -100,9 +101,15 @@ export class NoteReferrerListBuilder {
     }
 
     this.listHeadingEls = allHeadingEls.filter((el) => el.innerText === this.listHeadingText);
-    this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(MARKDOWN_SCRIPT_ID, {
-      event: 'searchReferrers',
-    });
+
+    if (!this.referrers) {
+      this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(
+        MARKDOWN_SCRIPT_ID,
+        {
+          event: 'searchReferrers',
+        },
+      );
+    }
 
     await this.prepareHeadings();
     await this.insertListAfterHeadings();

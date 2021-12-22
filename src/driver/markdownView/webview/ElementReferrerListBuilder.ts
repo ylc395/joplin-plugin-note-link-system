@@ -72,10 +72,15 @@ export class ElementReferrerListBuilder {
   private numberType?: ReferrersListNumberType;
 
   private enabled?: Boolean;
+  private referrersMap?: Record<string, Referrer[]>;
 
   private async init() {
     const attach = debounce(this.attachReferrers.bind(this), 500);
     this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, attach as EventListener);
+    this.view.addEventListener(
+      MarkdownViewEvents.NewNoteOpen,
+      () => (this.referrersMap = undefined),
+    );
 
     this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
@@ -104,25 +109,43 @@ export class ElementReferrerListBuilder {
       return;
     }
 
-    const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
-    const els = [...rootEl.querySelectorAll('[id]')] as HTMLElement[];
-    const ids = els.map((el) => el.id);
-    const referrersMap = await webviewApi.postMessage<SearchElementReferrersResponse>(
-      MARKDOWN_SCRIPT_ID,
-      {
-        event: 'searchReferrers',
-        payload: { elementIds: ids },
-      },
-    );
+    await this.updateReferrersMap();
 
-    for (const elId of Object.keys(referrersMap)) {
-      const idEl = document.getElementById(elId)!;
-      const referrers = referrersMap[elId];
+    if (!this.referrersMap) {
+      throw new Error('no referrers map');
+    }
+
+    for (const elId of Object.keys(this.referrersMap)) {
+      const idEl = document.getElementById(elId);
+
+      if (!idEl) {
+        continue;
+      }
+
+      const referrers = this.referrersMap[elId];
       const iconEl = this.createReferrerIconElement(referrers);
       const listEl = this.createReferrerListElement(referrers, elId);
 
       attach(idEl, iconEl, listEl);
     }
+  }
+
+  private async updateReferrersMap() {
+    if (this.referrersMap) {
+      return;
+    }
+
+    const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
+    const els = [...rootEl.querySelectorAll('[id]')] as HTMLElement[];
+    const elementIds = els.map((el) => el.id);
+
+    this.referrersMap = await webviewApi.postMessage<SearchElementReferrersResponse>(
+      MARKDOWN_SCRIPT_ID,
+      {
+        event: 'searchReferrers',
+        payload: { elementIds },
+      },
+    );
   }
 
   private createReferrerIconElement(notes: Referrer[]) {
