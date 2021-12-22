@@ -17,7 +17,7 @@ import {
   QUICK_LINK_AFTER_COMPLETION_SETTING,
   QUICK_LINK_CREATE_NOTE_SETTING,
 } from 'driver/constants';
-import type { SearchedNote, Note } from 'model/Referrer';
+import type { SearchResult, Note } from 'model/Referrer';
 import { ActionAfterCompletion } from './constants';
 
 export interface Context {
@@ -305,7 +305,7 @@ export class QuickLinker {
     }
 
     const keyword = this.doc.getRange({ line, ch }, { line: cursorLine, ch: cursorCh });
-    const notes = await this.context.postMessage<SearchedNote[]>({
+    const notes = await this.context.postMessage<SearchResult[]>({
       event: 'searchNotes',
       payload: { keyword: keyword },
     });

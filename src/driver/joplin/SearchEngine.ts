@@ -1,6 +1,6 @@
 import joplin from 'api';
 import debounce from 'lodash.debounce';
-import type { Referrer, SearchedNote, Note, Notebook } from 'model/Referrer';
+import type { Referrer, Note, Notebook, SearchResult } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
@@ -20,11 +20,11 @@ export class SearchEngine {
   private noteSearchPattern?: string;
   private currentNoteId?: string;
   private referrerSearchPattern?: string;
-  private needNotebooks?: boolean;
+  private needPathWhenSearching?: boolean;
   private mentionTextLength?: number;
 
   private async buildNotebookIndex() {
-    if (!this.needNotebooks || this.isBuildingIndex) {
+    if (!this.needPathWhenSearching || this.isBuildingIndex) {
       return;
     }
 
@@ -51,7 +51,7 @@ export class SearchEngine {
 
     this.noteSearchPattern = await joplin.settings.value(QUICK_LINK_SEARCH_PATTERN_SETTING);
     this.referrerSearchPattern = await joplin.settings.value(REFERRER_SEARCH_PATTERN_SETTING);
-    this.needNotebooks = await joplin.settings.value(QUICK_LINK_SHOW_PATH_SETTING);
+    this.needPathWhenSearching = await joplin.settings.value(QUICK_LINK_SHOW_PATH_SETTING);
     this.mentionTextLength = Math.max(
       await joplin.settings.value(REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH),
       await joplin.settings.value(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH),
@@ -85,7 +85,7 @@ export class SearchEngine {
     }
   }
 
-  async searchNotes(keyword?: string): Promise<SearchedNote[]> {
+  async searchNotes(keyword?: string): Promise<SearchResult[]> {
     if (typeof this.noteSearchPattern === 'undefined') {
       throw new Error('no note search pattern');
     }
@@ -94,10 +94,10 @@ export class SearchEngine {
       return [];
     }
 
-    let notes: SearchedNote[];
+    let notes: SearchResult[];
     if (keyword) {
       const _keyword = this.noteSearchPattern.replaceAll(NOTE_SEARCH_PATTERN_PLACEHOLDER, keyword);
-      notes = await SearchEngine.fetchAll<SearchedNote>(['search'], { query: _keyword });
+      notes = await SearchEngine.fetchAll<SearchResult>(['search'], { query: _keyword });
     } else {
       notes = (
         await joplin.data.get(['notes'], {
@@ -111,7 +111,8 @@ export class SearchEngine {
 
     for (const note of notes) {
       note.isCurrent = note.id === this.currentNoteId;
-      if (this.needNotebooks) {
+
+      if (this.needPathWhenSearching) {
         note.path = this.getPathOfNote(note);
       }
     }
@@ -119,7 +120,7 @@ export class SearchEngine {
     return notes;
   }
 
-  private getPathOfNote(note: SearchedNote) {
+  private getPathOfNote(note: { parent_id: string }) {
     let parentId = note.parent_id;
     let path = '';
 
@@ -151,9 +152,10 @@ export class SearchEngine {
         REFERRER_SEARCH_PATTERN_PLACEHOLDER,
         noteId,
       );
-      const notes = await SearchEngine.getDetailedNotes(
-        await SearchEngine.fetchAll(['search'], { query: keyword }),
-      );
+      const searchResults = await SearchEngine.fetchAll<SearchResult>(['search'], {
+        query: keyword,
+      });
+      const notes = await this.getNotes(searchResults.map(({ id }) => id));
 
       return notes
         .map((note) => ({
@@ -197,9 +199,10 @@ export class SearchEngine {
           REFERRER_SEARCH_PATTERN_PLACEHOLDER,
           `${noteId}#${elementId}`,
         );
-        const referrers = await SearchEngine.getDetailedNotes(
-          await SearchEngine.fetchAll(['search'], { query: keyword }),
-        );
+        const searchResults = await SearchEngine.fetchAll<SearchResult>(['search'], {
+          query: keyword,
+        });
+        const referrers = await this.getNotes(searchResults.map(({ id }) => id));
 
         if (referrers.length > 0) {
           result[elementId] = referrers
@@ -240,13 +243,21 @@ export class SearchEngine {
     return result;
   }
 
-  private static getDetailedNotes(notes: SearchedNote[]) {
-    return Promise.all(
-      notes.map(({ id }) =>
-        joplin.data.get(['notes', id], {
-          fields: 'id,title,created_time,updated_time,body',
-        }),
-      ),
-    ) as Promise<Note[]>;
+  getNote(id: string, needPath: true): Promise<Required<Note>>;
+  getNote(id: string, needPath?: false): Promise<Note>;
+  async getNote(id: string, needPath = false) {
+    const note = (await joplin.data.get(['notes', id], {
+      fields: 'id,title,created_time,updated_time,body,parent_id',
+    })) as Note;
+
+    if (needPath) {
+      note.path = this.getPathOfNote(note);
+    }
+
+    return note;
+  }
+
+  private getNotes(ids: string[]) {
+    return Promise.all(ids.map((id) => this.getNote(id)));
   }
 }
