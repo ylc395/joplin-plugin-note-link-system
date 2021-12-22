@@ -5,6 +5,7 @@ import {
   FetchNoteHtmlRequest,
   MARKDOWN_SCRIPT_ID,
   PREVIEWER_ENABLED_SETTING,
+  PREVIEWER_HOVER_DELAY_SETTING,
   QuerySettingRequest,
   QueryNoteRequest,
   QueryNoteResourcesRequest,
@@ -33,8 +34,13 @@ declare const webviewApi: {
 };
 
 export class LinkPreviewer {
+  constructor() {
+    this.init();
+  }
+
   private tooltip?: Instance;
-  ready = this.init();
+  private hoverDelay?: number;
+  private tooltipTimer?: ReturnType<typeof setTimeout>;
 
   private async init() {
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
@@ -46,7 +52,19 @@ export class LinkPreviewer {
       return;
     }
 
+    this.hoverDelay = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
+      event: 'querySetting',
+      payload: { key: PREVIEWER_HOVER_DELAY_SETTING },
+    });
     delegate(`a`, 'mouseover', (e: any) => this.addPreviewerOf(e.delegateTarget));
+    delegate(`a`, 'mouseout', () => this.cancelPreview());
+  }
+
+  private async cancelPreview() {
+    if (this.tooltipTimer) {
+      clearTimeout(this.tooltipTimer);
+      this.tooltipTimer = undefined;
+    }
   }
 
   private async addPreviewerOf(linkEl: HTMLAnchorElement) {
@@ -56,9 +74,11 @@ export class LinkPreviewer {
 
     const url = linkEl.href;
     const containerEl = document.createElement('div');
+    const isRemote = url.startsWith('http');
+
     containerEl.classList.add(PREVIEWER_CLASS);
 
-    if (url.startsWith('http')) {
+    if (isRemote) {
       this.addRemotePreviewerOf(linkEl, containerEl);
     } else {
       const hasContent = await this.addLocalPreviewerOf(linkEl, containerEl);
@@ -68,34 +88,64 @@ export class LinkPreviewer {
       }
     }
 
+    this.createTooltip(linkEl, containerEl, !isRemote);
+  }
+
+  private createTooltip(linkEl: HTMLAnchorElement, content: HTMLElement, isLocal: boolean) {
+    this.cancelPreview();
+
     if (this.tooltip) {
       this.tooltip.destroy();
+      this.tooltip = undefined;
     }
 
-    this.tooltip = tippy(linkEl, {
-      duration: [300, 0],
-      content: containerEl,
-      theme: 'note-link-previewer',
-      interactive: true,
-      placement: 'top',
-      arrow: roundArrow,
-      showOnCreate: true,
-      trigger: 'mouseenter',
-      maxWidth: '90vw',
-      appendTo: () => document.getElementById(ROOT_ELEMENT_ID)!,
-      popperOptions: {
-        modifiers: [
-          {
-            name: 'flip',
-            options: {
-              fallbackPlacements: ['bottom'],
+    this.tooltipTimer = setTimeout(() => {
+      this.tooltipTimer = undefined;
+      this.tooltip = tippy(linkEl, {
+        duration: [300, 0],
+        content,
+        theme: 'note-link-previewer',
+        interactive: true,
+        placement: 'top',
+        arrow: roundArrow,
+        interactiveBorder: 30,
+        showOnCreate: true,
+        trigger: 'mouseenter',
+        appendTo: () => document.getElementById(ROOT_ELEMENT_ID)!,
+        popperOptions: {
+          modifiers: [
+            {
+              name: 'flip',
+              options: {
+                fallbackPlacements: ['bottom'],
+              },
             },
-          },
-        ],
-      },
-    });
+            {
+              name: 'preventOverflow',
+              options: {
+                tether: false,
+                boundary: document.getElementById(ROOT_ELEMENT_ID),
+              },
+            },
+          ],
+        },
+      });
 
-    this.tooltip.show();
+      if (isLocal) {
+        const elementId = parseUrlFromLinkEl(linkEl)?.elementId;
+        // scroll to element
+        if (elementId) {
+          const bodyEl = this.tooltip.popper.querySelector(`.${LOCAL_PREVIEWER_BODY_CLASS}`)!;
+          const targetElement = bodyEl.querySelector(`#${elementId}`);
+
+          if (targetElement) {
+            window.requestAnimationFrame(() => {
+              bodyEl.scrollTop = (targetElement as HTMLElement).offsetTop;
+            });
+          }
+        }
+      }
+    }, this.hoverDelay);
   }
 
   private async addRemotePreviewerOf(linkEl: HTMLAnchorElement, containerEl: HTMLElement) {
@@ -117,13 +167,12 @@ export class LinkPreviewer {
   }
 
   private async addLocalPreviewerOf(linkEl: HTMLAnchorElement, containerEl: HTMLElement) {
-    const url = parseUrlFromLinkEl(linkEl);
+    const noteId = parseUrlFromLinkEl(linkEl)?.noteId;
 
-    if (!url || linkEl.classList.contains(REFERENCE_CLASS_NAME)) {
+    if (!noteId || linkEl.classList.contains(REFERENCE_CLASS_NAME)) {
       return false;
     }
 
-    const [noteId, elementId] = url.split('#');
     const resources = await webviewApi.postMessage<ResourcesMap>(MARKDOWN_SCRIPT_ID, {
       event: 'queryNoteResources',
       payload: { noteId },
@@ -154,37 +203,27 @@ export class LinkPreviewer {
 
     containerEl.append(titleEl, bodyEl);
 
-    // scroll to element
-    if (elementId) {
-      const targetElement = bodyEl.querySelector(`#${elementId}`);
-
-      if (targetElement) {
-        window.requestAnimationFrame(() => {
-          bodyEl.scrollTop = (targetElement as HTMLElement).offsetTop;
-        });
-      }
-    }
-
     return true;
   }
 }
 
-function parseUrlFromLinkEl(linkEl: HTMLAnchorElement) {
+function parseUrlFromLinkEl(
+  linkEl: HTMLAnchorElement,
+): { noteId: string; elementId?: string } | undefined {
   if (linkEl.dataset.noteLinkReferrerId) {
-    return linkEl.dataset.noteLinkReferrerId;
-  }
-
-  if (linkEl.href.startsWith('#')) {
-    return linkEl.href;
+    return { noteId: linkEl.dataset.noteLinkReferrerId };
   }
 
   const onclickString = linkEl.onclick?.toString();
+  const url = onclickString?.match(/\("joplin:\/\/(.+?)",/)?.[1];
 
-  if (!onclickString) {
+  if (!url) {
     return;
   }
 
-  return onclickString.match(/\("joplin:\/\/(.+?)",/)?.[1];
+  const [noteId, elementId] = url.split('#');
+
+  return { noteId, elementId };
 }
 
 // handle <a> and resources

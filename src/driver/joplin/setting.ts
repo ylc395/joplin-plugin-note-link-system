@@ -25,6 +25,7 @@ import {
   QUICK_LINK_SHOW_PATH_SETTING,
   QUICK_LINK_CREATE_NOTE_SETTING,
   PREVIEWER_ENABLED_SETTING,
+  PREVIEWER_HOVER_DELAY_SETTING,
 } from 'driver/constants';
 import {
   ReferrersAutoListPosition,
@@ -210,6 +211,13 @@ const setting: Record<string, SettingItem> = {
     type: SettingItemType.Bool,
     public: true,
     value: true,
+    section: SECTION_NAME,
+  },
+  [PREVIEWER_HOVER_DELAY_SETTING]: {
+    label: 'Previewer: Hover Delay Time(ms)',
+    type: SettingItemType.Int,
+    public: true,
+    value: 800,
     section: SECTION_NAME,
   },
 
