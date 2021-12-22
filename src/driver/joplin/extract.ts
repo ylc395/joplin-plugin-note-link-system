@@ -1,53 +1,11 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
+import { escape } from 'html-escaper';
 import targetIcon from 'bootstrap-icons/icons/box-arrow-in-left.svg';
 import { MAIN_MARK_CLASS_NAME } from 'driver/constants';
 
-// Regex in javascript can not handle markdown link perfectly. For example, [aa[b]ccc](url)
-// see https://medium.com/@michael_perrin/match-markdown-links-with-advanced-regex-features-fc5f9f4122bc
-const getRegex = (keyword: string) => new RegExp(`\\[([^\\[\\]]*)\\]\\(:/(${keyword}.*?)\\)`, 'g');
-
-export function getMatchesWithRegex(keyword: string, content: string) {
-  return [...content.matchAll(getRegex(keyword))].map((match) => ({
-    index: match.index,
-    length: match[0].length,
-  }));
-}
-
-export function extractMentionsWithRegex(keyword: string, content: string, prefixLength: number) {
-  const regex = getRegex(keyword);
-  let mainMarkFound = false;
-  const text = content
-    .replace(regex, (_, $1, $2, offset) => {
-      let isMainMark = false;
-
-      // find main mark on such text:
-      // `dddddddd..ddddd [aaa](a-url),[aaa](a-url) dddd...dddd`
-      if (offset + `${$1}](${$2})`.length >= prefixLength && !mainMarkFound) {
-        mainMarkFound = true;
-        isMainMark = true;
-      }
-
-      const elementId = keyword.includes('#') ? '' : $2.split('#').slice(1).join('#');
-      const button =
-        elementId && isMainMark
-          ? `<button data-note-link-element-id="${elementId}">${targetIcon}</button>`
-          : '';
-
-      return `<mark class="${
-        isMainMark ? MAIN_MARK_CLASS_NAME : 'note-link-mark'
-      }">${$1}${button}</mark>`;
-    })
-    .trim();
-
-  return {
-    text,
-    mainMarkFound,
-  };
-}
-
 const parser = unified().use(remarkParse);
-export function getMatchesWithParser(keyword: string, content: string) {
+function getMatches(keyword: string, content: string) {
   const rootNode = parser.parse(content);
   const matches: { index?: number; length: number }[] = [];
   const filterLink = (node: typeof rootNode | typeof rootNode.children[number]) => {
@@ -72,7 +30,7 @@ export function getMatchesWithParser(keyword: string, content: string) {
   return matches;
 }
 
-export function extractMentionsWithParser(keyword: string, content: string, prefixLength: number) {
+function extractMention(keyword: string, content: string, prefixLength: number) {
   const rootNode = parser.parse(content);
   const links: {
     startOffset: number;
@@ -142,4 +100,38 @@ export function extractMentionsWithParser(keyword: string, content: string, pref
     mainMarkFound: mainLinkFound,
     text,
   };
+}
+
+export default function extractMentions(
+  keyword: string,
+  content: string,
+  mentionTextLength: number,
+) {
+  const mentions: string[] = [];
+  const matches = getMatches(keyword, content);
+
+  for (const match of matches) {
+    const { index, length } = match;
+
+    if (typeof index === 'undefined') {
+      continue;
+    }
+
+    if (!mentionTextLength) {
+      mentions.push('');
+      continue;
+    }
+
+    const start = Math.max(0, index - Math.ceil(mentionTextLength / 2));
+    const end = Math.min(content.length, index + length + Math.ceil(mentionTextLength / 2));
+    const textFragment = escape(content.slice(start, end));
+    const prefixLength = index - start;
+    const { text, mainMarkFound } = extractMention(keyword, textFragment, prefixLength);
+
+    if (mainMarkFound) {
+      mentions.push(text);
+    }
+  }
+
+  return mentions;
 }

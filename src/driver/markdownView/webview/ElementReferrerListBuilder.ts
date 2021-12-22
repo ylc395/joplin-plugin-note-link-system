@@ -48,6 +48,7 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
     interactive: true,
     placement: 'right',
     arrow: roundArrow,
+    appendTo: () => document.querySelector(`#${ROOT_ELEMENT_ID}`)!,
     trigger: 'click',
     popperOptions: {
       modifiers: [

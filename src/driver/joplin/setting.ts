@@ -3,7 +3,6 @@ import {
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_SETTING,
-  REFERRER_SEARCH_HIGH_ACCURACY_SETTING,
   REFERRER_ELEMENT_NUMBER_ENABLED,
   REFERRER_ELEMENT_NUMBER_TYPE,
   REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH,
@@ -233,15 +232,6 @@ const setting: Record<string, SettingItem> = {
     section: SECTION_NAME,
     value: '/":/$noteId"',
     description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
-  },
-  [REFERRER_SEARCH_HIGH_ACCURACY_SETTING]: {
-    label: 'No Referrers Omitted',
-    type: SettingItemType.Bool,
-    public: true,
-    advanced: true,
-    section: SECTION_NAME,
-    value: true,
-    description: `Disable this if you find Joplin slows down when finding referrers. See https://github.com/ylc395/joplin-plugin-note-link-system/issues/1`,
   },
 };
 

@@ -1,11 +1,9 @@
 import joplin from 'api';
 import debounce from 'lodash.debounce';
-import { escape } from 'html-escaper';
 import type { Referrer, SearchedNote, Note, Notebook } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
-  REFERRER_SEARCH_HIGH_ACCURACY_SETTING,
   NOTE_SEARCH_PATTERN_PLACEHOLDER,
   REFERRER_SEARCH_PATTERN_PLACEHOLDER,
   QUICK_LINK_SHOW_PATH_SETTING,
@@ -14,12 +12,7 @@ import {
   REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH,
   SearchElementReferrersResponse,
 } from 'driver/constants';
-import {
-  getMatchesWithRegex,
-  extractMentionsWithRegex,
-  getMatchesWithParser,
-  extractMentionsWithParser,
-} from './extract';
+import extractMentions from './extract';
 
 export class SearchEngine {
   private notebooksIndex: Record<string, Notebook> = {};
@@ -29,7 +22,6 @@ export class SearchEngine {
   private referrerSearchPattern?: string;
   private needNotebooks?: boolean;
   private mentionTextLength?: number;
-  private highReferrerAccuracy?: boolean;
 
   private async buildNotebookIndex() {
     if (!this.needNotebooks || this.isBuildingIndex) {
@@ -65,7 +57,6 @@ export class SearchEngine {
       await joplin.settings.value(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH),
       await joplin.settings.value(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH),
     );
-    this.highReferrerAccuracy = await joplin.settings.value(REFERRER_SEARCH_HIGH_ACCURACY_SETTING);
     buildNoteIndex();
 
     if (isFirstTime) {
@@ -85,7 +76,6 @@ export class SearchEngine {
           keys.includes(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH) ||
           keys.includes(REFERRER_SEARCH_PATTERN_SETTING) ||
           keys.includes(QUICK_LINK_SHOW_PATH_SETTING) ||
-          keys.includes(REFERRER_SEARCH_HIGH_ACCURACY_SETTING) ||
           keys.includes(QUICK_LINK_SEARCH_PATTERN_SETTING);
 
         if (needInit) {
@@ -146,9 +136,15 @@ export class SearchEngine {
       throw new Error('no referrers search pattern');
     }
 
+    if (typeof this.mentionTextLength === 'undefined') {
+      throw new Error('no mentionTextLength');
+    }
+
     if (!this.referrerSearchPattern) {
       return [];
     }
+
+    const { mentionTextLength } = this;
 
     try {
       const keyword = this.referrerSearchPattern.replaceAll(
@@ -162,7 +158,7 @@ export class SearchEngine {
       return notes
         .map((note) => ({
           ...note,
-          mentions: this.extractMentions(noteId, note.body),
+          mentions: extractMentions(noteId, note.body, mentionTextLength),
         }))
         .filter(({ mentions }) => mentions.length > 0);
     } catch (error) {
@@ -179,9 +175,15 @@ export class SearchEngine {
       throw new Error('no element referrers search pattern');
     }
 
+    if (typeof this.mentionTextLength === 'undefined') {
+      throw new Error('no mentionTextLength');
+    }
+
     if (!this.referrerSearchPattern) {
       return {};
     }
+
+    const { mentionTextLength } = this;
 
     try {
       const result = {} as SearchElementReferrersResponse;
@@ -203,7 +205,7 @@ export class SearchEngine {
           result[elementId] = referrers
             .map((referrer) => ({
               ...referrer,
-              mentions: this.extractMentions(`${noteId}#${elementId}`, referrer.body),
+              mentions: extractMentions(`${noteId}#${elementId}`, referrer.body, mentionTextLength),
             }))
             .filter(({ mentions }) => mentions.length > 0);
         }
@@ -246,40 +248,5 @@ export class SearchEngine {
         }),
       ),
     ) as Promise<Note[]>;
-  }
-
-  private extractMentions(keyword: string, content: string) {
-    const mentions: string[] = [];
-    const matches = (this.highReferrerAccuracy ? getMatchesWithParser : getMatchesWithRegex)(
-      keyword,
-      content,
-    );
-
-    for (const match of matches) {
-      const { index, length } = match;
-
-      if (typeof index === 'undefined') {
-        continue;
-      }
-
-      if (!this.mentionTextLength) {
-        mentions.push('');
-        continue;
-      }
-
-      const start = Math.max(0, index - Math.ceil(this.mentionTextLength / 2));
-      const end = Math.min(content.length, index + length + Math.ceil(this.mentionTextLength / 2));
-      const textFragment = escape(content.slice(start, end));
-      const prefixLength = index - start;
-      const { text, mainMarkFound } = (
-        this.highReferrerAccuracy ? extractMentionsWithParser : extractMentionsWithRegex
-      )(keyword, textFragment, prefixLength);
-
-      if (mainMarkFound) {
-        mentions.push(text);
-      }
-    }
-
-    return mentions;
   }
 }
