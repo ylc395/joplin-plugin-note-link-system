@@ -22,6 +22,7 @@ export const QUICK_LINK_SHOW_PATH_SETTING = 'QUICK_LINK_SHOW_PATH_SETTING';
 export const QUICK_LINK_ELEMENTS_ENABLED_SETTING = 'QUICK_LINK_ELEMENTS_ENABLED_SETTING';
 export const QUICK_LINK_AFTER_COMPLETION_SETTING = 'QUICK_LINK_AFTER_COMPLETION_SETTING';
 export const QUICK_LINK_CREATE_NOTE_SETTING = 'QUICK_LINK_CREATE_NOTE_SETTING';
+export const PREVIEWER_ENABLED_SETTING = 'PREVIEWER_ENABLED_SETTING';
 
 export const NOTE_SEARCH_PATTERN_PLACEHOLDER = '$keyword';
 export const REFERRER_SEARCH_PATTERN_PLACEHOLDER = '$noteId';
@@ -39,6 +40,7 @@ export type Request =
   | WriteClipboardRequest
   | FetchNoteHtmlRequest
   | CreateNoteRequest
+  | QueryNoteRequest
   | ScrollToHashRequest
   | QueryCurrentNoteRequest;
 
@@ -101,4 +103,9 @@ export interface FetchNoteHtmlRequest {
 export interface CreateNoteRequest {
   event: 'createNote';
   payload: { title: string; type: 'todo' | 'note' };
+}
+
+export interface QueryNoteRequest {
+  event: 'queryNote';
+  payload: { id: string };
 }

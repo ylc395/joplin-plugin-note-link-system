@@ -50,6 +50,7 @@ function attach(attachTargetEl: HTMLElement, iconEl: HTMLElement, listEl: HTMLEl
     arrow: roundArrow,
     appendTo: () => document.querySelector(`#${ROOT_ELEMENT_ID}`)!,
     trigger: 'click',
+    theme: 'note-link-referrers',
     popperOptions: {
       modifiers: [
         {

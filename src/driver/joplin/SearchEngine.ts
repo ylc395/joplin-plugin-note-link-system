@@ -10,6 +10,7 @@ import {
   REFERRER_LIST_MENTION_TEXT_MAX_LENGTH,
   REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
   REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH,
+  PREVIEWER_ENABLED_SETTING,
   SearchElementReferrersResponse,
 } from 'driver/constants';
 import extractMentions from './extract';
@@ -21,10 +22,11 @@ export class SearchEngine {
   private currentNoteId?: string;
   private referrerSearchPattern?: string;
   private needPathWhenSearching?: boolean;
+  private previewEnabled?: boolean;
   private mentionTextLength?: number;
 
   private async buildNotebookIndex() {
-    if (!this.needPathWhenSearching || this.isBuildingIndex) {
+    if ((!this.needPathWhenSearching && !this.previewEnabled) || this.isBuildingIndex) {
       return;
     }
 
@@ -52,6 +54,7 @@ export class SearchEngine {
     this.noteSearchPattern = await joplin.settings.value(QUICK_LINK_SEARCH_PATTERN_SETTING);
     this.referrerSearchPattern = await joplin.settings.value(REFERRER_SEARCH_PATTERN_SETTING);
     this.needPathWhenSearching = await joplin.settings.value(QUICK_LINK_SHOW_PATH_SETTING);
+    this.previewEnabled = await joplin.settings.value(PREVIEWER_ENABLED_SETTING);
     this.mentionTextLength = Math.max(
       await joplin.settings.value(REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH),
       await joplin.settings.value(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH),
@@ -76,6 +79,7 @@ export class SearchEngine {
           keys.includes(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH) ||
           keys.includes(REFERRER_SEARCH_PATTERN_SETTING) ||
           keys.includes(QUICK_LINK_SHOW_PATH_SETTING) ||
+          keys.includes(PREVIEWER_ENABLED_SETTING) ||
           keys.includes(QUICK_LINK_SEARCH_PATTERN_SETTING);
 
         if (needInit) {

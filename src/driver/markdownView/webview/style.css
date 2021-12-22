@@ -115,3 +115,39 @@ h6 > .note-link-element-referrers-icon {
 #note-link-scroll-anchor {
   background-color: yellow;
 }
+
+.note-link-previewer {
+  box-sizing: border-box;
+  background-color: #fff;
+  border: 1px solid #000;
+  padding: 10px;
+}
+
+.note-link-previewer-local {
+  width: 400px;
+  max-width: 90vw;
+}
+
+.note-link-previewer-local-title {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+  color: rgb(145, 145, 145);
+}
+
+.note-link-previewer-local-body {
+  overflow: auto;
+  height: 300px;
+}
+
+.note-link-previewer-remote {
+  max-width: 960px;
+  width: 90vw;
+}
+
+.note-link-previewer-remote > iframe {
+  border: 0;
+  width: 100%;
+  height: 500px;
+  max-height: 80vh;
+}

@@ -24,6 +24,7 @@ import {
   QUICK_LINK_AFTER_COMPLETION_SETTING,
   QUICK_LINK_SHOW_PATH_SETTING,
   QUICK_LINK_CREATE_NOTE_SETTING,
+  PREVIEWER_ENABLED_SETTING,
 } from 'driver/constants';
 import {
   ReferrersAutoListPosition,
@@ -202,6 +203,13 @@ const setting: Record<string, SettingItem> = {
       [ActionAfterCompletion.MoveCursorToEnd]: 'Move cursor to link end',
       [ActionAfterCompletion.SelectText]: 'Select title of link',
     },
+    section: SECTION_NAME,
+  },
+  [PREVIEWER_ENABLED_SETTING]: {
+    label: 'Previewer: Enable',
+    type: SettingItemType.Bool,
+    public: true,
+    value: true,
     section: SECTION_NAME,
   },
 

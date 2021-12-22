@@ -10,6 +10,7 @@ import {
 import type { Note } from 'model/Referrer';
 import { MarkdownViewEvents, ReferenceListExpandMode } from './constants';
 import { NoteRouter } from './NoteRouter';
+import { LinkPreviewer } from './LinkPreviewer';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -28,6 +29,7 @@ export class MarkdownView extends EventTarget {
     new ElementReferrerListBuilder(this);
     new NoteReferrerListBuilder(this);
     new CopyAnchorBuilder(this);
+    new LinkPreviewer();
   }
 
   ready = this.init();

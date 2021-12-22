@@ -94,6 +94,8 @@ export default class App {
         return App.createNote(request.payload);
       case 'scrollToHash':
         return joplin.commands.execute('scrollToHash', request.payload.hash);
+      case 'queryNote':
+        return this.searchEngine.getNote(request.payload.id, true);
       default:
         break;
     }
