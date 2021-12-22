@@ -1,6 +1,6 @@
 import joplin from 'api';
 import debounce from 'lodash.debounce';
-import type { Referrer, Note, Notebook, SearchResult } from 'model/Referrer';
+import type { Referrer, Note, Notebook, SearchResult, Resource, File } from 'model/Referrer';
 import {
   REFERRER_SEARCH_PATTERN_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
@@ -15,7 +15,7 @@ import {
 } from 'driver/constants';
 import extractMentions from './extract';
 
-export class SearchEngine {
+export default class SearchEngine {
   private notebooksIndex: Record<string, Notebook> = {};
   private isBuildingIndex = false;
   private noteSearchPattern?: string;
@@ -32,7 +32,7 @@ export class SearchEngine {
 
     this.isBuildingIndex = true;
     this.notebooksIndex = {};
-    const notebooks = await SearchEngine.fetchAll<Notebook>(['folders']);
+    const notebooks = await fetchAll<Notebook>(['folders']);
 
     const buildIndex = (notebooks: Notebook[]) => {
       for (const notebook of notebooks) {
@@ -101,7 +101,7 @@ export class SearchEngine {
     let notes: SearchResult[];
     if (keyword) {
       const _keyword = this.noteSearchPattern.replaceAll(NOTE_SEARCH_PATTERN_PLACEHOLDER, keyword);
-      notes = await SearchEngine.fetchAll<SearchResult>(['search'], { query: _keyword });
+      notes = await fetchAll<SearchResult>(['search'], { query: _keyword });
     } else {
       notes = (
         await joplin.data.get(['notes'], {
@@ -156,7 +156,7 @@ export class SearchEngine {
         REFERRER_SEARCH_PATTERN_PLACEHOLDER,
         noteId,
       );
-      const searchResults = await SearchEngine.fetchAll<SearchResult>(['search'], {
+      const searchResults = await fetchAll<SearchResult>(['search'], {
         query: keyword,
       });
       const notes = await this.getNotes(searchResults.map(({ id }) => id));
@@ -203,7 +203,7 @@ export class SearchEngine {
           REFERRER_SEARCH_PATTERN_PLACEHOLDER,
           `${noteId}#${elementId}`,
         );
-        const searchResults = await SearchEngine.fetchAll<SearchResult>(['search'], {
+        const searchResults = await fetchAll<SearchResult>(['search'], {
           query: keyword,
         });
         const referrers = await this.getNotes(searchResults.map(({ id }) => id));
@@ -229,24 +229,6 @@ export class SearchEngine {
     this.init(true);
   }
 
-  private static async fetchAll<T>(path: string[], query?: Record<string, unknown>): Promise<T[]> {
-    let result: T[] = [];
-    let page = 1;
-    let hasMore = true;
-
-    while (hasMore) {
-      const { items, has_more } = await joplin.data.get(path, {
-        ...query,
-        page: page++,
-      });
-
-      result = result.concat(items);
-      hasMore = has_more;
-    }
-
-    return result;
-  }
-
   getNote(id: string, needPath: true): Promise<Required<Note>>;
   getNote(id: string, needPath?: false): Promise<Note>;
   async getNote(id: string, needPath = false) {
@@ -264,4 +246,39 @@ export class SearchEngine {
   private getNotes(ids: string[]) {
     return Promise.all(ids.map((id) => this.getNote(id)));
   }
+}
+
+async function fetchAll<T>(path: string[], query?: Record<string, unknown>): Promise<T[]> {
+  let result: T[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { items, has_more } = await joplin.data.get(path, {
+      ...query,
+      page: page++,
+    });
+
+    result = result.concat(items);
+    hasMore = has_more;
+  }
+
+  return result;
+}
+
+export async function getResourcesOf(noteId: string) {
+  const resources = await fetchAll<Resource>(['notes', noteId, 'resources'], { fields: 'id,mime' });
+
+  if (resources.length === 0) {
+    return {};
+  }
+
+  const files: File[] = await Promise.all(
+    resources.map(({ id }) => joplin.data.get(['resources', id, 'file'])),
+  );
+
+  return resources.reduce((result, { id }, index) => {
+    result[id] = files[index];
+    return result;
+  }, {} as Record<string, File>);
 }

@@ -12,7 +12,7 @@ import {
   CODE_MIRROR_SCRIPT_ID,
   REFERRER_LIST_HEADING_SETTING,
 } from 'driver/constants';
-import { SearchEngine } from './SearchEngine';
+import SearchEngine, { getResourcesOf } from './SearchEngine';
 import setting, { SECTION_NAME } from './setting';
 import { ReferrerPanelView } from '../referrerPanelView';
 import { Reference } from 'model/Referrer';
@@ -96,6 +96,8 @@ export default class App {
         return joplin.commands.execute('scrollToHash', request.payload.hash);
       case 'queryNote':
         return this.searchEngine.getNote(request.payload.id, true);
+      case 'queryNoteResources':
+        return getResourcesOf(request.payload.noteId);
       default:
         break;
     }

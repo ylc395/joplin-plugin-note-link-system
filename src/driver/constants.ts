@@ -42,6 +42,7 @@ export type Request =
   | CreateNoteRequest
   | QueryNoteRequest
   | ScrollToHashRequest
+  | QueryNoteResourcesRequest
   | QueryCurrentNoteRequest;
 
 export interface SearchNotesRequest {
@@ -108,4 +109,9 @@ export interface CreateNoteRequest {
 export interface QueryNoteRequest {
   event: 'queryNote';
   payload: { id: string };
+}
+
+export interface QueryNoteResourcesRequest {
+  event: 'queryNoteResources';
+  payload: { noteId: string };
 }

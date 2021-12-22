@@ -10,7 +10,7 @@ import {
   REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
 } from 'driver/constants';
 import { truncateMention } from 'driver/utils';
-import type { SearchEngine } from '../joplin/SearchEngine';
+import type SearchEngine from '../joplin/SearchEngine';
 
 export class ReferrerPanelView {
   constructor(

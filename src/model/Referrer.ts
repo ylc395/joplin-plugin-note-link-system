@@ -28,3 +28,15 @@ export interface Reference {
   toElementId?: string;
   index: number; // start from 1
 }
+
+// @see https://joplinapp.org/api/references/rest_api/#resources
+export interface Resource {
+  id: string;
+  mime: string;
+}
+
+export interface File {
+  attachmentFilename: string;
+  body: Uint8Array;
+  contentType: string;
+}
