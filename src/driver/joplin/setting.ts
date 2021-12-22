@@ -237,7 +237,7 @@ const setting: Record<string, SettingItem> = {
   [REFERRER_SEARCH_HIGH_ACCURACY_SETTING]: {
     label: 'No Referrers Omitted',
     type: SettingItemType.Bool,
-    public: false, // no need to expose this setting now
+    public: true,
     advanced: true,
     section: SECTION_NAME,
     value: true,
