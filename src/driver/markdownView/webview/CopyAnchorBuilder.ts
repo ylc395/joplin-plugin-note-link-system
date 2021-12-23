@@ -12,6 +12,7 @@ import {
 import { MarkdownViewEvents, ROOT_ELEMENT_ID, SCROLL_ANCHOR_ID } from './constants';
 
 const IDENTIFIER_CLASS_NAME = 'note-link-identifier';
+const IDENTIFIER_PARENT_CLASS_NAME = 'note-link-identifier-parent';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -51,6 +52,9 @@ export class CopyAnchorBuilder {
       },
       true,
     );
+
+    delegate(`.${IDENTIFIER_CLASS_NAME}`, 'mouseover', this.handleMouseMove);
+    delegate(`.${IDENTIFIER_CLASS_NAME}`, 'mouseout', this.handleMouseMove);
 
     const attach = debounce(this.attach.bind(this), 500);
     this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
@@ -104,8 +108,19 @@ export class CopyAnchorBuilder {
       identifierEl.classList.add(IDENTIFIER_CLASS_NAME);
       identifierEl.dataset.noteLinkElementId = el.id;
       identifierEl.innerHTML = hashIcon;
+      identifierEl.title = el.id;
 
       el.prepend(identifierEl);
     }
+  }
+
+  private handleMouseMove(e: any) {
+    const target = (e.delegateTarget as HTMLElement).parentElement;
+
+    if (!target) {
+      return;
+    }
+
+    target.classList.toggle(IDENTIFIER_PARENT_CLASS_NAME);
   }
 }

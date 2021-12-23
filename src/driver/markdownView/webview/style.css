@@ -64,12 +64,14 @@ h6 > .note-link-element-referrers-icon {
   padding: 0;
   border: none;
   font-size: inherit;
+  height: 1em;
+  vertical-align: middle;
   background-color: transparent;
-  display: none;
+  display: inline-block;
 }
 
 .note-link-identifier svg {
-  height: 1em;
+  height: 100%;
 }
 
 .note-link-identifier:active {
@@ -77,8 +79,35 @@ h6 > .note-link-element-referrers-icon {
   transition-duration: 0.2s;
 }
 
-#rendered-md [id]:hover > .note-link-identifier {
+h1 > .note-link-identifier,
+h2 > .note-link-identifier,
+h3 > .note-link-identifier,
+h4 > .note-link-identifier,
+h5 > .note-link-identifier,
+h6 > .note-link-identifier {
+  display: none;
+}
+
+h1:hover > .note-link-identifier,
+h2:hover > .note-link-identifier,
+h3:hover > .note-link-identifier,
+h4:hover > .note-link-identifier,
+h5:hover > .note-link-identifier,
+h6:hover > .note-link-identifier {
   display: inline-block;
+}
+
+.note-link-identifier-parent {
+  outline: 1px dashed gray;
+}
+
+h1.note-link-identifier-parent,
+h2.note-link-identifier-parent,
+h3.note-link-identifier-parent,
+h4.note-link-identifier-parent,
+h5.note-link-identifier-parent,
+h6.note-link-identifier-parent {
+  outline: none;
 }
 
 .note-link-overflow-anchor-none {
