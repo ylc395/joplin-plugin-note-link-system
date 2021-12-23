@@ -40,6 +40,18 @@ export class CopyAnchorBuilder {
       true,
     );
 
+    delegate(
+      `.${IDENTIFIER_CLASS_NAME}`,
+      'contextmenu',
+      (e: any) => {
+        const target = e.delegateTarget as HTMLElement;
+        this.copyUrl(target, true);
+        e.stopPropagation();
+        e.preventDefault();
+      },
+      true,
+    );
+
     const attach = debounce(this.attach.bind(this), 500);
     this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
     this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, (({
@@ -58,7 +70,7 @@ export class CopyAnchorBuilder {
     }
   }
 
-  private async copyUrl(identifier: HTMLElement) {
+  private async copyUrl(identifier: HTMLElement, urlOnly = false) {
     if (!this.currentNote) {
       throw new Error('no currentNote');
     }
@@ -69,7 +81,7 @@ export class CopyAnchorBuilder {
 
     webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'writeClipboard',
-      payload: { content: `[${title}#${elId}](:/${id}#${elId})` },
+      payload: { content: urlOnly ? `:/${id}#${elId}` : `[${title}#${elId}](:/${id}#${elId})` },
     });
   }
 
