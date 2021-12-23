@@ -2079,6 +2079,16 @@ markdown-it-anchor@^8.4.1:
   resolved "https://registry.npmjs.org/markdown-it-anchor/-/markdown-it-anchor-8.4.1.tgz#29e560593f5edb80b25fdab8b23f93ef8a91b31e"
   integrity sha512-sLODeRetZ/61KkKLJElaU3NuU2z7MhXf12Ml1WJMSdwpngeofneCRF+JBbat8HiSqhniOMuTemXMrsI7hA6XyA==
 
+markdown-it-attrs@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/markdown-it-attrs/-/markdown-it-attrs-4.1.1.tgz#1c0a102d9cf1882642b58c236ad70b61cf3d9d91"
+  integrity sha512-0nyjVuj4KHbNhdHZ+MiKUAQJacqKz5wljcxMdgklkc/4b/iYJHjBz/+6A1Lgid4cW91aDj0Hy5ggPW932NE6zQ==
+
+markdown-it-bracketed-spans@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/markdown-it-bracketed-spans/-/markdown-it-bracketed-spans-1.0.1.tgz#9905c87347b5383cd15c3c9b6e72d38315e528de"
+  integrity sha512-ffDHx7bdOEecvo/EPpsatFLNnLZBRdj+ZF/v6gGJh0ixU0oVWxUUeJn5daVnT0sn0MU73G9oPDTqBX82z99fnw==
+
 markdown-it@^12.2.0:
   version "12.2.0"
   resolved "https://registry.npmjs.org/markdown-it/-/markdown-it-12.2.0.tgz#091f720fd5db206f80de7a8d1f1a7035fd0d38db"

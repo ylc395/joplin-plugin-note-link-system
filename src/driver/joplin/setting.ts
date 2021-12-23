@@ -26,6 +26,7 @@ import {
   QUICK_LINK_CREATE_NOTE_SETTING,
   PREVIEWER_ENABLED_SETTING,
   PREVIEWER_HOVER_DELAY_SETTING,
+  EXTRA_SYNTAX_ENABLED_SETTING,
 } from 'driver/constants';
 import {
   ReferrersAutoListPosition,
@@ -219,6 +220,15 @@ const setting: Record<string, SettingItem> = {
     public: true,
     value: 800,
     section: SECTION_NAME,
+  },
+  [EXTRA_SYNTAX_ENABLED_SETTING]: {
+    label: 'Extra Markdown Syntax: Enable(need to restart Joplin)',
+    type: SettingItemType.Bool,
+    public: true,
+    value: true,
+    section: SECTION_NAME,
+    description:
+      'Enable Bracketed Spans Syntax(https://github.com/mb21/markdown-it-bracketed-spans) And Id Attrs Syntax(https://github.com/arve0/markdown-it-attrs), to mark any text as link target easily.',
   },
 
   // below are advanced

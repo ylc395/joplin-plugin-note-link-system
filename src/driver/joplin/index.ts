@@ -3,6 +3,8 @@ import { ContentScriptType, ToolbarButtonLocation } from 'api/types';
 import MarkdownIt from 'markdown-it';
 import uslug from 'uslug';
 import markdownItAnchor from 'markdown-it-anchor';
+import markdownItAttrs from 'markdown-it-attrs';
+import markdownItBracketedSpans from 'markdown-it-bracketed-spans';
 import {
   Request,
   CreateNoteRequest,
@@ -11,10 +13,12 @@ import {
   MARKDOWN_SCRIPT_ID,
   CODE_MIRROR_SCRIPT_ID,
   REFERRER_LIST_HEADING_SETTING,
+  EXTRA_SYNTAX_ENABLED_SETTING,
 } from 'driver/constants';
 import SearchEngine, { getResourcesOf } from './SearchEngine';
 import setting, { SECTION_NAME } from './setting';
 import { ReferrerPanelView } from '../referrerPanelView';
+import { MAKRDOWN_IT_ATTRS_CONFIG } from '../markdownView/markdownConfig';
 import { Reference } from 'model/Referrer';
 
 export default class App {
@@ -25,6 +29,10 @@ export default class App {
   private referrerPanel?: ReferrerPanelView;
   async init() {
     await this.setupSetting();
+
+    if (await joplin.settings.value(EXTRA_SYNTAX_ENABLED_SETTING)) {
+      this.md.use(markdownItAttrs, MAKRDOWN_IT_ATTRS_CONFIG).use(markdownItBracketedSpans);
+    }
 
     this.searchEngine = new SearchEngine();
 
@@ -104,10 +112,12 @@ export default class App {
   }
 
   async setupMarkdownView() {
+    const syntaxEnabled = await joplin.settings.value(EXTRA_SYNTAX_ENABLED_SETTING);
+    const scriptPath = `./driver/markdownView/index${syntaxEnabled ? 'withSyntax' : ''}.js`;
     await joplin.contentScripts.register(
       ContentScriptType.MarkdownItPlugin,
       MARKDOWN_SCRIPT_ID,
-      './driver/markdownView/index.js',
+      scriptPath,
     );
 
     await joplin.contentScripts.onMessage(MARKDOWN_SCRIPT_ID, this.requestHandler.bind(this));
