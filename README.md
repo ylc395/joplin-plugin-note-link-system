@@ -19,11 +19,11 @@ This feature helps you make quick link to note or element with id, and auto sele
 
 ![](./doc/quick-link.gif)
 
-### Main Feature 2: Quick Copy Element URL
+### Main Feature 3: Quick Copy Element URL
 
 ![](./doc/quick-copy.png)
 
-### Main Feature 3: Preview local/remote URL
+### Main Feature 4: Preview local/remote URL
 
 ![](./doc/preview-local.png)
 
