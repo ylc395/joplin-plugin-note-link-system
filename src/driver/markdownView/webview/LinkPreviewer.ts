@@ -185,7 +185,7 @@ export class LinkPreviewer {
       resources,
     );
 
-    const { path } = await webviewApi.postMessage<Required<Note>>(MARKDOWN_SCRIPT_ID, {
+    const { path, title } = await webviewApi.postMessage<Required<Note>>(MARKDOWN_SCRIPT_ID, {
       event: 'queryNote',
       payload: { id: noteId },
     });
@@ -194,7 +194,7 @@ export class LinkPreviewer {
 
     const titleEl = document.createElement('div');
     titleEl.classList.add(LOCAL_PREVIEWER_TITLE_CLASS);
-    titleEl.innerHTML = path;
+    titleEl.innerHTML = `${path}/${title}`;
 
     const bodyEl = document.createElement('article');
     bodyEl.classList.add(LOCAL_PREVIEWER_BODY_CLASS);
