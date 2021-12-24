@@ -112,6 +112,12 @@ export class LinkPreviewer {
         showOnCreate: true,
         trigger: 'mouseenter',
         appendTo: () => document.getElementById(ROOT_ELEMENT_ID)!,
+        onUntrigger: () => {
+          if (this.tooltip) {
+            this.tooltip.destroy();
+            this.tooltip = undefined;
+          }
+        },
         popperOptions: {
           modifiers: [
             {
