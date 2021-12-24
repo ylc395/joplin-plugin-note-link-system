@@ -12,11 +12,11 @@ import {
   OpenNoteRequest,
   MARKDOWN_SCRIPT_ID,
   CODE_MIRROR_SCRIPT_ID,
-  REFERRER_LIST_HEADING_SETTING,
   EXTRA_SYNTAX_ENABLED_SETTING,
 } from 'driver/constants';
 import SearchEngine, { getResourcesOf } from './SearchEngine';
 import setting, { SECTION_NAME } from './setting';
+import ContentEditor from './ContentEditor';
 import { ReferrerPanelView } from '../referrerPanelView';
 import { MAKRDOWN_IT_ATTRS_CONFIG } from '../markdownView/markdownConfig';
 import { Reference } from 'model/Referrer';
@@ -26,6 +26,7 @@ export default class App {
   private reference?: Reference;
   // @see https://github.com/laurent22/joplin/blob/725c79d1ec03a712d671498417b0061a1da3073b/packages/renderer/MdToHtml.ts#L560
   private readonly md = new MarkdownIt({ html: true }).use(markdownItAnchor, { slugify: uslug });
+  private editor = new ContentEditor(this.md);
   private referrerPanel?: ReferrerPanelView;
   async init() {
     await this.setupSetting();
@@ -155,15 +156,7 @@ export default class App {
   }
 
   async setupToolbar() {
-    const insertList = 'insertReferrersList';
     const toggleReferrersPanel = 'toggleReferrersPanel';
-
-    await joplin.commands.register({
-      name: insertList,
-      label: 'Insert a referrers list',
-      iconName: 'fas fa-hand-point-left',
-      execute: this.insertReferrerList.bind(this),
-    });
 
     await joplin.commands.register({
       name: toggleReferrersPanel,
@@ -179,16 +172,11 @@ export default class App {
     });
 
     await joplin.views.toolbarButtons.create(
-      'insert-referrers-list',
-      insertList,
-      ToolbarButtonLocation.EditorToolbar,
-    );
-
-    await joplin.views.toolbarButtons.create(
       'toggle-referrers-panel',
       toggleReferrersPanel,
       ToolbarButtonLocation.NoteToolbar,
     );
+    await this.editor.setupToolbar();
   }
   private static async createNote({ title, type }: CreateNoteRequest['payload']) {
     const currentNote = await joplin.workspace.selectedNote();
@@ -199,21 +187,5 @@ export default class App {
       title: title,
       parent_id: currentNotebook.id,
     });
-  }
-
-  private async insertReferrerList() {
-    const text = await joplin.settings.value(REFERRER_LIST_HEADING_SETTING);
-    const noteContent = (await joplin.workspace.selectedNote()).body;
-    const tokens = this.md.parse(noteContent, {});
-    const minLevel = Math.min(
-      ...tokens
-        .filter(({ tag }) => ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag))
-        .map(({ tag }) => Number(tag[1])),
-    );
-
-    joplin.commands.execute(
-      'replaceSelection',
-      `\n${'#'.repeat(Number.isFinite(minLevel) ? minLevel : 1)} ${text}`,
-    );
   }
 }

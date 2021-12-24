@@ -7,10 +7,6 @@ import cardHeadingIcon from 'bootstrap-icons/icons/card-heading.svg';
 import boxIcon from 'bootstrap-icons/icons/box.svg';
 import plusIcon from 'bootstrap-icons/icons/file-earmark-plus.svg';
 import {
-  QuerySettingRequest,
-  SearchNotesRequest,
-  FetchNoteHtmlRequest,
-  CreateNoteRequest,
   QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
@@ -19,12 +15,7 @@ import {
 } from 'driver/constants';
 import type { SearchResult, Note } from 'model/Referrer';
 import { ActionAfterCompletion } from './constants';
-
-export interface Context {
-  postMessage: <T>(
-    request: QuerySettingRequest | SearchNotesRequest | FetchNoteHtmlRequest | CreateNoteRequest,
-  ) => Promise<T>;
-}
+import type { Context } from './index';
 
 // @see https://codemirror.net/doc/manual.html#addon_show-hint
 interface Hint {
@@ -44,7 +35,7 @@ interface Completion {
   selectedHint?: number;
 }
 
-export type ExtendedEditor = Editor & {
+export type ExtendedEditor = {
   showHint(options: {
     completeSingle: boolean;
     closeCharacters: RegExp;
@@ -55,10 +46,10 @@ export type ExtendedEditor = Editor & {
 const HINT_ITEM_CLASS = 'note-link-hint';
 const HINT_ITEM_PATH_CLASS = 'note-link-hint-path';
 
-export class QuickLinker {
+export default class QuickLinker {
   constructor(
     private readonly context: Context,
-    private readonly editor: ExtendedEditor,
+    private readonly editor: ExtendedEditor & Editor,
     private readonly cm: typeof CodeMirror,
   ) {
     this.editor.on('cursorActivity', this.triggerHints.bind(this));
