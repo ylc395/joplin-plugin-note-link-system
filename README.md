@@ -23,7 +23,7 @@ This feature helps you make quick link to note or element with id, and auto sele
 
 ### Main Feature 3: Quick Copy Element URL
 
-Left click will copy title + url; Right click is url only.
+Left click will copy title + url; Right click is for url only.
 
 ![](./doc/quick-copy.png)
 
@@ -32,6 +32,10 @@ Left click will copy title + url; Right click is url only.
 ![](./doc/preview-local.png)
 
 ![](./doc/preview-remote.png)
+
+### Main Feature 5: Set Id for text to make it as link target
+
+![](./doc/set-id.png)
 
 ## Thanks
 
