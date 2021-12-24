@@ -1,4 +1,4 @@
-import type { Editor, Position } from 'codemirror';
+import type { Editor, Position, Token } from 'codemirror';
 import type CodeMirror from 'codemirror';
 import h1Icon from 'bootstrap-icons/icons/type-h1.svg';
 import h2Icon from 'bootstrap-icons/icons/type-h2.svg';
@@ -92,19 +92,20 @@ export default class QuickLinker {
   private linkToElementEnabled?: boolean;
   private actionAfterCompletion?: ActionAfterCompletion;
   private createNoteEnabled?: boolean;
+  private isUrlOnly?: boolean;
 
   private triggerHints() {
     if (!this.triggerSymbol || !this.enabled) {
       return;
     }
 
-    const to = this.doc.getCursor();
-
-    const symbolRange = [{ line: to.line, ch: to.ch - this.triggerSymbol.length }, to] as const;
+    const pos = this.doc.getCursor();
+    const symbolRange = [{ line: pos.line, ch: pos.ch - this.triggerSymbol.length }, pos] as const;
     const chars = this.doc.getRange(...symbolRange);
 
     if (chars === this.triggerSymbol) {
       this.symbolRange = { from: symbolRange[0], to: symbolRange[1] };
+      this.isUrlOnly = this.editor.getTokenTypeAt(pos) === 'string url';
       this.editor.showHint({
         closeCharacters: /[()\[\]{};:>,]/,
         completeSingle: false,
@@ -209,10 +210,12 @@ export default class QuickLinker {
           const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
           const titleEnd = cursorCh - (text.length + noteId.length + 4);
 
-          this.doc.replaceRange(text, {
-            line: cursorLine,
-            ch: titleEnd,
-          });
+          if (!this.isUrlOnly) {
+            this.doc.replaceRange(text, {
+              line: cursorLine,
+              ch: titleEnd,
+            });
+          }
 
           this.afterCompletion('element', [
             { line: cursorLine, ch: titleEnd - title.length },
@@ -226,16 +229,18 @@ export default class QuickLinker {
   }
 
   private afterCompletion(source: 'note' | 'element', titleRange: [Position, Position]) {
-    if (this.actionAfterCompletion === ActionAfterCompletion.SelectText) {
-      this.doc.setSelection(...titleRange);
-    }
+    const { line, ch } = this.doc.getCursor();
 
-    if (this.actionAfterCompletion === ActionAfterCompletion.MoveCursorToEnd) {
-      const { line, ch } = this.doc.getCursor();
-
+    if (this.actionAfterCompletion === ActionAfterCompletion.MoveCursorToEnd || this.isUrlOnly) {
       if (source === 'element') {
         this.doc.setCursor({ line, ch: ch + 1 });
       }
+
+      return;
+    }
+
+    if (this.actionAfterCompletion === ActionAfterCompletion.SelectText) {
+      this.doc.setSelection(...titleRange);
     }
   }
 
@@ -247,10 +252,19 @@ export default class QuickLinker {
 
       const { from, to } = this.symbolRange;
 
-      this.doc.replaceRange(`[${note.title}](:/${note.id})`, from, {
-        line: to.line,
-        ch: to.ch + keyword.length,
-      });
+      if (this.isUrlOnly) {
+        const token = this.editor.getTokenAt(from);
+        this.doc.replaceRange(
+          `:/${note.id}`,
+          { line: from.line, ch: token.start },
+          { line: from.line, ch: token.end },
+        );
+      } else {
+        this.doc.replaceRange(`[${note.title}](:/${note.id})`, from, {
+          line: to.line,
+          ch: to.ch + keyword.length,
+        });
+      }
       this.afterCompletion('note', [
         { line: from.line, ch: from.ch + 1 },
         { line: from.line, ch: from.ch + 1 + note.title.length },
@@ -303,7 +317,7 @@ export default class QuickLinker {
     const { from } = this.symbolRange;
     const to = { line, ch: ch + keyword.length };
     const hintList: Hint[] = notes.map(({ title, id, path }) => ({
-      text: `[${title}](:/${id})`,
+      text: this.isUrlOnly ? `:/${id}` : `[${title}](:/${id})`,
       className: HINT_ITEM_CLASS,
       render(container) {
         container.innerHTML =
@@ -326,15 +340,29 @@ export default class QuickLinker {
           { line: to.line, ch: from.ch + hint.title!.length + 1 },
         ] as [Position, Position];
 
+        let positionAfterNoteId = {
+          line: to.line,
+          ch: from.ch + hint.text.length - 1,
+        };
+
+        if (this.isUrlOnly) {
+          const token = this.editor.getTokenAt({ line: cursorLine, ch: cursorCh });
+          this.doc.replaceRange(
+            hint.text,
+            { line: to.line, ch: token.start },
+            { line: to.line, ch: token.end },
+          );
+
+          positionAfterNoteId.ch = token.start + hint.text.length;
+        }
+
         if (!this.linkToElementEnabled) {
           this.afterCompletion('note', titleRange);
           return;
         }
 
-        const positionAfterId = { line: to.line, ch: from.ch + hint.text.length - 1 };
-
-        this.doc.setCursor(positionAfterId);
-        this.hintForElements({ id: hint.id!, title: hint.title! }, positionAfterId, titleRange);
+        this.doc.setCursor(positionAfterNoteId);
+        this.hintForElements({ id: hint.id!, title: hint.title! }, positionAfterNoteId, titleRange);
       }) as any);
     }
 
