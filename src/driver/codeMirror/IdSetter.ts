@@ -34,8 +34,8 @@ export default class IdSetter {
       );
 
       this.doc.setSelection(
-        { line, ch: anchor.ch + `[${text}]{#}`.length },
-        { line, ch: anchor.ch + ` [${text}]{#${placeholder}`.length },
+        { line, ch: anchor.ch + `[${text}]{#`.length },
+        { line, ch: anchor.ch + ` [${text}]{#${placeholder}`.length - 1 },
       );
     }
   }
