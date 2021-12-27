@@ -38,9 +38,9 @@ export default class App {
     this.searchEngine = new SearchEngine();
 
     await this.setupCodeMirror();
+    await this.setupPanel();
     await this.setupToolbar();
     await this.setupMarkdownView();
-    await this.setupPanel();
   }
 
   private async openNote({ noteId, reference }: OpenNoteRequest['payload']) {
