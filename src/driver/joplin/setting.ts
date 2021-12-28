@@ -9,7 +9,6 @@ import {
   REFERRER_LIST_HEADING_SETTING,
   REFERRER_LIST_MENTION_TEXT_MAX_LENGTH,
   REFERRER_AUTO_LIST_POSITION_SETTING,
-  REFERRER_AUTO_LIST_ENABLED_SETTING,
   REFERRER_VIEW_REFERENCE_EXPAND_SETTING,
   REFERRER_PANEL_ENABLED_SETTING,
   REFERRER_PANEL_TITLE_SETTING,
@@ -29,7 +28,6 @@ import {
 } from 'driver/constants';
 import {
   ReferrersAutoListPosition,
-  ReferrersAutoListEnabled,
   ReferrersListNumberType,
   ReferenceListExpandMode,
 } from '../markdownView/webview/constants';
@@ -46,28 +44,6 @@ const setting: Record<string, SettingItem> = {
     section: SECTION_NAME,
     description: 'Text in Headings(h1-h6) for auto & manually inserted referrers list',
   },
-  [REFERRER_LIST_MENTION_TEXT_MAX_LENGTH]: {
-    label: 'Markdown View: Max Text Length Of Digest Of Referrer Of Note',
-    type: SettingItemType.Int,
-    public: true,
-    value: 120,
-    section: SECTION_NAME,
-    description: 'Left 0 to disabled digest',
-  },
-  [REFERRER_AUTO_LIST_ENABLED_SETTING]: {
-    label: 'Markdown View: Enable/Disable Auto Referrers List Insertion',
-    type: SettingItemType.Int,
-    isEnum: true,
-    public: true,
-    value: ReferrersAutoListEnabled.EnabledWhenNoManual,
-    section: SECTION_NAME,
-    options: {
-      [ReferrersAutoListEnabled.Enabled]: 'Always enabled',
-      [ReferrersAutoListEnabled.EnabledWhenNoManual]:
-        'Enabled only when no manual insertion is existing',
-      [ReferrersAutoListEnabled.Disabled]: 'Always disabled',
-    },
-  },
   [REFERRER_AUTO_LIST_POSITION_SETTING]: {
     label: 'Markdown View: Auto Inserted Referrers List Position',
     type: SettingItemType.Int,
@@ -75,10 +51,20 @@ const setting: Record<string, SettingItem> = {
     public: true,
     value: ReferrersAutoListPosition.Bottom,
     section: SECTION_NAME,
+    description: 'Select "None" to disabled auto insertion',
     options: {
+      [ReferrersAutoListPosition.None]: 'None',
       [ReferrersAutoListPosition.Top]: 'Note Top',
       [ReferrersAutoListPosition.Bottom]: 'Note Bottom',
     },
+  },
+  [REFERRER_LIST_MENTION_TEXT_MAX_LENGTH]: {
+    label: 'Markdown View: Max Text Length Of Digest Of Referrer Of Note',
+    type: SettingItemType.Int,
+    public: true,
+    value: 120,
+    section: SECTION_NAME,
+    description: 'Left 0 to disabled digest',
   },
   [REFERRER_ELEMENT_NUMBER_ENABLED]: {
     label: 'Markdown View: Enable Searching Referrers For Elements',
@@ -239,7 +225,7 @@ const setting: Record<string, SettingItem> = {
     label: 'Filter For Quick Link',
     type: SettingItemType.String,
     public: true,
-    value: 'title: $keyword*',
+    value: '$keyword',
     advanced: true,
     description: `Search filter for making quick links in editor. Filters can be found at https://joplinapp.org/help/#search-filters. ${NOTE_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for keyword you typed in.`,
   },

@@ -1,12 +1,7 @@
 export enum ReferrersAutoListPosition {
   Top,
   Bottom,
-}
-
-export enum ReferrersAutoListEnabled {
-  Enabled,
-  EnabledWhenNoManual,
-  Disabled,
+  None,
 }
 
 export enum ReferrersListNumberType {

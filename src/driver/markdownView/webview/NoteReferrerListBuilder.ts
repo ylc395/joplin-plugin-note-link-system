@@ -5,7 +5,6 @@ import {
   REFERRER_LIST_HEADING_SETTING,
   REFERRER_AUTO_LIST_POSITION_SETTING,
   MARKDOWN_SCRIPT_ID,
-  REFERRER_AUTO_LIST_ENABLED_SETTING,
   REFERRER_LIST_MENTION_TEXT_MAX_LENGTH,
   QuerySettingRequest,
   SearchReferrersRequest,
@@ -14,7 +13,6 @@ import {
 import { truncateMention } from 'driver/utils';
 import {
   ReferrersAutoListPosition,
-  ReferrersAutoListEnabled,
   ReferenceListExpandMode,
   MarkdownViewEvents,
   ROOT_ELEMENT_ID,
@@ -36,7 +34,6 @@ export class NoteReferrerListBuilder {
   constructor(private readonly view: MarkdownView) {}
   private listHeadingText?: string;
   private listPosition?: ReferrersAutoListPosition;
-  private autoInsertionEnabled?: ReferrersAutoListEnabled;
   private referrers?: Referrer[];
   private readonly ready = this.init();
   private maxTextLength?: number;
@@ -47,14 +44,6 @@ export class NoteReferrerListBuilder {
     this.view.addEventListener(
       MarkdownViewEvents.NoteDidUpdate,
       debounce(this.insert.bind(this), 500),
-    );
-
-    this.autoInsertionEnabled = await webviewApi.postMessage<ReferrersAutoListEnabled>(
-      MARKDOWN_SCRIPT_ID,
-      {
-        event: 'querySetting',
-        payload: { key: REFERRER_AUTO_LIST_ENABLED_SETTING },
-      },
     );
 
     this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
@@ -79,24 +68,18 @@ export class NoteReferrerListBuilder {
   private async insert() {
     await this.ready;
 
-    if (
-      typeof this.autoInsertionEnabled === 'undefined' ||
-      typeof this.listHeadingText === 'undefined'
-    ) {
+    if (typeof this.listPosition === 'undefined' || typeof this.listHeadingText === 'undefined') {
       throw new Error('can not auto insert');
     }
 
-    if (!this.listHeadingText) {
+    if (!this.listHeadingText || this.listPosition === ReferrersAutoListPosition.None) {
       return;
     }
 
     const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const allHeadingEls = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
 
-    if (
-      allHeadingEls.length === 0 &&
-      this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled
-    ) {
+    if (allHeadingEls.length === 0) {
       return;
     }
 
@@ -124,11 +107,7 @@ export class NoteReferrerListBuilder {
       throw new Error('can not auto insert');
     }
 
-    if (
-      this.autoInsertionEnabled === ReferrersAutoListEnabled.Disabled ||
-      (this.autoInsertionEnabled === ReferrersAutoListEnabled.EnabledWhenNoManual &&
-        this.listHeadingEls.length > 0)
-    ) {
+    if (this.listPosition === ReferrersAutoListPosition.None || this.listHeadingEls.length > 0) {
       return;
     }
 
