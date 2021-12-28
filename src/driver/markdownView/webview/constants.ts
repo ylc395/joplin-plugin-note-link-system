@@ -35,3 +35,5 @@ export const REFERRER_TITLE_CONTAINER_CLASS_NAME = 'note-link-referrer-title-con
 export const REFERRER_TITLE_CLASS_NAME = 'note-link-referrer-title';
 export const REFERENCE_ITEM_CLASS_NAME = 'note-link-reference-item';
 export const REFERENCE_CLASS_NAME = 'note-link-reference';
+
+export const TODO_CHECKBOX_ID_PREFIX = 'cb-label-md-checkbox-';

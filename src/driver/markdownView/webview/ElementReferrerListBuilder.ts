@@ -24,6 +24,7 @@ import {
   REFERRER_TITLE_CLASS_NAME,
   REFERENCE_CLASS_NAME,
   REFERENCE_ITEM_CLASS_NAME,
+  TODO_CHECKBOX_ID_PREFIX,
 } from './constants';
 import type { MarkdownView } from './index';
 
@@ -139,7 +140,9 @@ export class ElementReferrerListBuilder {
 
     const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const els = [...rootEl.querySelectorAll('[id]')] as HTMLElement[];
-    const elementIds = els.map((el) => el.id);
+    const elementIds = els
+      .map((el) => el.id)
+      .filter((id) => !id.startsWith(TODO_CHECKBOX_ID_PREFIX));
 
     this.referrersMap = await webviewApi.postMessage<SearchElementReferrersResponse>(
       MARKDOWN_SCRIPT_ID,
