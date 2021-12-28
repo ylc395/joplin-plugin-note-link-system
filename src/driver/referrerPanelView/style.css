@@ -30,12 +30,13 @@ li {
   margin: 1em 0;
 }
 
-.title-container {
+.title-container,
+.referrer-title:not([data-is-self]) {
   cursor: pointer;
 }
 
 .referrer-title[data-is-self]::before {
-  content: 'LOCAL';
+  content: 'SELF';
   border: solid 1px #b7eb8f;
   background: #f6ffed;
   color: #389e0d;
@@ -47,6 +48,7 @@ li {
   text-decoration: underline;
 }
 
+/* self referrer is not clickable */
 .referrer-title[data-is-self]:hover {
   text-decoration: none;
   cursor: auto;
