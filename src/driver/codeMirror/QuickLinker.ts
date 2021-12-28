@@ -7,7 +7,6 @@ import cardHeadingIcon from 'bootstrap-icons/icons/card-heading.svg';
 import boxIcon from 'bootstrap-icons/icons/box.svg';
 import plusIcon from 'bootstrap-icons/icons/file-earmark-plus.svg';
 import {
-  QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
   QUICK_LINK_AFTER_COMPLETION_SETTING,
@@ -58,19 +57,15 @@ export default class QuickLinker {
   }
 
   async init() {
-    this.enabled = await this.context.postMessage<boolean>({
-      event: 'querySetting',
-      payload: { key: QUICK_LINK_ENABLED_SETTING },
-    });
-
-    if (!this.enabled) {
-      return;
-    }
-
     this.triggerSymbol = await this.context.postMessage<string>({
       event: 'querySetting',
       payload: { key: QUICK_LINK_SYMBOL_SETTING },
     });
+
+    if (!this.triggerSymbol) {
+      return;
+    }
+
     this.linkToElementEnabled = await this.context.postMessage<boolean>({
       event: 'querySetting',
       payload: { key: QUICK_LINK_ELEMENTS_ENABLED_SETTING },
@@ -86,7 +81,6 @@ export default class QuickLinker {
   }
 
   private readonly doc = this.editor.getDoc();
-  private enabled?: boolean;
   private triggerSymbol?: string;
   private symbolRange?: { from: Position; to: Position };
   private linkToElementEnabled?: boolean;
@@ -95,7 +89,7 @@ export default class QuickLinker {
   private isUrlOnly?: boolean;
 
   private triggerHints() {
-    if (!this.triggerSymbol || !this.enabled) {
+    if (!this.triggerSymbol) {
       return;
     }
 

@@ -17,7 +17,6 @@ import {
   REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
   REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
   REFERRER_IDENTIFIER_ENABLED_SETTING,
-  QUICK_LINK_ENABLED_SETTING,
   QUICK_LINK_SYMBOL_SETTING,
   QUICK_LINK_SEARCH_PATTERN_SETTING,
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
@@ -160,11 +159,12 @@ const setting: Record<string, SettingItem> = {
     section: SECTION_NAME,
     description: 'Left 0 to disabled digest',
   },
-  [QUICK_LINK_ENABLED_SETTING]: {
-    label: 'Quick Link: Enable',
-    type: SettingItemType.Bool,
+  [QUICK_LINK_SYMBOL_SETTING]: {
+    label: 'Quick Link: Symbols To Trigger',
+    type: SettingItemType.String,
     public: true,
-    value: true,
+    value: '@@',
+    description: 'Symbols to trigger Quick Link. Left empty to disabled Quick Link',
     section: SECTION_NAME,
   },
   [QUICK_LINK_SHOW_PATH_SETTING]: {
@@ -186,13 +186,6 @@ const setting: Record<string, SettingItem> = {
     type: SettingItemType.Bool,
     public: true,
     value: false,
-    section: SECTION_NAME,
-  },
-  [QUICK_LINK_SYMBOL_SETTING]: {
-    label: 'Quick Link: Symbols To Trigger',
-    type: SettingItemType.String,
-    public: true,
-    value: '@@',
     section: SECTION_NAME,
   },
   [QUICK_LINK_AFTER_COMPLETION_SETTING]: {
