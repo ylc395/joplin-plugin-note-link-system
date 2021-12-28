@@ -49,9 +49,8 @@ Basically, this plugin is inspired by:
 ## RoadMap
 
 - Style beautifying
-- Support Quick Link to current note
-- Support finding referrer of current note
 - An Outlink panel to show links(to other Joplin note or Web page) in current note.
+- display metadata of referrer
 - ...
 
 Any PR / Issue / Discussion is welcome!
