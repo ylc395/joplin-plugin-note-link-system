@@ -173,11 +173,13 @@ export class LinkPreviewer {
   }
 
   private async addLocalPreviewerOf(linkEl: HTMLAnchorElement, containerEl: HTMLElement) {
-    const noteId = parseUrlFromLinkEl(linkEl)?.noteId;
+    const urlParts = parseUrlFromLinkEl(linkEl);
 
-    if (!noteId || linkEl.classList.contains(REFERENCE_CLASS_NAME)) {
+    if (!urlParts || linkEl.classList.contains(REFERENCE_CLASS_NAME)) {
       return false;
     }
+
+    const { noteId, elementId } = urlParts;
 
     const resources = await webviewApi.postMessage<ResourcesMap>(MARKDOWN_SCRIPT_ID, {
       event: 'queryNoteResources',
@@ -200,7 +202,7 @@ export class LinkPreviewer {
 
     const titleEl = document.createElement('div');
     titleEl.classList.add(LOCAL_PREVIEWER_TITLE_CLASS);
-    titleEl.innerHTML = `${path}/${title}`;
+    titleEl.innerHTML = `${path}/${title}` + (elementId ? `#${elementId}` : '');
 
     const bodyEl = document.createElement('article');
     bodyEl.classList.add(LOCAL_PREVIEWER_BODY_CLASS);
