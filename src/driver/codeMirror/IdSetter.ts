@@ -1,4 +1,4 @@
-import type { Editor, Range } from 'codemirror';
+import type { Editor } from 'codemirror';
 
 export default class IdSetter {
   constructor(private readonly editor: Editor) {}

@@ -1,4 +1,4 @@
-import type { Editor, Position, Token } from 'codemirror';
+import type { Editor, Position } from 'codemirror';
 import type CodeMirror from 'codemirror';
 import h1Icon from 'bootstrap-icons/icons/type-h1.svg';
 import h2Icon from 'bootstrap-icons/icons/type-h2.svg';
