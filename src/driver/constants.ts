@@ -52,8 +52,9 @@ export interface SearchNotesRequest {
 
 export interface SearchReferrersRequest {
   event: 'searchReferrers';
-  payload?: {
-    elementIds: string[];
+  payload: {
+    type: 'note' | 'panel';
+    elementIds?: string[];
   };
 }
 

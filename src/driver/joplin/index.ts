@@ -69,7 +69,7 @@ export default class App {
 
     return payload?.elementIds
       ? this.searchEngine.searchReferrersOfElements(selectedNoteId, payload.elementIds)
-      : this.searchEngine.searchReferrers(selectedNoteId);
+      : this.searchEngine.searchReferrers(selectedNoteId, payload.type);
   }
 
   private async getNoteHtml(noteId: string) {

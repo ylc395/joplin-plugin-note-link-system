@@ -14,7 +14,6 @@ import {
   REFERRER_ELEMENT_NUMBER_TYPE,
   REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH,
 } from 'driver/constants';
-import { truncateMention } from 'driver/utils';
 import {
   MarkdownViewEvents,
   ReferrersListNumberType,
@@ -148,7 +147,7 @@ export class ElementReferrerListBuilder {
       MARKDOWN_SCRIPT_ID,
       {
         event: 'searchReferrers',
-        payload: { elementIds },
+        payload: { type: 'note', elementIds },
       },
     );
   }
@@ -191,7 +190,6 @@ export class ElementReferrerListBuilder {
     olEL.classList.add(LIST_CLASS_NAME);
     olEL.innerHTML = ElementReferrerListBuilder.renderList({
       notes,
-      truncateMention,
       currentNoteId: this.view.currentNoteId,
       textLength: this.maxTextLength,
       elId,
@@ -236,7 +234,7 @@ export class ElementReferrerListBuilder {
                   data-note-link-to-element-id="<%= elId  %>"
                   <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                 >
-                    <%= truncateMention(mention, textLength) %>
+                    <%= mention %>
                 </a>
               </li>
             <% } %>

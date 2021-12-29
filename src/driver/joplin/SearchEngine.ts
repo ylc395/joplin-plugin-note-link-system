@@ -23,7 +23,17 @@ export default class SearchEngine {
   private referrerSearchPattern?: string;
   private needPathWhenSearching?: boolean;
   private previewEnabled?: boolean;
-  private mentionTextLength?: number;
+  private elementMentionTextLength?: number;
+  private noteMentionTextLength?: number;
+  private panelMentionTextLength?: number;
+
+  private getMentionTextLength(type: 'element' | 'note' | 'panel') {
+    return {
+      element: this.elementMentionTextLength,
+      note: this.noteMentionTextLength,
+      panel: this.panelMentionTextLength,
+    }[type];
+  }
 
   private async buildNotebookIndex() {
     if ((!this.needPathWhenSearching && !this.previewEnabled) || this.isBuildingIndex) {
@@ -51,15 +61,24 @@ export default class SearchEngine {
   private async init(isFirstTime: boolean) {
     const buildNoteIndex = debounce(this.buildNotebookIndex.bind(this), 1000);
 
-    this.noteSearchPattern = await joplin.settings.value(QUICK_LINK_SEARCH_PATTERN_SETTING);
-    this.referrerSearchPattern = await joplin.settings.value(REFERRER_SEARCH_PATTERN_SETTING);
-    this.needPathWhenSearching = await joplin.settings.value(QUICK_LINK_SHOW_PATH_SETTING);
-    this.previewEnabled = await joplin.settings.value(PREVIEWER_ENABLED_SETTING);
-    this.mentionTextLength = Math.max(
-      await joplin.settings.value(REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH),
-      await joplin.settings.value(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH),
-      await joplin.settings.value(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH),
-    );
+    [
+      this.noteSearchPattern,
+      this.referrerSearchPattern,
+      this.needPathWhenSearching,
+      this.previewEnabled,
+      this.elementMentionTextLength,
+      this.noteMentionTextLength,
+      this.panelMentionTextLength,
+    ] = await Promise.all([
+      joplin.settings.value(QUICK_LINK_SEARCH_PATTERN_SETTING),
+      joplin.settings.value(REFERRER_SEARCH_PATTERN_SETTING),
+      joplin.settings.value(QUICK_LINK_SHOW_PATH_SETTING),
+      joplin.settings.value(PREVIEWER_ENABLED_SETTING),
+      joplin.settings.value(REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH),
+      joplin.settings.value(REFERRER_LIST_MENTION_TEXT_MAX_LENGTH),
+      joplin.settings.value(REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH),
+    ]);
+
     buildNoteIndex();
 
     if (isFirstTime) {
@@ -136,20 +155,20 @@ export default class SearchEngine {
     return path;
   }
 
-  async searchReferrers(noteId: string): Promise<Referrer[]> {
+  async searchReferrers(noteId: string, type: 'note' | 'panel'): Promise<Referrer[]> {
     if (typeof this.referrerSearchPattern === 'undefined') {
       throw new Error('no referrers search pattern');
-    }
-
-    if (typeof this.mentionTextLength === 'undefined') {
-      throw new Error('no mentionTextLength');
     }
 
     if (!this.referrerSearchPattern) {
       return [];
     }
 
-    const { mentionTextLength } = this;
+    const mentionTextLength = this.getMentionTextLength(type);
+
+    if (typeof mentionTextLength === 'undefined') {
+      throw new Error('no mentionTextLength');
+    }
 
     try {
       const keyword = this.referrerSearchPattern.replaceAll(
@@ -181,15 +200,15 @@ export default class SearchEngine {
       throw new Error('no element referrers search pattern');
     }
 
-    if (typeof this.mentionTextLength === 'undefined') {
-      throw new Error('no mentionTextLength');
-    }
-
     if (!this.referrerSearchPattern) {
       return {};
     }
 
-    const { mentionTextLength } = this;
+    const mentionTextLength = this.getMentionTextLength('element');
+
+    if (typeof mentionTextLength === 'undefined') {
+      throw new Error('no mentionTextLength');
+    }
 
     try {
       const result = {} as SearchElementReferrersResponse;

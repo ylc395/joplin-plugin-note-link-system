@@ -108,17 +108,17 @@ export default function extractMentions(
   mentionTextLength: number,
 ) {
   const mentions: string[] = [];
+
+  if (mentionTextLength === 0) {
+    return [...content.matchAll(new RegExp(`:/${keyword}`, 'g'))].map(() => '');
+  }
+
   const matches = getMatches(keyword, content);
 
   for (const match of matches) {
     const { index, length } = match;
 
     if (typeof index === 'undefined') {
-      continue;
-    }
-
-    if (!mentionTextLength) {
-      mentions.push('');
       continue;
     }
 

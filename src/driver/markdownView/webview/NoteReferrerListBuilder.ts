@@ -10,7 +10,6 @@ import {
   SearchReferrersRequest,
   SearchNoteReferrersResponse,
 } from 'driver/constants';
-import { truncateMention } from 'driver/utils';
 import {
   ReferrersAutoListPosition,
   ReferenceListExpandMode,
@@ -82,6 +81,7 @@ export class NoteReferrerListBuilder {
         MARKDOWN_SCRIPT_ID,
         {
           event: 'searchReferrers',
+          payload: { type: 'note' },
         },
       );
     }
@@ -126,7 +126,6 @@ export class NoteReferrerListBuilder {
     const listHtml = NoteReferrerListBuilder.renderList({
       currentNoteId: this.view.currentNoteId,
       notes: this.referrers,
-      truncateMention,
       textLength: this.maxTextLength,
       expand: [
         ReferenceListExpandMode.ExpandBoth,
@@ -175,7 +174,7 @@ export class NoteReferrerListBuilder {
                   data-note-link-reference-index="<%= index + 1 %>"
                   <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                 >
-                    <%= truncateMention(mention, textLength) %>
+                    <%= mention %>
                 </a>
               </li>
             <% } %>

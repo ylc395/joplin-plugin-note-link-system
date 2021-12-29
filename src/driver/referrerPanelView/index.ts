@@ -9,7 +9,6 @@ import {
   REFERRER_PANEL_REFERENCE_EXPAND_SETTING,
   REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
 } from 'driver/constants';
-import { truncateMention } from 'driver/utils';
 import type SearchEngine from '../joplin/SearchEngine';
 
 export class ReferrerPanelView {
@@ -132,7 +131,7 @@ export class ReferrerPanelView {
                         class="reference"
                         <%= currentNoteId === note.id ? 'data-is-self' : '' %>
                         data-note-id="<%= note.id %>"
-                        data-reference-index="<%= index + 1 %>"><%= truncateMention(mention, textLength) %></a>
+                        data-reference-index="<%= index + 1 %>"><%= mention %></a>
                     </li>
                   <% } %>
                 </ol>
@@ -151,7 +150,7 @@ export class ReferrerPanelView {
       throw new Error('no current note id');
     }
 
-    const notes = await this.searchEngine.searchReferrers(this.currentNoteId);
+    const notes = await this.searchEngine.searchReferrers(this.currentNoteId, 'panel');
     const html = ReferrerPanelView.render({
       notes,
       currentNoteId: this.currentNoteId,
@@ -159,7 +158,6 @@ export class ReferrerPanelView {
       panelTitle: this.panelTitle,
       expand: this.isExpandingReference,
       textLength: this.maxTextLength,
-      truncateMention,
     });
     joplin.views.panels.setHtml(this.viewHandler, html);
   }
