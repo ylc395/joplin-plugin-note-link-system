@@ -49,9 +49,10 @@ const setting: Record<string, SettingItem> = {
     type: SettingItemType.Int,
     isEnum: true,
     public: true,
-    value: ReferrersAutoListPosition.Bottom,
+    value: ReferrersAutoListPosition.None,
     section: SECTION_NAME,
-    description: 'Select "None" to disabled auto insertion',
+    description:
+      'Select "None" to disabled auto insertion. Auto insertion will always be disabled when you insert referrers list manually in your note.',
     options: {
       [ReferrersAutoListPosition.None]: 'None',
       [ReferrersAutoListPosition.Top]: 'Note Top',

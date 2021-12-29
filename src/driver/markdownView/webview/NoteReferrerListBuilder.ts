@@ -37,7 +37,6 @@ export class NoteReferrerListBuilder {
   private referrers?: Referrer[];
   private readonly ready = this.init();
   private maxTextLength?: number;
-  private listHeadingEls?: HTMLElement[];
 
   private async init() {
     this.view.addEventListener(MarkdownViewEvents.NewNoteOpen, () => (this.referrers = undefined));
@@ -72,18 +71,11 @@ export class NoteReferrerListBuilder {
       throw new Error('can not auto insert');
     }
 
-    if (!this.listHeadingText || this.listPosition === ReferrersAutoListPosition.None) {
+    const listHeadingEls = this.prepareHeadings();
+
+    if (listHeadingEls.length === 0) {
       return;
     }
-
-    const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
-    const allHeadingEls = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
-
-    if (allHeadingEls.length === 0) {
-      return;
-    }
-
-    this.listHeadingEls = allHeadingEls.filter((el) => el.innerText === this.listHeadingText);
 
     if (!this.referrers) {
       this.referrers = await webviewApi.postMessage<SearchNoteReferrersResponse>(
@@ -94,38 +86,39 @@ export class NoteReferrerListBuilder {
       );
     }
 
-    await this.prepareHeadings();
-    await this.insertListAfterHeadings();
+    this.insertListAfterHeadings(listHeadingEls);
   }
 
-  private async prepareHeadings() {
-    if (
-      typeof this.listHeadingText === 'undefined' ||
-      typeof this.listPosition === 'undefined' ||
-      !this.listHeadingEls
-    ) {
+  private prepareHeadings() {
+    if (typeof this.listHeadingText === 'undefined' || typeof this.listPosition === 'undefined') {
       throw new Error('can not auto insert');
     }
 
-    if (this.listPosition === ReferrersAutoListPosition.None || this.listHeadingEls.length > 0) {
-      return;
+    if (!this.listHeadingText) {
+      return [];
     }
 
     const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
     const allHeadingELs = [...rootEl.querySelectorAll('h1,h2,h3,h4,h5,h6')] as HTMLElement[];
-    const minLevel = Math.min(...allHeadingELs.map((el) => Number(el.tagName[1])));
-    const headingEl = document.createElement(`h${Number.isFinite(minLevel) ? minLevel : 1}`);
+    const listHeadingEls = allHeadingELs.filter((el) => el.innerText === this.listHeadingText);
 
-    headingEl.innerText = this.listHeadingText;
-    this.listHeadingEls.push(headingEl);
-    rootEl.insertAdjacentElement(
-      this.listPosition === ReferrersAutoListPosition.Top ? 'afterbegin' : 'beforeend',
-      headingEl,
-    );
+    if (listHeadingEls.length === 0 && this.listPosition !== ReferrersAutoListPosition.None) {
+      const minLevel = Math.min(...allHeadingELs.map((el) => Number(el.tagName[1])));
+      const headingEl = document.createElement(`h${Number.isFinite(minLevel) ? minLevel : 1}`);
+
+      headingEl.innerText = this.listHeadingText;
+      listHeadingEls.push(headingEl);
+      rootEl.insertAdjacentElement(
+        this.listPosition === ReferrersAutoListPosition.Top ? 'afterbegin' : 'beforeend',
+        headingEl,
+      );
+    }
+
+    return listHeadingEls;
   }
 
-  private async insertListAfterHeadings() {
-    if (!this.referrers || !this.listHeadingEls || typeof this.view.expandMode === 'undefined') {
+  private async insertListAfterHeadings(listHeadingEls: HTMLElement[]) {
+    if (!this.referrers || typeof this.view.expandMode === 'undefined') {
       throw new Error('can not insert list');
     }
 
@@ -141,7 +134,7 @@ export class NoteReferrerListBuilder {
       ].includes(this.view.expandMode),
     });
 
-    for (const headingEl of this.listHeadingEls) {
+    for (const headingEl of listHeadingEls) {
       const sectionEl = hasReferrers ? document.createElement('ol') : document.createElement('p');
 
       sectionEl.innerHTML = hasReferrers ? listHtml : '<p>No referrers.</p>';
