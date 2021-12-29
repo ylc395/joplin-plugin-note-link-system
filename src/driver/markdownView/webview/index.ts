@@ -8,7 +8,7 @@ import {
   QuerySettingRequest,
 } from 'driver/constants';
 import type { Note } from 'model/Referrer';
-import { MarkdownViewEvents, ReferenceListExpandMode } from './constants';
+import { MarkdownViewEvents, ReferenceListExpandMode, ROOT_ELEMENT_ID } from './constants';
 import { NoteRouter } from './NoteRouter';
 import { LinkPreviewer } from './LinkPreviewer';
 
@@ -51,6 +51,8 @@ export class MarkdownView extends EventTarget {
     this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
     this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
 
+    this.initGlobalStyle();
+
     // this event doesn't fire on app start
     document.addEventListener('joplin-noteDidUpdate', async () => {
       timer && clearTimeout(timer);
@@ -88,6 +90,27 @@ export class MarkdownView extends EventTarget {
       }
     });
   }
+
+  private initGlobalStyle() {
+    const backgroundColor = getBackgroundColor();
+    const css = `.tippy-box[data-theme^="note-link-"] { background-color: ${backgroundColor}}`;
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = css;
+
+    document.head.appendChild(styleEl);
+  }
+}
+
+function getBackgroundColor() {
+  let el: HTMLElement = document.getElementById(ROOT_ELEMENT_ID)!;
+  let color = getComputedStyle(el).backgroundColor;
+
+  while (color === 'rgba(0, 0, 0, 0)' && el.parentElement) {
+    el = el.parentElement;
+    color = getComputedStyle(el).backgroundColor;
+  }
+
+  return color;
 }
 
 new MarkdownView();
