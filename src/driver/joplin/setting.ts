@@ -65,7 +65,7 @@ const setting: Record<string, SettingItem> = {
     public: true,
     value: 120,
     section: SECTION_NAME,
-    description: 'Left 0 to disabled digest',
+    description: 'Left 0 to disabled digest to get better performance',
   },
   [REFERRER_ELEMENT_NUMBER_ENABLED]: {
     label: 'Markdown View: Enable Searching Referrers For Elements',
@@ -93,7 +93,7 @@ const setting: Record<string, SettingItem> = {
     public: true,
     value: 120,
     section: SECTION_NAME,
-    description: 'Left 0 to disabled digest',
+    description: 'Left 0 to disabled digest to get better performance',
   },
   [REFERRER_VIEW_REFERENCE_EXPAND_SETTING]: {
     section: SECTION_NAME,
@@ -144,7 +144,7 @@ const setting: Record<string, SettingItem> = {
     public: true,
     value: 120,
     section: SECTION_NAME,
-    description: 'Left 0 to disabled digest',
+    description: 'Left 0 to disabled digest to get better performance',
   },
   [QUICK_LINK_SYMBOL_SETTING]: {
     label: 'Quick Link: Symbols To Trigger',
