@@ -120,6 +120,7 @@ h6.note-link-identifier-parent {
 }
 
 .note-link-reference {
+  white-space: pre-line;
   color: rgb(145, 145, 145);
 }
 

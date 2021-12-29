@@ -173,9 +173,7 @@ export class NoteReferrerListBuilder {
                   data-note-link-referrer-id="<%= note.id %>"
                   data-note-link-reference-index="<%= index + 1 %>"
                   <%= currentNoteId === note.id ? 'data-is-self' : '' %>
-                >
-                    <%= mention %>
-                </a>
+                > <%= mention %></a>
               </li>
             <% } %>
           </ol>
