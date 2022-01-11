@@ -44,6 +44,7 @@ export type ExtendedEditor = {
 
 const HINT_ITEM_CLASS = 'note-link-hint';
 const HINT_ITEM_PATH_CLASS = 'note-link-hint-path';
+const HINT_NEW_ITEM_CLASS = 'note-link-hint-new';
 
 export default class QuickLinker {
   constructor(
@@ -320,45 +321,47 @@ export default class QuickLinker {
       title,
       id,
     }));
-    const isCreatingNewNote = hintList.length === 0 && this.createNoteEnabled;
+    const isCreatingNewNote = keyword && this.createNoteEnabled;
     const completion: Completion = {
       from,
       to,
-      list: isCreatingNewNote ? this.getNewNoteHints(keyword) : hintList,
+      list: hintList.concat(isCreatingNewNote ? this.getNewNoteHints(keyword) : []),
     };
 
-    if (!isCreatingNewNote) {
-      this.cm.on(completion, 'pick', ((hint: Hint) => {
-        const titleRange = [
-          { line: to.line, ch: from.ch + 1 },
-          { line: to.line, ch: from.ch + hint.title!.length + 1 },
-        ] as [Position, Position];
+    this.cm.on(completion, 'pick', ((hint: Hint) => {
+      if (hint.className?.includes(HINT_NEW_ITEM_CLASS)) {
+        return;
+      }
 
-        let positionAfterNoteId = {
-          line: to.line,
-          ch: from.ch + hint.text.length - 1,
-        };
+      const titleRange = [
+        { line: to.line, ch: from.ch + 1 },
+        { line: to.line, ch: from.ch + hint.title!.length + 1 },
+      ] as [Position, Position];
 
-        if (this.isUrlOnly) {
-          const token = this.editor.getTokenAt({ line: cursorLine, ch: cursorCh });
-          this.doc.replaceRange(
-            hint.text,
-            { line: to.line, ch: token.start },
-            { line: to.line, ch: token.end },
-          );
+      let positionAfterNoteId = {
+        line: to.line,
+        ch: from.ch + hint.text.length - 1,
+      };
 
-          positionAfterNoteId.ch = token.start + hint.text.length;
-        }
+      if (this.isUrlOnly) {
+        const token = this.editor.getTokenAt({ line: cursorLine, ch: cursorCh });
+        this.doc.replaceRange(
+          hint.text,
+          { line: to.line, ch: token.start },
+          { line: to.line, ch: token.end },
+        );
 
-        if (!this.linkToElementEnabled) {
-          this.afterCompletion('note', titleRange);
-          return;
-        }
+        positionAfterNoteId.ch = token.start + hint.text.length;
+      }
 
-        this.doc.setCursor(positionAfterNoteId);
-        this.hintForElements({ id: hint.id!, title: hint.title! }, positionAfterNoteId, titleRange);
-      }) as any);
-    }
+      if (!this.linkToElementEnabled) {
+        this.afterCompletion('note', titleRange);
+        return;
+      }
+
+      this.doc.setCursor(positionAfterNoteId);
+      this.hintForElements({ id: hint.id!, title: hint.title! }, positionAfterNoteId, titleRange);
+    }) as any);
 
     return completion;
   }
