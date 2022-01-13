@@ -54,3 +54,7 @@ Basically, this plugin is inspired by:
 - ...
 
 Any PR / Issue / Discussion is welcome!
+
+## Related Plugin
+
+- [Knowledge Graph](https://github.com/agerardin/joplin-plugin-knowledge-graph): turns notes into nodes in a knowledge graph.
