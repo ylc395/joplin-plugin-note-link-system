@@ -5,28 +5,91 @@ import targetIcon from 'bootstrap-icons/icons/box-arrow-in-left.svg';
 import { MAIN_MARK_CLASS_NAME } from 'driver/constants';
 
 const parser = unified().use(remarkParse);
-function getMatches(keyword: string, content: string) {
+function getFragments(keyword: string, content: string, fragmentLength: number) {
   const rootNode = parser.parse(content);
-  const matches: { index?: number; length: number }[] = [];
-  const filterLink = (node: typeof rootNode | typeof rootNode.children[number]) => {
+  const matches: { textFragment: string; prefixLength: number }[] = [];
+
+  const filterLink = (
+    node: typeof rootNode | typeof rootNode.children[number],
+    ancestors: (typeof rootNode | typeof rootNode.children[number])[],
+  ) => {
     if (node.type === 'link') {
-      if (!node.url.includes(keyword)) {
-        return;
+      if (node.url.includes(keyword)) {
+        let depth = 1;
+        let parent = ancestors[ancestors.length - depth];
+        let textFragment = content.slice(node.position!.start.offset, node.position!.end.offset);
+        let targetNode: typeof parent = node;
+        let over = false;
+        let prefixLength = 0;
+        const maxLength = fragmentLength + `[](:/${node.url})`.length;
+
+        while (parent) {
+          if (!('children' in parent)) {
+            throw new Error('no child in parent');
+          }
+
+          const index = parent.children.findIndex((n) => n === targetNode);
+          let siblingOffset = 1;
+          let sibling1 = parent.children[index - siblingOffset];
+          let sibling2 = parent.children[index + siblingOffset];
+
+          while (sibling1 || sibling2) {
+            const prefix = sibling1
+              ? content.slice(sibling1.position?.start.offset, targetNode.position?.start.offset)
+              : '';
+
+            if (`${prefix}${textFragment}`.length < maxLength) {
+              textFragment = `${prefix}${textFragment}`;
+              prefixLength += prefix.length;
+            } else {
+              over = true;
+              break;
+            }
+
+            const suffix = sibling2
+              ? content.slice(targetNode.position?.end.offset, sibling2.position?.end.offset)
+              : '';
+
+            if (`${suffix}${textFragment}`.length < maxLength) {
+              textFragment = `${textFragment}${suffix}`;
+            } else {
+              over = true;
+              break;
+            }
+
+            siblingOffset += 1;
+
+            if (!('children' in parent)) {
+              throw new Error('no child in parent');
+            }
+
+            sibling1 = parent.children[index - siblingOffset];
+            sibling2 = parent.children[index + siblingOffset];
+          }
+
+          if (over) {
+            break;
+          }
+
+          depth += 1;
+          targetNode = parent;
+          parent = ancestors[ancestors.length - depth];
+        }
+
+        matches.push({ textFragment: escape(textFragment), prefixLength });
       }
 
-      const { start, end } = node.position!;
-      matches.push({ index: start.offset, length: end.offset! - start.offset! });
       return;
     }
 
     if ('children' in node) {
       for (const child of node.children) {
-        filterLink(child);
+        filterLink(child, [...ancestors, node]);
       }
     }
   };
 
-  filterLink(rootNode);
+  filterLink(rootNode, []);
   return matches;
 }
 
@@ -113,19 +176,9 @@ export default function extractMentions(
     return [...content.matchAll(new RegExp(`:/${keyword}`, 'g'))].map(() => '');
   }
 
-  const matches = getMatches(keyword, content);
+  const fragments = getFragments(keyword, content, mentionTextLength);
 
-  for (const match of matches) {
-    const { index, length } = match;
-
-    if (typeof index === 'undefined') {
-      continue;
-    }
-
-    const start = Math.max(0, index - Math.ceil(mentionTextLength / 2));
-    const end = Math.min(content.length, index + length + Math.ceil(mentionTextLength / 2));
-    const textFragment = escape(content.slice(start, end));
-    const prefixLength = index - start;
+  for (const { textFragment, prefixLength } of fragments) {
     const { text, mainMarkFound } = extractMention(keyword, textFragment, prefixLength);
 
     if (mainMarkFound) {
