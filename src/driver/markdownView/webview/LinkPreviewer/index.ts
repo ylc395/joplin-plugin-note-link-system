@@ -9,11 +9,13 @@ import {
   QueryNoteRequest,
   QueryNoteResourcesRequest,
 } from 'driver/constants';
-import { REFERENCE_CLASS_NAME, ROOT_ELEMENT_ID } from '../constants';
-import { Box, LocalBox, RemoteBox } from './Box';
+import { REFERENCE_CLASS_NAME, ROOT_ELEMENT_ID, MarkdownViewEvents } from '../constants';
+import { Box, LocalBox, RemoteBox, BoxEvents } from './Box';
 import { parseUrlFromLinkEl } from './utils';
+import type { MarkdownView } from '../index';
 
 const PREVIEWER_CLASS = 'note-link-previewer';
+const PINNED_PREVIEWER_CLASS = 'note-link-previewer-pinned';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -27,15 +29,21 @@ declare const webviewApi: {
 };
 
 export class LinkPreviewer {
-  constructor() {
+  constructor(private readonly markdownView: MarkdownView) {
     this.init();
   }
 
   private tooltip?: Instance;
   private hoverDelay?: number;
   private tooltipTimer?: ReturnType<typeof setTimeout>;
+  private readonly pinnedTooltips = new Map<HTMLAnchorElement, Instance>();
+  private activeBox?: Box;
+  private zIndex = 1;
 
   private async init() {
+    this.markdownView.addEventListener(MarkdownViewEvents.NewNoteOpen, () =>
+      this.pinnedTooltips.clear(),
+    );
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
       payload: { key: PREVIEWER_ENABLED_SETTING },
@@ -49,8 +57,13 @@ export class LinkPreviewer {
       event: 'querySetting',
       payload: { key: PREVIEWER_HOVER_DELAY_SETTING },
     });
-    delegate(`a`, 'mouseover', (e: any) => this.addPreviewerOf(e.delegateTarget));
+    delegate(`a`, 'mouseover', (e: any) => this.preview(e.delegateTarget));
     delegate(`a`, 'mouseout', () => this.cancelPreview());
+    delegate(
+      `.${PINNED_PREVIEWER_CLASS}`,
+      'click',
+      (e: any) => (e.delegateTarget.style.zIndex = `${this.zIndex++}`),
+    );
   }
 
   private async cancelPreview() {
@@ -60,17 +73,22 @@ export class LinkPreviewer {
     }
   }
 
-  private async addPreviewerOf(linkEl: HTMLAnchorElement) {
+  private async preview(linkEl: HTMLAnchorElement) {
     if (linkEl.matches(`.${PREVIEWER_CLASS} *`)) {
+      return;
+    }
+
+    if (this.pinnedTooltips.has(linkEl)) {
+      const tooltip = this.pinnedTooltips.get(linkEl);
+      tooltip!.popper.style.zIndex = `${this.zIndex++}`;
       return;
     }
 
     const url = linkEl.href;
     const isRemote = url.startsWith('http');
-    let box: Box;
 
     if (isRemote) {
-      box = new RemoteBox(url);
+      this.activeBox = new RemoteBox(url);
     } else {
       const urlParts = parseUrlFromLinkEl(linkEl);
 
@@ -78,27 +96,59 @@ export class LinkPreviewer {
         return;
       }
 
-      box = new LocalBox(urlParts);
+      this.activeBox = new LocalBox(urlParts);
     }
 
-    this.createTooltip(linkEl, box);
+    this.activeBox.on(BoxEvents.Pinned, () => this.pinTooltip(linkEl));
+    this.activeBox.on(BoxEvents.Unpinned, () => this.unpinTooltip(linkEl));
+
+    this.createTooltip(linkEl);
   }
 
-  private createTooltip(linkEl: HTMLAnchorElement, box: Box) {
-    this.cancelPreview();
+  private pinTooltip(linkEl: HTMLAnchorElement) {
+    if (!this.tooltip || !this.activeBox) {
+      throw new Error('no tooltip');
+    }
 
-    const { containerEl } = box;
+    this.pinnedTooltips.set(linkEl, this.tooltip);
+    this.tooltip.popper.classList.add(PINNED_PREVIEWER_CLASS);
+    this.tooltip.setProps({
+      placement: this.tooltip.popperInstance!.state.placement,
+    });
+    this.tooltip.popperInstance!.setOptions((options) => ({
+      ...options,
+      modifiers: [...options.modifiers!, { name: 'flip', enabled: false }],
+    }));
+    this.tooltip.popper.style.zIndex = `${this.zIndex++}`;
+    this.tooltip = undefined;
+  }
 
-    if (this.tooltip) {
+  private unpinTooltip(linkEl: HTMLAnchorElement) {
+    const tooltip = this.pinnedTooltips.get(linkEl);
+
+    if (!tooltip) {
+      throw new Error('no box');
+    }
+
+    this.pinnedTooltips.delete(linkEl);
+    tooltip.destroy();
+  }
+
+  private createTooltip(linkEl: HTMLAnchorElement) {
+    if (this.tooltip && ![...this.pinnedTooltips.values()].includes(this.tooltip)) {
       this.tooltip.destroy();
       this.tooltip = undefined;
     }
 
     this.tooltipTimer = setTimeout(() => {
+      if (!this.activeBox) {
+        throw new Error('no box');
+      }
+
       this.tooltipTimer = undefined;
       this.tooltip = tippy(linkEl, {
         duration: [300, 0],
-        content: containerEl,
+        content: this.activeBox.containerEl,
         theme: 'note-link-previewer',
         interactive: true,
         placement: 'top',
@@ -107,12 +157,8 @@ export class LinkPreviewer {
         showOnCreate: true,
         trigger: 'mouseenter',
         appendTo: () => document.getElementById(ROOT_ELEMENT_ID)!,
-        onUntrigger: () => {
-          if (this.tooltip) {
-            this.tooltip.destroy();
-            this.tooltip = undefined;
-          }
-        },
+        onHidden: (instance) => instance.destroy(),
+        onHide: () => (this.pinnedTooltips.has(linkEl) ? false : undefined),
         popperOptions: {
           modifiers: [
             {
@@ -132,11 +178,11 @@ export class LinkPreviewer {
         },
       });
 
-      if (box instanceof LocalBox) {
-        window.requestAnimationFrame(() => {
-          box.scrollToElement();
-        });
-      }
+      window.requestAnimationFrame(() => {
+        if (this.activeBox instanceof LocalBox) {
+          this.activeBox.scrollToElement();
+        }
+      });
     }, this.hoverDelay);
   }
 }

@@ -1,3 +1,6 @@
+import EventEmitter from 'eventemitter3';
+import pinAngleIcon from 'bootstrap-icons/icons/pin-angle.svg';
+import xIcon from 'bootstrap-icons/icons/x.svg';
 import type { Note } from 'model/Referrer';
 import {
   FetchNoteHtmlRequest,
@@ -9,6 +12,7 @@ import {
 import { processNoteContent, ResourcesMap } from './utils';
 
 const PREVIEWER_CLASS = 'note-link-previewer';
+const PREVIEWER_PIN_BUTTON_CLASS = 'note-link-previewer-pin-button';
 
 const LOCAL_PREVIEWER_CLASS = 'note-link-previewer-local';
 const LOCAL_PREVIEWER_TITLE_CLASS = 'note-link-previewer-local-title';
@@ -18,6 +22,11 @@ const REMOTE_PREVIEWER_CLASS = 'note-link-previewer-remote';
 const REMOTE_PREVIEWER_TITLE_CLASS = 'note-link-previewer-remote-title';
 const REMOTE_PREVIEWER_BODY_CLASS = 'note-link-previewer-remote-body';
 const REMOTE_PREVIEWER_EMPTY_BODY_CLASS = 'note-link-previewer-remote-empty-body';
+
+export enum BoxEvents {
+  Pinned = 'PINNED',
+  Unpinned = 'UNPINNED',
+}
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -30,7 +39,7 @@ declare const webviewApi: {
   ) => Promise<T>;
 };
 
-export abstract class Box {
+export abstract class Box extends EventEmitter<BoxEvents> {
   readonly containerEl = document.createElement('div');
   protected readonly titleEl = document.createElement('div');
   protected abstract readonly bodyEl: HTMLElement;
@@ -39,7 +48,25 @@ export abstract class Box {
     this.containerEl.append(this.titleEl, this.bodyEl);
   }
 
-  protected abstract initTitle(): void;
+  private isPinned = false;
+
+  protected initTitle() {
+    const pinButtonEL = document.createElement('button');
+    pinButtonEL.classList.add(PREVIEWER_PIN_BUTTON_CLASS);
+    pinButtonEL.innerHTML = pinAngleIcon;
+    pinButtonEL.addEventListener('click', () => {
+      if (this.isPinned) {
+        this.isPinned = false;
+        this.emit(BoxEvents.Unpinned);
+      } else {
+        this.isPinned = true;
+        this.emit(BoxEvents.Pinned);
+        pinButtonEL.innerHTML = xIcon;
+      }
+    });
+    this.titleEl.appendChild(pinButtonEL);
+  }
+
   protected abstract initBody(): void;
 }
 
@@ -88,6 +115,7 @@ export class LocalBox extends Box {
 
     this.titleEl.classList.add(LOCAL_PREVIEWER_TITLE_CLASS);
     this.titleEl.innerHTML = `${path}/${title}` + (elementId ? `#${elementId}` : '');
+    super.initTitle();
   }
 
   scrollToElement() {
@@ -130,6 +158,7 @@ export class RemoteBox extends Box {
 
     this.titleEl.classList.add(REMOTE_PREVIEWER_TITLE_CLASS);
     this.titleEl.innerHTML = doc.title;
+    super.initTitle();
   }
 
   protected async initBody() {

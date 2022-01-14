@@ -43,6 +43,7 @@
   "dependencies": {
     "bootstrap-icons": "^1.7.0",
     "delegate": "^3.2.0",
+    "eventemitter3": "^4.0.7",
     "html-escaper": "^3.0.3",
     "lodash.debounce": "^4.0.8",
     "lodash.template": "^4.5.0",

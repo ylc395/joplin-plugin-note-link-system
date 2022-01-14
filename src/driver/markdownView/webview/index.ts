@@ -29,7 +29,7 @@ export class MarkdownView extends EventTarget {
     new ElementReferrerListBuilder(this);
     new NoteReferrerListBuilder(this);
     new CopyAnchorBuilder(this);
-    new LinkPreviewer();
+    new LinkPreviewer(this);
   }
 
   ready = this.init();

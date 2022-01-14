@@ -191,3 +191,14 @@ h6.note-link-identifier-parent {
 .note-link-previewer-remote-empty-body {
   margin-bottom: 0;
 }
+.note-link-previewer-pin-button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.note-link-previewer-pin-button > svg {
+  height: 1em;
+}
