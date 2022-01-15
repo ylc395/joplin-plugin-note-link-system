@@ -38,11 +38,8 @@ export class NoteReferrerListBuilder {
   private maxTextLength?: number;
 
   private async init() {
-    this.view.addEventListener(MarkdownViewEvents.NewNoteOpen, () => (this.referrers = undefined));
-    this.view.addEventListener(
-      MarkdownViewEvents.NoteDidUpdate,
-      debounce(this.insert.bind(this), 500),
-    );
+    this.view.on(MarkdownViewEvents.NewNoteOpen, () => (this.referrers = undefined));
+    this.view.on(MarkdownViewEvents.NoteDidUpdate, debounce(this.insert.bind(this), 500));
 
     this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',

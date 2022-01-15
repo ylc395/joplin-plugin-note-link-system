@@ -41,9 +41,7 @@ export class LinkPreviewer {
   private zIndex = 1;
 
   private async init() {
-    this.markdownView.addEventListener(MarkdownViewEvents.NewNoteOpen, () =>
-      this.pinnedTooltips.clear(),
-    );
+    this.markdownView.on(MarkdownViewEvents.NewNoteOpen, () => this.pinnedTooltips.clear());
     const enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
       payload: { key: PREVIEWER_ENABLED_SETTING },

@@ -15,6 +15,7 @@ import {
   SCROLL_ANCHOR_ID,
   TODO_CHECKBOX_ID_PREFIX,
 } from './constants';
+import type { MarkdownView } from './index';
 
 const IDENTIFIER_CLASS_NAME = 'note-link-identifier';
 const IDENTIFIER_PARENT_CLASS_NAME = 'note-link-identifier-parent';
@@ -27,7 +28,7 @@ declare const webviewApi: {
 };
 
 export class CopyAnchorBuilder {
-  constructor(private readonly view: EventTarget) {}
+  constructor(private readonly view: MarkdownView) {}
 
   private currentNote?: Note;
   private enabled?: Boolean;
@@ -62,12 +63,10 @@ export class CopyAnchorBuilder {
     delegate(`.${IDENTIFIER_CLASS_NAME}`, 'mouseout', this.handleMouseMove);
 
     const attach = debounce(this.attach.bind(this), 500);
-    this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
-    this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, (({
-      detail: note,
-    }: CustomEvent<Note>) => {
+    this.view.on(MarkdownViewEvents.NoteDidUpdate, attach);
+    this.view.on(MarkdownViewEvents.NoteDidUpdate, (note: Note) => {
       this.currentNote = note;
-    }) as EventListener);
+    });
 
     this.enabled = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
@@ -75,7 +74,7 @@ export class CopyAnchorBuilder {
     });
 
     if (!this.enabled) {
-      this.view.removeEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
+      this.view.off(MarkdownViewEvents.NoteDidUpdate, attach);
     }
   }
 

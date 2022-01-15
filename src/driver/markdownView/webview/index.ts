@@ -1,3 +1,5 @@
+import EventEmitter from 'eventemitter3';
+import type { Note } from 'model/Referrer';
 import { ElementReferrerListBuilder } from './ElementReferrerListBuilder';
 import { NoteReferrerListBuilder } from './NoteReferrerListBuilder';
 import { CopyAnchorBuilder } from './CopyAnchorBuilder';
@@ -7,7 +9,6 @@ import {
   QueryCurrentNoteRequest,
   QuerySettingRequest,
 } from 'driver/constants';
-import type { Note } from 'model/Referrer';
 import { MarkdownViewEvents, ReferenceListExpandMode, ROOT_ELEMENT_ID } from './constants';
 import { NoteRouter } from './NoteRouter';
 import { LinkPreviewer } from './LinkPreviewer';
@@ -19,7 +20,7 @@ declare const webviewApi: {
   ) => Promise<T>;
 };
 
-export class MarkdownView extends EventTarget {
+export class MarkdownView extends EventEmitter<MarkdownViewEvents> {
   // `this class will be instantiated when :
   // 1. start App(including return from setting panel)
   // 2. switch to note in another notebook
@@ -48,8 +49,8 @@ export class MarkdownView extends EventTarget {
     let currentNoteIdTimes = 1;
     let timer: ReturnType<typeof setTimeout>;
 
-    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
-    this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: note }));
+    this.emit(MarkdownViewEvents.NewNoteOpen);
+    this.emit(MarkdownViewEvents.NoteDidUpdate, note);
 
     this.initGlobalStyle();
 
@@ -67,12 +68,10 @@ export class MarkdownView extends EventTarget {
         // hack: joplin-noteDidUpdate fires twice when switch to another note
         if (currentNoteIdTimes >= 2) {
           if (currentNoteIdTimes === 2) {
-            this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
+            this.emit(MarkdownViewEvents.NewNoteOpen);
           }
 
-          this.dispatchEvent(
-            new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: currentNote }),
-          );
+          this.emit(MarkdownViewEvents.NoteDidUpdate, currentNote);
         }
       } else {
         timer && clearTimeout(timer);
@@ -82,10 +81,8 @@ export class MarkdownView extends EventTarget {
         // hack: don't know why sometimes joplin-noteDidUpdate just fire once when switching note.
         // use timer to make sure it fire
         timer = setTimeout(() => {
-          this.dispatchEvent(new CustomEvent(MarkdownViewEvents.NewNoteOpen));
-          this.dispatchEvent(
-            new CustomEvent(MarkdownViewEvents.NoteDidUpdate, { detail: currentNote }),
-          );
+          this.emit(MarkdownViewEvents.NewNoteOpen);
+          this.emit(MarkdownViewEvents.NoteDidUpdate, currentNote);
         }, 2000);
       }
     });

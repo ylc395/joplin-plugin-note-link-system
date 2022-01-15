@@ -78,11 +78,8 @@ export class ElementReferrerListBuilder {
 
   private async init() {
     const attach = debounce(this.attachReferrers.bind(this), 500);
-    this.view.addEventListener(MarkdownViewEvents.NoteDidUpdate, attach as EventListener);
-    this.view.addEventListener(
-      MarkdownViewEvents.NewNoteOpen,
-      () => (this.referrersMap = undefined),
-    );
+    this.view.on(MarkdownViewEvents.NoteDidUpdate, attach as EventListener);
+    this.view.on(MarkdownViewEvents.NewNoteOpen, () => (this.referrersMap = undefined));
 
     this.maxTextLength = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
@@ -100,7 +97,7 @@ export class ElementReferrerListBuilder {
     });
 
     if (!this.enabled) {
-      this.view.removeEventListener(MarkdownViewEvents.NoteDidUpdate, attach);
+      this.view.off(MarkdownViewEvents.NoteDidUpdate, attach);
     }
   }
 

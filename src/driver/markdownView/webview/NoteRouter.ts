@@ -8,6 +8,7 @@ import {
 } from 'driver/constants';
 import { Reference } from 'model/Referrer';
 import { MarkdownViewEvents, SCROLL_ANCHOR_ID } from './constants';
+import type { MarkdownView } from './index';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -20,7 +21,7 @@ export const OVERFLOW_ANCHOR_NONE_CLASS_NAME = 'note-link-overflow-anchor-none';
 
 export class NoteRouter {
   private recoveryIdTimer?: ReturnType<typeof setTimeout>;
-  constructor(view: EventTarget) {
+  constructor(view: MarkdownView) {
     delegate('[data-note-link-referrer-id]', 'click', this.handleReferrerClick.bind(this));
     delegate(
       `.${MAIN_MARK_CLASS_NAME} [data-note-link-element-id] `,
@@ -28,7 +29,7 @@ export class NoteRouter {
       this.handleMarkClick.bind(this),
       true,
     );
-    view.addEventListener(MarkdownViewEvents.NewNoteOpen, () => this.scrollToReference());
+    view.on(MarkdownViewEvents.NewNoteOpen, () => this.scrollToReference());
   }
 
   private handleReferrerClick(e: any) {
