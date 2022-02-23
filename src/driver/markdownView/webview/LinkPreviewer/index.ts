@@ -138,6 +138,12 @@ export class LinkPreviewer {
       this.tooltip = undefined;
     }
 
+    const handleClick = () => {
+      this.cancelPreview();
+      linkEl.removeEventListener('click', handleClick);
+    };
+
+    linkEl.addEventListener('click', handleClick);
     this.tooltipTimer = setTimeout(() => {
       if (!this.activeBox) {
         throw new Error('no box');
