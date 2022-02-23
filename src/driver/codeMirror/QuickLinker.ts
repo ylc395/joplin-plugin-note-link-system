@@ -160,7 +160,7 @@ export default class QuickLinker {
     });
 
     if (list.length === 0) {
-      this.afterCompletion('note', titleRange);
+      this.afterCompletion(titleRange);
       return;
     }
 
@@ -191,7 +191,7 @@ export default class QuickLinker {
           const { from } = this.symbolRange;
 
           if (!keyword) {
-            this.afterCompletion('element', [
+            this.afterCompletion([
               { line: from.line, ch: from.ch + 1 },
               { line: from.line, ch: from.ch + 1 + title.length },
             ]);
@@ -212,7 +212,7 @@ export default class QuickLinker {
             });
           }
 
-          this.afterCompletion('element', [
+          this.afterCompletion([
             { line: cursorLine, ch: titleEnd - title.length },
             { line: cursorLine, ch: titleEnd + text.length },
           ]);
@@ -223,14 +223,11 @@ export default class QuickLinker {
     });
   }
 
-  private afterCompletion(source: 'note' | 'element', titleRange: [Position, Position]) {
+  private afterCompletion(titleRange: [Position, Position]) {
     const { line, ch } = this.doc.getCursor();
 
     if (this.actionAfterCompletion === ActionAfterCompletion.MoveCursorToEnd || this.isUrlOnly) {
-      if (source === 'element') {
-        this.doc.setCursor({ line, ch: ch + 1 });
-      }
-
+      this.doc.setCursor({ line, ch: ch + 1 });
       return;
     }
 
@@ -260,7 +257,7 @@ export default class QuickLinker {
           ch: to.ch + keyword.length,
         });
       }
-      this.afterCompletion('note', [
+      this.afterCompletion([
         { line: from.line, ch: from.ch + 1 },
         { line: from.line, ch: from.ch + 1 + note.title.length },
       ]);
@@ -355,7 +352,7 @@ export default class QuickLinker {
       }
 
       if (!this.linkToElementEnabled) {
-        this.afterCompletion('note', titleRange);
+        this.afterCompletion(titleRange);
         return;
       }
 
