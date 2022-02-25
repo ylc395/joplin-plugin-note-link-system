@@ -38,6 +38,7 @@ export type ExtendedEditor = {
   showHint(options: {
     completeSingle: boolean;
     closeCharacters: RegExp;
+    closeOnUnfocus: boolean;
     hint: (cm: Editor) => Completion | undefined | Promise<Completion | undefined>;
   }): void;
 };
@@ -103,6 +104,7 @@ export default class QuickLinker {
       this.isUrlOnly = this.editor.getTokenTypeAt(pos) === 'string url';
       this.editor.showHint({
         closeCharacters: /[()\[\]{};:>,]/,
+        closeOnUnfocus: true,
         completeSingle: false,
         hint: this.getNoteCompletion.bind(this),
       });
@@ -167,20 +169,27 @@ export default class QuickLinker {
     this.editor.showHint({
       completeSingle: false,
       closeCharacters: /[()\[\]{};:>,]/,
+      closeOnUnfocus: true,
       hint: () => {
-        const { line: cursorLine, ch: cursorCh } = this.doc.getCursor();
+        const cursorPos = this.doc.getCursor();
         const { line, ch } = start;
 
-        if (cursorLine < line || cursorCh < ch) {
+        if (this.editor.getTokenTypeAt(cursorPos) !== 'string url') {
           return;
         }
 
-        const keyword = this.doc.getRange({ line, ch }, { line: cursorLine, ch: cursorCh });
+        const keyword = this.doc.getRange({ line, ch }, cursorPos);
+        const selectedHint = list.findIndex(({ text }) => text.slice(1).includes(keyword));
+
+        if (selectedHint < 0) {
+          return;
+        }
+
         const completion = {
           from: { line: start.line, ch: start.ch },
           to: { line: start.line, ch: start.ch + keyword.length },
           list,
-          selectedHint: list.findIndex(({ text }) => text.slice(1).includes(keyword)),
+          selectedHint,
         };
 
         const handleClose: any = () => {
