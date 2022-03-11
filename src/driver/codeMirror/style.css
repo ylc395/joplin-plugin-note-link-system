@@ -21,7 +21,7 @@
   overflow-y: auto;
 }
 
-.CodeMirror-hint {
+.note-link-hint.CodeMirror-hint {
   margin: 0;
   padding: 0 4px;
   border-radius: 2px;
@@ -30,7 +30,7 @@
   cursor: pointer;
 }
 
-li.CodeMirror-hint-active {
+.note-link-hint.CodeMirror-hint-active {
   background: #08f;
   color: white;
 }
@@ -45,4 +45,8 @@ li.CodeMirror-hint-active {
   margin-left: 1em;
   font-size: 0.8em;
   color: rgb(145, 145, 145);
+}
+
+.note-link-hint.CodeMirror-hint-active > .note-link-hint-path {
+  color: #efefef;
 }

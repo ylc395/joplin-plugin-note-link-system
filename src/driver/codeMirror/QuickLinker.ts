@@ -104,7 +104,7 @@ export default class QuickLinker {
       this.isUrlOnly = this.editor.getTokenTypeAt(pos) === 'string url';
       this.editor.showHint({
         closeCharacters: /[()\[\]{};:>,]/,
-        closeOnUnfocus: true,
+        closeOnUnfocus: process.env.NODE_ENV === 'production',
         completeSingle: false,
         hint: this.getNoteCompletion.bind(this),
       });
@@ -169,7 +169,7 @@ export default class QuickLinker {
     this.editor.showHint({
       completeSingle: false,
       closeCharacters: /[()\[\]{};:>,]/,
-      closeOnUnfocus: true,
+      closeOnUnfocus: process.env.NODE_ENV === 'production',
       hint: () => {
         const cursorPos = this.doc.getCursor();
         const { line, ch } = start;
