@@ -57,8 +57,8 @@ li {
 .count {
   margin-left: 3px;
   font-family: monospace;
-  background-color: rgb(233, 233, 233);
-  color: rgb(145, 145, 145);
+  background-color: var(--joplin-code-background-color);
+  color: var(--joplin-code-color);
   padding: 0.1em 0.3em;
   border-radius: 0.4em;
   vertical-align: middle;
@@ -101,7 +101,7 @@ mark > button {
 }
 
 .reference > .note-link-mark-main {
-  color: #000;
+  color: var(--joplin-highlighted-color);
 }
 
 .no-referrers {
