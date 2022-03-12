@@ -13,7 +13,7 @@
   border-radius: 3px;
   border: 1px solid silver;
 
-  background: white;
+  background: var(--joplin-background-color);
   font-size: 90%;
   font-family: monospace;
 
@@ -26,13 +26,13 @@
   padding: 0 4px;
   border-radius: 2px;
   white-space: pre;
-  color: black;
+  color: var(--joplin-color);
   cursor: pointer;
 }
 
 .note-link-hint.CodeMirror-hint-active {
-  background: #08f;
-  color: white;
+  background: var(--joplin-raised-background-color);
+  color: var(--joplin-raised-color);
 }
 
 .note-link-hint svg {
@@ -44,9 +44,5 @@
 .note-link-hint-path {
   margin-left: 1em;
   font-size: 0.8em;
-  color: rgb(145, 145, 145);
-}
-
-.note-link-hint.CodeMirror-hint-active > .note-link-hint-path {
-  color: #efefef;
+  color: var(--joplin-color-faded);
 }

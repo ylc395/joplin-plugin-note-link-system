@@ -76,7 +76,7 @@ li {
 
 .reference {
   display: block;
-  color: rgb(145, 145, 145);
+  color: var(--joplin-color-faded);
   cursor: pointer;
   white-space: pre-line;
   word-break: break-all;
@@ -105,7 +105,7 @@ mark > button {
 }
 
 .no-referrers {
-  color: rgb(145, 145, 145);
+  color: var(--joplin-color-faded);
 }
 
 .note-link-mark-main .bi {
