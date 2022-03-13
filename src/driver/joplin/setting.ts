@@ -25,6 +25,7 @@ import {
   PREVIEWER_ENABLED_SETTING,
   PREVIEWER_HOVER_DELAY_SETTING,
   EXTRA_SYNTAX_ENABLED_SETTING,
+  URL_ICON_ENABLED_SETTING,
 } from 'driver/constants';
 import {
   ReferrersAutoListPosition,
@@ -111,6 +112,13 @@ const setting: Record<string, SettingItem> = {
   },
   [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
     label: 'Markdown View: Enable Identifier Icon For Copying Url',
+    type: SettingItemType.Bool,
+    public: true,
+    value: true,
+    section: SECTION_NAME,
+  },
+  [URL_ICON_ENABLED_SETTING]: {
+    label: 'Markdown View: Enable Icon for External Url',
     type: SettingItemType.Bool,
     public: true,
     value: true,

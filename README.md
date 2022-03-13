@@ -37,6 +37,10 @@ Left click will copy title + url; Right click is for url only.
 
 ![](./doc/set-id.png)
 
+### Main Feature 6: Show website icon for url
+
+![](./doc/url-icon.png)
+
 ## Thanks
 
 Basically, this plugin is inspired by:

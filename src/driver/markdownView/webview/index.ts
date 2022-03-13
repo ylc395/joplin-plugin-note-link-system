@@ -12,6 +12,7 @@ import {
 import { MarkdownViewEvents, ReferenceListExpandMode, ROOT_ELEMENT_ID } from './constants';
 import { NoteRouter } from './NoteRouter';
 import { LinkPreviewer } from './LinkPreviewer';
+import { IconBuilder } from './IconBuilder';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -31,6 +32,7 @@ export class MarkdownView extends EventEmitter<MarkdownViewEvents> {
     new NoteReferrerListBuilder(this);
     new CopyAnchorBuilder(this);
     new LinkPreviewer(this);
+    new IconBuilder(this);
   }
 
   ready = this.init();

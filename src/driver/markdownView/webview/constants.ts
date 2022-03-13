@@ -25,7 +25,6 @@ export enum ReferenceListExpandMode {
 export const ROOT_ELEMENT_ID = 'rendered-md';
 
 export const SCROLL_ANCHOR_ID = 'note-link-scroll-anchor';
-
 export const REFERRER_TITLE_CONTAINER_CLASS_NAME = 'note-link-referrer-title-container';
 export const REFERRER_TITLE_CLASS_NAME = 'note-link-referrer-title';
 export const REFERENCE_ITEM_CLASS_NAME = 'note-link-reference-item';
