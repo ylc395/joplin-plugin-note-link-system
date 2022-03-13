@@ -90,6 +90,10 @@ export default class QuickLinker {
   private createNoteEnabled?: boolean;
   private isUrlOnly?: boolean;
 
+  private isUrlToken() {
+    return this.editor.getTokenTypeAt(this.editor.getCursor())?.includes('string url') || false;
+  }
+
   private triggerHints() {
     if (!this.triggerSymbol) {
       return;
@@ -101,7 +105,7 @@ export default class QuickLinker {
 
     if (chars === this.triggerSymbol) {
       this.symbolRange = { from: symbolRange[0], to: symbolRange[1] };
-      this.isUrlOnly = this.editor.getTokenTypeAt(pos) === 'string url';
+      this.isUrlOnly = this.isUrlToken();
       this.editor.showHint({
         closeCharacters: /[()\[\]{};:>,]/,
         closeOnUnfocus: process.env.NODE_ENV === 'production',
@@ -171,13 +175,12 @@ export default class QuickLinker {
       closeCharacters: /[()\[\]{};:>,]/,
       closeOnUnfocus: process.env.NODE_ENV === 'production',
       hint: () => {
-        const cursorPos = this.doc.getCursor();
-        const { line, ch } = start;
-
-        if (this.editor.getTokenTypeAt(cursorPos) !== 'string url') {
+        if (!this.isUrlToken()) {
           return;
         }
 
+        const { line, ch } = start;
+        const cursorPos = this.doc.getCursor();
         const keyword = this.doc.getRange({ line, ch }, cursorPos);
         const selectedHint = list.findIndex(({ text }) => text.slice(1).includes(keyword));
 
