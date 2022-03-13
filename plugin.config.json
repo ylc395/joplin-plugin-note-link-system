@@ -1,7 +1,6 @@
 {
   "extraScripts": [
     "driver/markdownView/index.ts",
-    "driver/markdownView/indexWithSyntax.ts",
     "driver/markdownView/webview/index.ts",
     "driver/referrerPanelView/script.ts",
     "driver/codeMirror/index.ts"

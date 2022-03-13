@@ -113,8 +113,7 @@ export default class App {
   }
 
   async setupMarkdownView() {
-    const syntaxEnabled = await joplin.settings.value(EXTRA_SYNTAX_ENABLED_SETTING);
-    const scriptPath = `./driver/markdownView/index${syntaxEnabled ? 'WithSyntax' : ''}.js`;
+    const scriptPath = `./driver/markdownView/index.js`;
     await joplin.contentScripts.register(
       ContentScriptType.MarkdownItPlugin,
       MARKDOWN_SCRIPT_ID,
