@@ -176,6 +176,10 @@ h6.note-link-identifier-parent {
   height: 300px;
 }
 
+.note-link-previewer-local-empty-body {
+  height: 50px;
+}
+
 .note-link-previewer-remote {
   max-width: 960px;
   width: 90vw;

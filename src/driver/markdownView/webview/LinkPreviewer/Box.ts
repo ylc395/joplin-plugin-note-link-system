@@ -18,6 +18,7 @@ const PREVIEWER_PIN_BUTTON_CLASS = 'note-link-previewer-pin-button';
 const LOCAL_PREVIEWER_CLASS = 'note-link-previewer-local';
 const LOCAL_PREVIEWER_TITLE_CLASS = 'note-link-previewer-local-title';
 const LOCAL_PREVIEWER_BODY_CLASS = 'note-link-previewer-local-body';
+const LOCAL_PREVIEWER_EMPTY_BODY_CLASS = 'note-link-previewer-local-empty-body';
 
 const REMOTE_PREVIEWER_CLASS = 'note-link-previewer-remote';
 const REMOTE_PREVIEWER_TITLE_CLASS = 'note-link-previewer-remote-title';
@@ -88,35 +89,45 @@ export class LocalBox extends Box {
   protected async initBody() {
     const { noteId } = this.url;
 
-    const resources = await webviewApi.postMessage<ResourcesMap>(MARKDOWN_SCRIPT_ID, {
-      event: 'queryNoteResources',
-      payload: { noteId },
-    });
+    try {
+      const resources = await webviewApi.postMessage<ResourcesMap>(MARKDOWN_SCRIPT_ID, {
+        event: 'queryNoteResources',
+        payload: { noteId },
+      });
 
-    const noteContent = processNoteContent(
-      await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
-        event: 'fetchNoteHtml',
-        payload: { id: noteId },
-      }),
-      resources,
-    );
+      const noteContent = processNoteContent(
+        await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
+          event: 'fetchNoteHtml',
+          payload: { id: noteId },
+        }),
+        resources,
+      );
+
+      this.bodyEl.innerHTML = noteContent;
+    } catch {
+      this.bodyEl.innerHTML = 'Can not find note.';
+      this.bodyEl.classList.add(LOCAL_PREVIEWER_EMPTY_BODY_CLASS);
+    }
 
     this.bodyEl.classList.add(LOCAL_PREVIEWER_BODY_CLASS);
-    this.bodyEl.innerHTML = noteContent;
     this.bodyEl.style.position = 'relative'; // make offsetParent correct
   }
 
   protected async initTitle() {
     const { elementId, noteId } = this.url;
 
-    const { path, title } = await webviewApi.postMessage<Required<Note>>(MARKDOWN_SCRIPT_ID, {
-      event: 'queryNote',
-      payload: { id: noteId },
-    });
+    try {
+      const { path, title } = await webviewApi.postMessage<Required<Note>>(MARKDOWN_SCRIPT_ID, {
+        event: 'queryNote',
+        payload: { id: noteId },
+      });
 
-    this.titleEl.classList.add(LOCAL_PREVIEWER_TITLE_CLASS);
-    this.titleEl.innerHTML = `${path}/${title}` + (elementId ? `#${elementId}` : '');
-    super.initTitle();
+      this.titleEl.classList.add(LOCAL_PREVIEWER_TITLE_CLASS);
+      this.titleEl.innerHTML = `${path}/${title}` + (elementId ? `#${elementId}` : '');
+      super.initTitle();
+    } catch {
+      return;
+    }
   }
 
   scrollToElement() {
@@ -171,7 +182,10 @@ export class RemoteBox extends Box {
 
     const { headers } = await this.response;
 
-    if (headers.has('x-frame-options')) {
+    if (
+      headers.has('x-frame-options') ||
+      headers.get('content-security-policy')?.includes('frame-ancestors')
+    ) {
       const emptyBody = document.createElement('p');
       emptyBody.classList.add(REMOTE_PREVIEWER_EMPTY_BODY_CLASS);
       emptyBody.innerHTML = 'This website prevents us from previewing.';

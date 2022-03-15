@@ -164,7 +164,7 @@ export class LinkPreviewer {
 
   private createTooltip(linkEl: HTMLAnchorElement) {
     if (this.tooltip && ![...this.pinnedTooltips.values()].includes(this.tooltip)) {
-      this.tooltip.destroy();
+      !this.tooltip.state.isDestroyed && this.tooltip.destroy();
       this.tooltip = undefined;
     }
 
