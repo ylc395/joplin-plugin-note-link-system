@@ -10,6 +10,7 @@ import {
   QueryNoteResourcesRequest,
 } from 'driver/constants';
 import { processNoteContent, ResourcesMap } from './utils';
+import { parseHtml } from '../utils';
 
 const PREVIEWER_CLASS = 'note-link-previewer';
 const PREVIEWER_PIN_BUTTON_CLASS = 'note-link-previewer-pin-button';
@@ -153,8 +154,7 @@ export class RemoteBox extends Box {
 
     const res = await this.response;
     const html = await res.text();
-    const domParser = new DOMParser();
-    const doc = domParser.parseFromString(html, 'text/html');
+    const doc = parseHtml(html);
 
     this.titleEl.classList.add(REMOTE_PREVIEWER_TITLE_CLASS);
     this.titleEl.innerHTML = doc.title;

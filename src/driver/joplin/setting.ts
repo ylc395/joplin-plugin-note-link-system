@@ -26,6 +26,8 @@ import {
   PREVIEWER_HOVER_DELAY_SETTING,
   EXTRA_SYNTAX_ENABLED_SETTING,
   URL_ICON_ENABLED_SETTING,
+  PREVIEWER_URL_BLACKLIST_SETTING,
+  PREVIEWER_URL_BLACKLIST_LOCAL,
 } from 'driver/constants';
 import {
   ReferrersAutoListPosition,
@@ -246,6 +248,15 @@ const setting: Record<string, SettingItem> = {
     section: SECTION_NAME,
     value: '/":/$noteId"',
     description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
+  },
+  [PREVIEWER_URL_BLACKLIST_SETTING]: {
+    label: 'Previewer: Url Blacklist',
+    type: SettingItemType.String,
+    public: true,
+    advanced: true,
+    section: SECTION_NAME,
+    value: '',
+    description: `Block previewer for specified URLs. ${PREVIEWER_URL_BLACKLIST_LOCAL} means internal links. Url syntaxs are in https://github.com/fczbkk/UrlMatch. Use comma as splitter`,
   },
 };
 

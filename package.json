@@ -41,6 +41,7 @@
     "yargs": "^16.2.0"
   },
   "dependencies": {
+    "@fczbkk/url-match": "^3.3.5",
     "bootstrap-icons": "^1.7.0",
     "delegate": "^3.2.0",
     "eventemitter3": "^4.0.7",

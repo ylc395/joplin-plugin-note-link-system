@@ -1,5 +1,6 @@
 import tippy, { Instance, roundArrow } from 'tippy.js';
 import delegate from 'delegate';
+import UrlMatch from '@fczbkk/url-match';
 import {
   FetchNoteHtmlRequest,
   MARKDOWN_SCRIPT_ID,
@@ -8,11 +9,14 @@ import {
   QuerySettingRequest,
   QueryNoteRequest,
   QueryNoteResourcesRequest,
+  PREVIEWER_URL_BLACKLIST_SETTING,
+  PREVIEWER_URL_BLACKLIST_LOCAL,
 } from 'driver/constants';
 import { REFERENCE_CLASS_NAME, ROOT_ELEMENT_ID, MarkdownViewEvents } from '../constants';
 import { Box, LocalBox, RemoteBox, BoxEvents } from './Box';
 import { parseUrlFromLinkEl } from './utils';
 import type { MarkdownView } from '../index';
+import { getRemoteUrl } from '../utils';
 
 const PREVIEWER_CLASS = 'note-link-previewer';
 const PINNED_PREVIEWER_CLASS = 'note-link-previewer-pinned';
@@ -35,6 +39,8 @@ export class LinkPreviewer {
 
   private tooltip?: Instance;
   private hoverDelay?: number;
+  private urlBlackList?: string[];
+  private urlMatcher?: any;
   private tooltipTimer?: ReturnType<typeof setTimeout>;
   private readonly pinnedTooltips = new Map<HTMLAnchorElement, Instance>();
   private activeBox?: Box;
@@ -50,6 +56,15 @@ export class LinkPreviewer {
     if (!enabled) {
       return;
     }
+
+    this.urlBlackList = (
+      await webviewApi.postMessage<string>(MARKDOWN_SCRIPT_ID, {
+        event: 'querySetting',
+        payload: { key: PREVIEWER_URL_BLACKLIST_SETTING },
+      })
+    ).split(',');
+
+    this.urlMatcher = new UrlMatch(this.urlBlackList);
 
     this.hoverDelay = await webviewApi.postMessage(MARKDOWN_SCRIPT_ID, {
       event: 'querySetting',
@@ -82,12 +97,27 @@ export class LinkPreviewer {
       return;
     }
 
-    const url = linkEl.href;
-    const isRemote = url.startsWith('http');
+    const href = linkEl.getAttribute('href');
+
+    if (!href) {
+      return;
+    }
+
+    const isRemote = !href.startsWith('#');
 
     if (isRemote) {
+      const url = getRemoteUrl(href);
+
+      if (this.urlMatcher.test(url)) {
+        return;
+      }
+
       this.activeBox = new RemoteBox(url);
     } else {
+      if (this.urlBlackList?.includes(PREVIEWER_URL_BLACKLIST_LOCAL)) {
+        return;
+      }
+
       const urlParts = parseUrlFromLinkEl(linkEl);
 
       if (!urlParts || linkEl.classList.contains(REFERENCE_CLASS_NAME)) {

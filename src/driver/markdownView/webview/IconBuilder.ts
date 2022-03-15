@@ -7,6 +7,7 @@ import {
   QuerySettingRequest,
 } from 'driver/constants';
 import { MarkdownViewEvents, ROOT_ELEMENT_ID } from './constants';
+import { parseHtml, getRemoteUrl } from './utils';
 import type { MarkdownView } from './index';
 
 declare const webviewApi: {
@@ -56,8 +57,7 @@ export class IconBuilder {
     if (isFaviconFailed) {
       const res = await fetch(pageUrl.toString());
       const html = await res.text();
-      const domParser = new DOMParser();
-      const doc = domParser.parseFromString(html, 'text/html');
+      const doc = parseHtml(html);
       iconLinkEl = doc.querySelector('link[rel="icon"]');
     }
 
@@ -102,9 +102,7 @@ export class IconBuilder {
       let pageUrl: URL;
 
       try {
-        pageUrl = new URL(
-          href.startsWith('http://') || href.startsWith('https://') ? href : `https://${href}`,
-        );
+        pageUrl = new URL(getRemoteUrl(href));
       } catch (error) {
         continue;
       }

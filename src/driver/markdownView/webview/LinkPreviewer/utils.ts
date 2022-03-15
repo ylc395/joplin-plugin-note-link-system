@@ -1,4 +1,5 @@
 import type { File } from 'model/Referrer';
+import { parseHtml } from '../utils';
 
 export interface ResourcesMap {
   [resourceId: string]: File;
@@ -6,8 +7,7 @@ export interface ResourcesMap {
 
 // handle <a> and resources
 export function processNoteContent(content: string, resources: ResourcesMap) {
-  const domParser = new DOMParser();
-  const doc = domParser.parseFromString(content, 'text/html');
+  const doc = parseHtml(content);
   const noteLinkEls = [...doc.querySelectorAll('a[href^=":/"]')] as HTMLAnchorElement[];
 
   for (const linkEl of noteLinkEls) {
