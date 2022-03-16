@@ -76,6 +76,7 @@ export function processNoteContent(content: string, resources: ResourcesMap) {
 
 export function parseUrlFromLinkEl(
   linkEl: HTMLAnchorElement,
+  currentNoteId: string,
 ): { noteId: string; elementId?: string } | undefined {
   if (linkEl.dataset.noteLinkReferrerId) {
     return { noteId: linkEl.dataset.noteLinkReferrerId };
@@ -85,7 +86,13 @@ export function parseUrlFromLinkEl(
   const url = onclickString?.match(/\("joplin:\/\/(.+?)",/)?.[1];
 
   if (!url) {
-    return;
+    const href = linkEl.getAttribute('href');
+
+    if (href && href.startsWith('#') && href.length > 1) {
+      return { noteId: currentNoteId, elementId: decodeURIComponent(href.slice(1)) };
+    } else {
+      return;
+    }
   }
 
   const [noteId, elementId] = url.split('#');

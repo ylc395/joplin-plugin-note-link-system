@@ -118,7 +118,11 @@ export class LinkPreviewer {
         return;
       }
 
-      const urlParts = parseUrlFromLinkEl(linkEl);
+      if (!this.markdownView.currentNoteId) {
+        throw new Error('no currentNoteId');
+      }
+
+      const urlParts = parseUrlFromLinkEl(linkEl, this.markdownView.currentNoteId);
 
       if (!urlParts || linkEl.classList.contains(REFERENCE_CLASS_NAME)) {
         return;
