@@ -2,7 +2,7 @@ import type { File } from 'model/Referrer';
 import { parseHtml } from '../utils';
 
 export interface ResourcesMap {
-  [resourceId: string]: File;
+  [resourceId: string]: File | undefined;
 }
 
 // handle <a> and resources
@@ -13,30 +13,32 @@ export function processNoteContent(content: string, resources: ResourcesMap) {
   for (const linkEl of noteLinkEls) {
     const iconEl = document.createElement('span');
     const url = linkEl.getAttribute('href')!.slice(2);
+    const resource = resources[url];
 
-    if (resources[url]) {
-      const resource = resources[url];
-      const resourceType = resource.contentType.split('/')[0]; // 'video'
-      let mediaEl: HTMLVideoElement | HTMLAudioElement | undefined = undefined;
+    if (!resource) {
+      continue;
+    }
 
-      if (resourceType === 'video') {
-        mediaEl = document.createElement('video');
-      }
+    const resourceType = resource.contentType.split('/')[0]; // 'video'
+    let mediaEl: HTMLVideoElement | HTMLAudioElement | undefined = undefined;
 
-      if (resourceType === 'audio') {
-        mediaEl = document.createElement('audio');
-      }
+    if (resourceType === 'video') {
+      mediaEl = document.createElement('video');
+    }
 
-      if (mediaEl) {
-        mediaEl.controls = true;
-        mediaEl.src = window.URL.createObjectURL(new Blob([resource.body]));
-        linkEl.after(mediaEl);
-      }
+    if (resourceType === 'audio') {
+      mediaEl = document.createElement('audio');
+    }
+
+    if (mediaEl) {
+      mediaEl.controls = true;
+      mediaEl.src = window.URL.createObjectURL(new Blob([resource.body]));
+      linkEl.after(mediaEl);
     }
 
     const noteId = url.split('#')[0];
     const iconClassName = (() => {
-      const mime = resources[url]?.contentType || '';
+      const mime = resource.contentType || '';
 
       if (mime.startsWith('video')) {
         return 'fa-file-video';
@@ -63,7 +65,10 @@ export function processNoteContent(content: string, resources: ResourcesMap) {
   for (const imgEl of imgEls) {
     const resourceId = imgEl.getAttribute('src')!.slice(2);
     const image = resources[resourceId];
-    imgEl.src = window.URL.createObjectURL(new Blob([image.body]));
+
+    if (image) {
+      imgEl.src = window.URL.createObjectURL(new Blob([image.body]));
+    }
   }
 
   return doc.body.innerHTML;
