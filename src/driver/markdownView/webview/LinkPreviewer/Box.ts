@@ -10,7 +10,7 @@ import {
   QueryNoteResourcesRequest,
 } from 'driver/constants';
 import { processNoteContent, ResourcesMap } from './utils';
-import { parseHtml } from '../utils';
+import { parseHtml } from '../../../utils';
 
 const PREVIEWER_CLASS = 'note-link-previewer';
 const PREVIEWER_PIN_BUTTON_CLASS = 'note-link-previewer-pin-button';

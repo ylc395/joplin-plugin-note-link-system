@@ -1,5 +1,5 @@
 import type { File } from 'model/Referrer';
-import { parseHtml } from '../utils';
+import { parseHtml } from '../../../utils';
 
 export interface ResourcesMap {
   [resourceId: string]: File | undefined;

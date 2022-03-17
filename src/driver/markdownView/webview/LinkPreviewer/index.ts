@@ -16,7 +16,7 @@ import { REFERENCE_CLASS_NAME, ROOT_ELEMENT_ID, MarkdownViewEvents } from '../co
 import { Box, LocalBox, RemoteBox, BoxEvents } from './Box';
 import { parseUrlFromLinkEl } from './utils';
 import type { MarkdownView } from '../index';
-import { getRemoteUrl } from '../utils';
+import { getRemoteUrl } from '../../../utils';
 
 const PREVIEWER_CLASS = 'note-link-previewer';
 const PINNED_PREVIEWER_CLASS = 'note-link-previewer-pinned';
