@@ -5,13 +5,20 @@ import type {
   SearchNotesRequest,
   FetchNoteHtmlRequest,
   CreateNoteRequest,
+  QueryCurrentNoteRequest,
 } from 'driver/constants';
 import QuickLinker, { ExtendedEditor } from './QuickLinker';
+import UrlFolder from './UrlFolder';
 import IdSetter from './IdSetter';
 
 export interface Context {
   postMessage: <T>(
-    request: QuerySettingRequest | SearchNotesRequest | FetchNoteHtmlRequest | CreateNoteRequest,
+    request:
+      | QuerySettingRequest
+      | SearchNotesRequest
+      | FetchNoteHtmlRequest
+      | CreateNoteRequest
+      | QueryCurrentNoteRequest,
   ) => Promise<T>;
 }
 
@@ -20,6 +27,7 @@ export default function (context: Context) {
     plugin: function (codemirror: typeof CodeMirror) {
       codemirror.defineOption('noteLinkSystem', false, (cm) => {
         new QuickLinker(context, cm as Editor & ExtendedEditor, codemirror);
+        new UrlFolder(context, cm);
         const idSetter = new IdSetter(cm);
 
         codemirror.defineExtension('setElementId', idSetter.setElementId.bind(idSetter));

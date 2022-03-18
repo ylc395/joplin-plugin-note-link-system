@@ -28,13 +28,14 @@ import {
   URL_ICON_ENABLED_SETTING,
   PREVIEWER_URL_BLACKLIST_SETTING,
   PREVIEWER_URL_BLACKLIST_LOCAL,
+  URL_FOLD_ICON_SETTING,
 } from 'driver/constants';
 import {
   ReferrersAutoListPosition,
   ReferrersListNumberType,
   ReferenceListExpandMode,
 } from '../markdownView/webview/constants';
-import { ActionAfterCompletion } from '../codeMirror/constants';
+import { ActionAfterCompletion, FoldUrlIconType } from '../codeMirror/constants';
 
 export const SECTION_NAME = 'Note Link';
 
@@ -194,6 +195,19 @@ const setting: Record<string, SettingItem> = {
     options: {
       [ActionAfterCompletion.MoveCursorToEnd]: 'Move cursor to link end',
       [ActionAfterCompletion.SelectText]: 'Select title of link',
+    },
+    section: SECTION_NAME,
+  },
+  [URL_FOLD_ICON_SETTING]: {
+    label: 'Fold Url: Fold url of links and images in editor',
+    isEnum: true,
+    type: SettingItemType.Int,
+    public: true,
+    value: FoldUrlIconType.Ellipsis,
+    options: {
+      [FoldUrlIconType.None]: "Don't fold url",
+      [FoldUrlIconType.Ellipsis]: 'Fold into ellipsis',
+      [FoldUrlIconType.Icon]: 'Fold into icon',
     },
     section: SECTION_NAME,
   },
