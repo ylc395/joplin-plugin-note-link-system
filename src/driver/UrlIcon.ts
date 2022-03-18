@@ -1,4 +1,5 @@
 import globeIcon from 'bootstrap-icons/icons/globe.svg';
+import hashIcon from 'bootstrap-icons/icons/hash.svg';
 import { getRemoteUrl, parseHtml } from './utils';
 
 const DEFAULT_ICON = 'DEFAULT';
@@ -28,8 +29,16 @@ export class UrlIcon {
   private get faviconUrl() {
     return `${this.origin}/favicon.ico`;
   }
+  private isHash() {
+    return this.href.startsWith('#') && this.href.length > 1;
+  }
 
   private async loadIcon() {
+    if (this.isHash()) {
+      this.iconEl.src = UrlIcon.getHashIcon();
+      return;
+    }
+
     this.iconEl.src = UrlIcon.getDefaultIcon();
 
     if (!this.origin) {
@@ -110,6 +119,9 @@ export class UrlIcon {
   }
   private static getDefaultIcon() {
     return `data:image/svg+xml;utf8,${globeIcon}`;
+  }
+  private static getHashIcon() {
+    return `data:image/svg+xml;utf8,${hashIcon}`;
   }
 
   private static createIconEl(containerEl: HTMLElement) {

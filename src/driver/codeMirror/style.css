@@ -56,6 +56,7 @@
   width: 0.85em;
   vertical-align: -0.125em;
   margin: 0 0.1em;
+  color: var(--joplin-color-faded);
 }
 
 .note-link-joplin-icon {
