@@ -250,7 +250,7 @@ const setting: Record<string, SettingItem> = {
     label: 'Filter For Quick Link',
     type: SettingItemType.String,
     public: true,
-    value: '$keyword',
+    value: '$keyword*',
     advanced: true,
     description: `Search filter for making quick links in editor. Filters can be found at https://joplinapp.org/help/#search-filters. ${NOTE_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for keyword you typed in.`,
   },
