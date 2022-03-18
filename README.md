@@ -39,7 +39,13 @@ Left click will copy title + url; Right click is for url only.
 
 ### Main Feature 6: Show website icon for url
 
-![](./doc/url-icon.png)
+Editor and/or viewer.
+
+![](./doc/url-icon-1.png)
+
+Or
+
+![](./doc/url-icon-2.png)
 
 ## Thanks
 
