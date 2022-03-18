@@ -6,7 +6,7 @@ const DEFAULT_ICON = 'DEFAULT';
 const EXTERNAL_WEBSITE_ICON_CLASS_NAME = 'note-link-external-website-icon';
 
 export class UrlIcon {
-  constructor(private readonly href: string, containerEl: HTMLElement) {
+  constructor(private readonly href: string, private readonly containerEl: HTMLElement) {
     this.pageUrl = getRemoteUrl(this.href);
 
     try {
@@ -15,33 +15,49 @@ export class UrlIcon {
       this.origin = '';
     }
 
-    this.iconEl =
-      containerEl.querySelector(`.${EXTERNAL_WEBSITE_ICON_CLASS_NAME}`) ||
-      UrlIcon.createIconEl(containerEl);
-
+    this.iconEl = this.createIconEl();
     this.loadIcon();
   }
 
-  private readonly iconEl: HTMLImageElement;
+  private iconEl: HTMLSpanElement;
   private readonly pageUrl: string;
+  private iconUrl?: string;
   private readonly origin: string;
   private abortController?: AbortController;
   private get faviconUrl() {
     return `${this.origin}/favicon.ico`;
   }
+
   private isHash() {
     return this.href.startsWith('#') && this.href.length > 1;
   }
 
-  private async loadIcon() {
-    if (this.isHash()) {
-      this.iconEl.src = UrlIcon.getHashIcon();
-      return;
+  private createIconEl() {
+    const iconEl = this.containerEl.querySelector(`.${EXTERNAL_WEBSITE_ICON_CLASS_NAME}`);
+
+    if (iconEl) {
+      iconEl.remove();
     }
 
-    this.iconEl.src = UrlIcon.getDefaultIcon();
+    const el = document.createElement('span');
 
-    if (!this.origin) {
+    el.innerHTML = this.isHash() ? hashIcon : globeIcon;
+    el.classList.add(EXTERNAL_WEBSITE_ICON_CLASS_NAME);
+    this.containerEl.prepend(el);
+
+    return el;
+  }
+
+  private setIconUrl(src: string) {
+    const imgEl = document.createElement('img');
+    imgEl.src = src;
+
+    this.iconEl.innerHTML = imgEl.outerHTML;
+    this.iconUrl = src;
+  }
+
+  private async loadIcon() {
+    if (!this.origin || this.isHash()) {
       return;
     }
 
@@ -67,7 +83,7 @@ export class UrlIcon {
       const icon = await res.blob();
 
       if (icon.type.includes('image')) {
-        this.iconEl.src = URL.createObjectURL(icon);
+        this.setIconUrl(URL.createObjectURL(icon));
         return;
       }
     }
@@ -95,8 +111,9 @@ export class UrlIcon {
       const icon = await iconRes.blob();
 
       if (icon.type.includes('image')) {
-        this.iconEl.src = URL.createObjectURL(icon);
-        localStorage.setItem(iconKey, this.iconEl.src);
+        const iconUrl = URL.createObjectURL(icon);
+        this.setIconUrl(iconUrl);
+        localStorage.setItem(iconKey, iconUrl);
       } else {
         throw new Error('fetch icon failed');
       }
@@ -111,24 +128,12 @@ export class UrlIcon {
       this.abortController.abort();
     }
 
-    URL.revokeObjectURL(this.iconEl.src);
+    if (this.iconUrl) {
+      URL.revokeObjectURL(this.iconUrl);
+    }
   }
 
   private static getIconKey(origin: string) {
     return `note-link-system-icon-url-${origin}`;
-  }
-  private static getDefaultIcon() {
-    return `data:image/svg+xml;utf8,${globeIcon}`;
-  }
-  private static getHashIcon() {
-    return `data:image/svg+xml;utf8,${hashIcon}`;
-  }
-
-  private static createIconEl(containerEl: HTMLElement) {
-    const el = document.createElement('img');
-    el.classList.add(EXTERNAL_WEBSITE_ICON_CLASS_NAME);
-    containerEl.prepend(el);
-
-    return el;
   }
 }

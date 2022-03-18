@@ -53,10 +53,16 @@
 }
 
 .note-link-external-website-icon {
+  display: inline-block;
   width: 0.85em;
+  height: 0.85em;
   vertical-align: -0.125em;
   margin: 0 0.1em;
   color: var(--joplin-color-faded);
+}
+
+.note-link-external-website-icon > img {
+  height: 100%;
 }
 
 .note-link-joplin-icon {
