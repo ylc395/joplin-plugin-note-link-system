@@ -43,40 +43,58 @@ export class UrlIcon {
       return;
     }
 
-    try {
-      this.abortController = new AbortController();
+    this.abortController = new AbortController();
 
-      const res = await fetch(persistedIcon || this.faviconUrl, {
+    let res;
+    try {
+      res = await fetch(persistedIcon || this.faviconUrl, {
         signal: this.abortController.signal,
       });
+    } catch (error) {
+      return;
+    }
 
-      if (res.status !== 200) {
-        throw new Error('no icon');
-      }
-
+    if (res.status === 200) {
       const icon = await res.blob();
 
-      this.iconEl.src = URL.createObjectURL(icon);
-    } catch {
-      try {
-        this.abortController = new AbortController();
-        const res = await fetch(this.pageUrl, { signal: this.abortController.signal });
-        const html = await res.text();
-        const doc = parseHtml(html);
-        const iconLinkEl = doc.querySelector('link[rel="icon"]');
-
-        if (iconLinkEl) {
-          this.iconEl.src = new URL(iconLinkEl.getAttribute('href')!, this.pageUrl).toString();
-          localStorage.setItem(iconKey, this.iconEl.src);
-        } else {
-          throw new Error('no icon linkEl');
-        }
-      } catch {
-        localStorage.setItem(iconKey, DEFAULT_ICON);
+      if (icon.type.includes('image')) {
+        this.iconEl.src = URL.createObjectURL(icon);
+        return;
       }
-    } finally {
-      this.abortController = undefined;
     }
+
+    try {
+      const res = await fetch(this.pageUrl, { signal: this.abortController.signal });
+      const html = await res.text();
+      const doc = parseHtml(html);
+      const iconLinkEl = doc.querySelector('link[rel="icon"]');
+
+      if (!iconLinkEl) {
+        throw new Error('no icon linkEl');
+      }
+
+      const iconUrl = new URL(iconLinkEl.getAttribute('href')!, this.pageUrl).toString();
+      const iconRes = await fetch(iconUrl, {
+        signal: this.abortController.signal,
+        redirect: 'error',
+      });
+
+      if (iconRes.status !== 200) {
+        throw new Error('fetch icon failed');
+      }
+
+      const icon = await iconRes.blob();
+
+      if (icon.type.includes('image')) {
+        this.iconEl.src = URL.createObjectURL(icon);
+        localStorage.setItem(iconKey, this.iconEl.src);
+      } else {
+        throw new Error('fetch icon failed');
+      }
+    } catch {
+      localStorage.setItem(iconKey, DEFAULT_ICON);
+    }
+    this.abortController = undefined;
   }
 
   destroy() {
