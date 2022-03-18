@@ -9,7 +9,7 @@ const MARKER_CLASS_NAME = 'note-link-folded-url';
 
 export default class UrlFolder {
   constructor(private readonly context: Context, private readonly editor: Editor) {
-    this.init();
+    setTimeout(this.init.bind(this), 100);
   }
   private foldType?: FoldUrlIconType;
 
