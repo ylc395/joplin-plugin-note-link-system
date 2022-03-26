@@ -52,6 +52,7 @@
     "markdown-it-anchor": "^8.4.1",
     "markdown-it-attrs": "^4.1.1",
     "markdown-it-bracketed-spans": "^1.0.1",
+    "markdown-it-footnote": "^3.0.3",
     "remark-parse": "^10.0.1",
     "tippy.js": "^6.3.5",
     "unified": "^10.1.1",

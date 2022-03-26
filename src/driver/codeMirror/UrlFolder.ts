@@ -1,11 +1,22 @@
 import debounce from 'lodash.debounce';
-import type { Editor } from 'codemirror';
+import type { Editor, Token } from 'codemirror';
 import { URL_FOLD_ICON_SETTING } from 'driver/constants';
 import type { Context } from './index';
 import { FoldUrlIconType } from './constants';
 import { UrlIcon } from '../UrlIcon';
 
 const MARKER_CLASS_NAME = 'note-link-folded-url';
+
+function isFootnote(tokenIndex: number, lineTokens: Token[]) {
+  const preToken1 = lineTokens[tokenIndex - 1];
+  const preToken2 = lineTokens[tokenIndex - 2];
+
+  if (preToken1 && preToken2) {
+    return preToken1.string === ' ' && preToken2.string === ']:';
+  }
+
+  return false;
+}
 
 export default class UrlFolder {
   constructor(private readonly context: Context, private readonly editor: Editor) {
@@ -39,7 +50,7 @@ export default class UrlFolder {
 
       const lineTokens = this.editor.getLineTokens(lineNo);
 
-      for (const token of lineTokens) {
+      for (const [tokenIndex, token] of lineTokens.entries()) {
         if (!token.type?.includes('string url') || token.string.length === 1) {
           continue;
         }
@@ -53,10 +64,11 @@ export default class UrlFolder {
         }
 
         if (
-          tokenTypeAtCursor?.includes('string url') &&
-          cursor.line === lineNo &&
-          cursor.ch <= token.end &&
-          cursor.ch >= token.start
+          isFootnote(tokenIndex, lineTokens) ||
+          (tokenTypeAtCursor?.includes('string url') &&
+            cursor.line === lineNo &&
+            cursor.ch <= token.end &&
+            cursor.ch >= token.start)
         ) {
           continue;
         }

@@ -4,6 +4,7 @@ import MarkdownIt from 'markdown-it';
 import uslug from 'uslug';
 import markdownItAnchor from 'markdown-it-anchor';
 import markdownItAttrs from 'markdown-it-attrs';
+import markdownItFootnote from 'markdown-it-footnote';
 import markdownItBracketedSpans from 'markdown-it-bracketed-spans';
 import {
   Request,
@@ -33,6 +34,10 @@ export default class App {
 
     if (await joplin.settings.value(EXTRA_SYNTAX_ENABLED_SETTING)) {
       this.md.use(markdownItAttrs, MAKRDOWN_IT_ATTRS_CONFIG).use(markdownItBracketedSpans);
+    }
+
+    if (await joplin.settings.globalValue('markdown.plugin.footnote')) {
+      this.md.use(markdownItFootnote);
     }
 
     this.searchEngine = new SearchEngine();

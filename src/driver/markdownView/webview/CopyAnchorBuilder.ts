@@ -9,13 +9,9 @@ import {
   QuerySettingRequest,
   REFERRER_IDENTIFIER_ENABLED_SETTING,
 } from 'driver/constants';
-import {
-  MarkdownViewEvents,
-  ROOT_ELEMENT_ID,
-  SCROLL_ANCHOR_ID,
-  TODO_CHECKBOX_ID_PREFIX,
-} from './constants';
+import { MarkdownViewEvents, ROOT_ELEMENT_ID, FOOTNOTE_ITEM_CLASS_NAME } from './constants';
 import type { MarkdownView } from './index';
+import { isIgnoredIdElement } from './utils';
 
 const IDENTIFIER_CLASS_NAME = 'note-link-identifier';
 const IDENTIFIER_PARENT_CLASS_NAME = 'note-link-identifier-parent';
@@ -101,10 +97,10 @@ export class CopyAnchorBuilder {
     }
 
     const rootEl = document.getElementById(ROOT_ELEMENT_ID)!;
-    const elsWithId = [...rootEl.querySelectorAll('[id]')];
+    const elsWithId = [...rootEl.querySelectorAll('[id]')] as HTMLElement[];
 
     for (const el of elsWithId) {
-      if (!el.id || el.id === SCROLL_ANCHOR_ID || el.id.startsWith(TODO_CHECKBOX_ID_PREFIX)) {
+      if (isIgnoredIdElement(el)) {
         continue;
       }
 

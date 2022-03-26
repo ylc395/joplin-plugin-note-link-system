@@ -31,3 +31,5 @@ export const REFERENCE_ITEM_CLASS_NAME = 'note-link-reference-item';
 export const REFERENCE_CLASS_NAME = 'note-link-reference';
 
 export const TODO_CHECKBOX_ID_PREFIX = 'cb-label-md-checkbox-';
+export const FOOTNOTE_ID_PREFIX = 'fnref';
+export const FOOTNOTE_ITEM_CLASS_NAME = 'footnote-item';
