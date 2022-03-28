@@ -163,12 +163,16 @@ export class RemoteBox extends Box {
       throw Error('no request');
     }
 
-    const res = await this.response;
-    const html = await res.text();
-    const doc = parseHtml(html);
+    try {
+      const res = await this.response;
+      const html = await res.text();
+      const doc = parseHtml(html);
+      this.titleEl.innerHTML = doc.title;
+    } catch (error) {
+      this.titleEl.innerHTML = 'Error';
+    }
 
     this.titleEl.classList.add(REMOTE_PREVIEWER_TITLE_CLASS);
-    this.titleEl.innerHTML = doc.title;
     super.initTitle();
   }
 
@@ -180,14 +184,23 @@ export class RemoteBox extends Box {
     this.bodyEl.src = this.url;
     this.bodyEl.classList.add(REMOTE_PREVIEWER_BODY_CLASS);
 
-    const { headers } = await this.response;
+    const emptyBody = document.createElement('p');
+    emptyBody.classList.add(REMOTE_PREVIEWER_EMPTY_BODY_CLASS);
+
+    let headers: Headers;
+
+    try {
+      headers = (await this.response).headers;
+    } catch (error) {
+      emptyBody.innerHTML = `Fail to preview page: ${error}`;
+      this.bodyEl.replaceWith(emptyBody);
+      return;
+    }
 
     if (
       headers.has('x-frame-options') ||
       headers.get('content-security-policy')?.includes('frame-ancestors')
     ) {
-      const emptyBody = document.createElement('p');
-      emptyBody.classList.add(REMOTE_PREVIEWER_EMPTY_BODY_CLASS);
       emptyBody.innerHTML = 'This website prevents us from previewing.';
       this.bodyEl.replaceWith(emptyBody);
     }
