@@ -53,6 +53,7 @@ export type ExtendedEditor = {
 
 const HINT_ITEM_CLASS = 'note-link-hint';
 const HINT_ITEM_PATH_CLASS = 'note-link-hint-path';
+const HINT_ITEM_SELF_CLASS = 'note-link-hint-self';
 function isNoteHint(hint: Hint): hint is NoteHint {
   return 'note' in hint;
 }
@@ -365,7 +366,11 @@ export default class QuickLinker {
       render(container) {
         container.innerHTML =
           note.title +
-          (note.path ? `<span class="${HINT_ITEM_PATH_CLASS}">${note.path}</span>` : '');
+          (note.isCurrent
+            ? `<span class="${HINT_ITEM_SELF_CLASS}">SELF</span>`
+            : note.path
+            ? `<span class="${HINT_ITEM_PATH_CLASS}">${note.path}</span>`
+            : '');
       },
       note,
       ...(note.isCurrent ? { hint: () => this.hintForElements(note) } : null),

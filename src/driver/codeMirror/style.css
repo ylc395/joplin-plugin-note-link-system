@@ -47,6 +47,15 @@
   color: var(--joplin-color-faded);
 }
 
+.note-link-hint-self {
+  font-size: 0.8em;
+  border: solid 1px #b7eb8f;
+  background: #f6ffed;
+  color: #389e0d;
+  padding: 0 0.3em;
+  margin-left: 1em;
+}
+
 .note-link-folded-url {
   font-family: 'Font Awesome 5 Free' !important;
   color: var(--joplin-color-faded);
