@@ -9,7 +9,7 @@ import {
   QuerySettingRequest,
   REFERRER_IDENTIFIER_ENABLED_SETTING,
 } from 'driver/constants';
-import { MarkdownViewEvents, ROOT_ELEMENT_ID, FOOTNOTE_ITEM_CLASS_NAME } from './constants';
+import { MarkdownViewEvents, ROOT_ELEMENT_ID } from './constants';
 import type { MarkdownView } from './index';
 import { isIgnoredIdElement } from './utils';
 

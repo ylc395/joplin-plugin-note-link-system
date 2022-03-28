@@ -11,6 +11,8 @@ import {
   QUICK_LINK_ELEMENTS_ENABLED_SETTING,
   QUICK_LINK_AFTER_COMPLETION_SETTING,
   QUICK_LINK_CREATE_NOTE_SETTING,
+  FOOTNOTE_ID_PREFIX,
+  FOOTNOTE_ITEM_CLASS_NAME,
 } from 'driver/constants';
 import type { SearchResult, Note } from 'model/Referrer';
 import { ActionAfterCompletion } from './constants';
@@ -53,6 +55,10 @@ const HINT_ITEM_CLASS = 'note-link-hint';
 const HINT_ITEM_PATH_CLASS = 'note-link-hint-path';
 function isNoteHint(hint: Hint): hint is NoteHint {
   return 'note' in hint;
+}
+
+function isFootnote(el: HTMLElement) {
+  return el.id.startsWith(FOOTNOTE_ID_PREFIX) || el.classList.contains(FOOTNOTE_ITEM_CLASS_NAME);
 }
 
 export default class QuickLinker {
@@ -132,45 +138,46 @@ export default class QuickLinker {
     const document = new DOMParser().parseFromString(html, 'text/html');
     const isHeading = (el: Element) => ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(el.tagName);
 
-    // todo: filter footnote elements
-    return [...document.querySelectorAll('[id]')].map((el, index, els) => {
-      const level = isHeading(el)
-        ? Number(el.tagName[1])
-        : (() => {
-            for (let i = index; els[i]; i--) {
-              if (isHeading(els[i])) {
-                return Number(els[i].tagName[1]);
+    return ([...document.querySelectorAll('[id]')] as HTMLElement[])
+      .filter((el) => !isFootnote(el))
+      .map((el, index, els) => {
+        const level = isHeading(el)
+          ? Number(el.tagName[1])
+          : (() => {
+              for (let i = index; els[i]; i--) {
+                if (isHeading(els[i])) {
+                  return Number(els[i].tagName[1]);
+                }
               }
-            }
-            return 1;
-          })();
+              return 1;
+            })();
 
-      const icon = (() => {
-        if (!isHeading(el)) {
-          return boxIcon;
-        }
+        const icon = (() => {
+          if (!isHeading(el)) {
+            return boxIcon;
+          }
 
-        switch (level) {
-          case 1:
-            return h1Icon;
-          case 2:
-            return h2Icon;
-          case 3:
-            return h3Icon;
-          default:
-            return cardHeadingIcon;
-        }
-      })();
+          switch (level) {
+            case 1:
+              return h1Icon;
+            case 2:
+              return h2Icon;
+            case 3:
+              return h3Icon;
+            default:
+              return cardHeadingIcon;
+          }
+        })();
 
-      return {
-        text: isLink ? `[${el.id}](#${el.id})` : `#${el.id}`,
-        className: HINT_ITEM_CLASS,
-        elId: el.id,
-        render: (container) => {
-          container.innerHTML = `${' '.repeat(level - 1)}${icon}${el.id}`;
-        },
-      };
-    });
+        return {
+          text: isLink ? `[${el.id}](#${el.id})` : `#${el.id}`,
+          className: HINT_ITEM_CLASS,
+          elId: el.id,
+          render: (container) => {
+            container.innerHTML = `${' '.repeat(level - 1)}${icon}${el.id}`;
+          },
+        };
+      });
   }
 
   private async hintForElements(

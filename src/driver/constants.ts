@@ -31,7 +31,9 @@ export const URL_FOLD_ICON_SETTING = 'URL_FOLD_ICON_SETTING';
 export const NOTE_SEARCH_PATTERN_PLACEHOLDER = '$keyword';
 export const REFERRER_SEARCH_PATTERN_PLACEHOLDER = '$noteId';
 export const MAIN_MARK_CLASS_NAME = 'note-link-mark-main';
+export const FOOTNOTE_ID_PREFIX = 'fnref';
 
+export const FOOTNOTE_ITEM_CLASS_NAME = 'footnote-item';
 export const MARKDOWN_SCRIPT_ID = 'ylc395.noteLinkSystem.MARKDOWN_SCRIPT_ID';
 export const CODE_MIRROR_SCRIPT_ID = 'ylc395.noteLinkSystem.CODE_MIRROR_SCRIPT_ID';
 
