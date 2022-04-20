@@ -1,0 +1,40 @@
+<% for (const note of notes) { %>
+    <li>
+    <% if (textLength) { %>
+    <details<%= expand ? ' open' : '' %>>
+        <summary class="${REFERRER_TITLE_CONTAINER_CLASS_NAME}">
+    <% } %>
+        <a 
+            <%= currentNoteId === note.id ? 'data-is-self' : '' %>
+            data-note-link-referrer-id="<%= note.id %>"
+            class="<%= REFERRER_TITLE_CLASS_NAME %>"
+        >
+            <%= note.title %>
+        </a>
+        <span
+            title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
+            class="<%= LIST_ITEM_COUNT_CLASS_NAME %>"
+        >
+            <%= note.mentions.length %>
+        </span>
+    <% if (textLength) { %>
+        </summary>
+        <ol>
+        <% for (const [index, mention] of note.mentions.entries()) { %>
+            <li class="<% REFERENCE_ITEM_CLASS_NAME %>">
+            <a
+                class="<% REFERENCE_CLASS_NAME %>"
+                data-note-link-referrer-id="<%= note.id %>"
+                data-note-link-reference-index="<%= index + 1 %>"
+                data-note-link-to-element-id="<%= elId  %>"
+                <%= currentNoteId === note.id ? 'data-is-self' : '' %>
+            >
+                <%= mention %>
+            </a>
+            </li>
+        <% } %>
+        </ol>
+    </details>
+    <% } %>
+    </li>
+<% } %>

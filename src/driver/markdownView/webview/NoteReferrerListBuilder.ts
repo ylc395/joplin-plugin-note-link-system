@@ -20,6 +20,7 @@ import {
   REFERENCE_CLASS_NAME,
   REFERENCE_ITEM_CLASS_NAME,
 } from './constants';
+import listTemplate from './templates/noteReferrerList.ejs';
 import type { MarkdownView } from './index';
 
 declare const webviewApi: {
@@ -128,6 +129,11 @@ export class NoteReferrerListBuilder {
         ReferenceListExpandMode.ExpandBoth,
         ReferenceListExpandMode.ExpandNoteListOnly,
       ].includes(this.view.expandMode),
+      REFERRER_TITLE_CONTAINER_CLASS_NAME,
+      REFERRER_TITLE_CLASS_NAME,
+      REFERENCE_CLASS_NAME,
+      REFERENCE_ITEM_CLASS_NAME,
+      REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME,
     });
 
     for (const headingEl of listHeadingEls) {
@@ -139,44 +145,5 @@ export class NoteReferrerListBuilder {
     }
   }
 
-  private static renderList = template(`
-    <% for (const note of notes) { %>
-      <li>
-        <% if (textLength) { %>
-        <details<%= expand ? ' open' : '' %>>
-          <summary class="${REFERRER_TITLE_CONTAINER_CLASS_NAME}">
-        <% } %>
-            <a 
-              data-note-link-referrer-id="<%= note.id %>"
-              <%= currentNoteId === note.id ? 'data-is-self' : '' %>
-              class="${REFERRER_TITLE_CLASS_NAME}"
-            >
-              <span class="resource-icon fa-joplin"></span>
-              <%= note.title  %>
-            </a>
-            <span
-              title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
-              class="${REFERRER_LIST_REFERENCE_COUNT_CLASS_NAME}"
-            >
-              <%= note.mentions.length %>
-            </span>
-        <% if (textLength) { %>
-          </summary>
-          <ol>
-            <% for (const [index, mention] of note.mentions.entries()) { %>
-              <li class="${REFERENCE_ITEM_CLASS_NAME}">
-                <a
-                  class="${REFERENCE_CLASS_NAME}"
-                  data-note-link-referrer-id="<%= note.id %>"
-                  data-note-link-reference-index="<%= index + 1 %>"
-                  <%= currentNoteId === note.id ? 'data-is-self' : '' %>
-                > <%= mention %></a>
-              </li>
-            <% } %>
-          </ol>
-        </details>
-        <% } %>
-      </li>
-    <% } %>
-  `);
+  private static renderList = template(listTemplate);
 }

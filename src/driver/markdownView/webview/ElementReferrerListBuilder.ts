@@ -26,6 +26,7 @@ import {
 } from './constants';
 import { isIgnoredIdElement } from './utils';
 import type { MarkdownView } from './index';
+import listTemplate from './templates/elementReferrerList.ejs';
 
 declare const webviewApi: {
   postMessage: <T>(
@@ -192,51 +193,15 @@ export class ElementReferrerListBuilder {
         ReferenceListExpandMode.ExpandBoth,
         ReferenceListExpandMode.ExpandElementListOnly,
       ].includes(this.view.expandMode),
+      REFERRER_TITLE_CONTAINER_CLASS_NAME,
+      REFERRER_TITLE_CLASS_NAME,
+      REFERENCE_CLASS_NAME,
+      REFERENCE_ITEM_CLASS_NAME,
+      LIST_ITEM_COUNT_CLASS_NAME,
     });
 
     return olEL;
   }
 
-  private static renderList = template(`
-    <% for (const note of notes) { %>
-      <li>
-        <% if (textLength) { %>
-        <details<%= expand ? ' open' : '' %>>
-          <summary class="${REFERRER_TITLE_CONTAINER_CLASS_NAME}">
-        <% } %>
-            <a 
-              <%= currentNoteId === note.id ? 'data-is-self' : '' %>
-              data-note-link-referrer-id="<%= note.id %>"
-              class="${REFERRER_TITLE_CLASS_NAME}"
-            >
-              <%= note.title %>
-            </a>
-            <span
-              title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
-              class="${LIST_ITEM_COUNT_CLASS_NAME}"
-            >
-              <%= note.mentions.length %>
-            </span>
-        <% if (textLength) { %>
-          </summary>
-          <ol>
-            <% for (const [index, mention] of note.mentions.entries()) { %>
-              <li class="${REFERENCE_ITEM_CLASS_NAME}">
-                <a
-                  class="${REFERENCE_CLASS_NAME}"
-                  data-note-link-referrer-id="<%= note.id %>"
-                  data-note-link-reference-index="<%= index + 1 %>"
-                  data-note-link-to-element-id="<%= elId  %>"
-                  <%= currentNoteId === note.id ? 'data-is-self' : '' %>
-                >
-                    <%= mention %>
-                </a>
-              </li>
-            <% } %>
-          </ol>
-        </details>
-        <% } %>
-      </li>
-    <% } %>
-  `);
+  private static renderList = template(listTemplate);
 }

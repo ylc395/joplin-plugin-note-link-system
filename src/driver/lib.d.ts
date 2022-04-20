@@ -4,3 +4,7 @@ declare module 'markdown-it-footnote';
 declare module '@fczbkk/url-match';
 declare module 'markdown-it-bracketed-spans';
 declare module '*.svg';
+declare module '*.ejs' {
+  const content: string;
+  export default content;
+}

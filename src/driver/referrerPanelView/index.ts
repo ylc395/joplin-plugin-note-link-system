@@ -10,6 +10,7 @@ import {
   REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH,
 } from 'driver/constants';
 import type SearchEngine from '../joplin/SearchEngine';
+import indexTemplate from './index.ejs';
 
 export class ReferrerPanelView {
   constructor(
@@ -95,55 +96,7 @@ export class ReferrerPanelView {
     }
   }
 
-  private static render = template(`
-    <style><%= stylesheet %></style>
-    <div id="root">
-      <h1><%= panelTitle %></h1>
-      <% if (notes.length > 0) { %>
-        <ol class="referrer-list">
-          <% for (const note of notes) { %>
-            <li>
-              <% if (textLength) { %>
-              <details<%= expand ? ' open' : '' %>>
-                <summary class="title-container">
-              <% } %>
-                  <span>
-                    <a
-                      class="referrer-title"
-                      <%= currentNoteId === note.id ? 'data-is-self' : '' %>
-                      data-note-id="<%= note.id %>"
-                    >
-                      <%= note.title %>
-                    </a>
-                    <span
-                      class="count"
-                      title="<%= note.mentions.length %> reference<%= note.mentions.length > 1 ? 's' : '' %> from this note"
-                    >
-                      <%= note.mentions.length %>
-                    </span>
-                  </span>
-                <% if (textLength) { %>
-                </summary>
-                <ol class="reference-list">
-                  <% for (const [index, mention] of note.mentions.entries()) { %>
-                    <li class="reference-item">
-                      <a
-                        class="reference"
-                        <%= currentNoteId === note.id ? 'data-is-self' : '' %>
-                        data-note-id="<%= note.id %>"
-                        data-reference-index="<%= index + 1 %>"><%= mention %></a>
-                    </li>
-                  <% } %>
-                </ol>
-              </details>
-                <% } %>
-          <% } %>
-        </ol>
-      <% } else { %>
-        <p class="no-referrers">No referrers.</p>
-      <% } %>
-    </div>
-  `);
+  private static render = template(indexTemplate);
 
   private async refresh() {
     if (!this.currentNoteId) {
