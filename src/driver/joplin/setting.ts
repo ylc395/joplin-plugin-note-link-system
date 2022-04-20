@@ -41,7 +41,7 @@ export const SECTION_NAME = 'Note Link';
 
 const setting: Record<string, SettingItem> = {
   [REFERRER_LIST_HEADING_SETTING]: {
-    label: 'Markdown View: Referrers List Heading Text',
+    label: 'Markdown View - Referrers: Referrers List Heading Text',
     type: SettingItemType.String,
     public: true,
     value: 'Backlinks', // compatible with [Automatic backlinks Plugin](https://discourse.joplinapp.org/t/insert-referencing-notes-backlinks-plugin/13632)
@@ -49,7 +49,7 @@ const setting: Record<string, SettingItem> = {
     description: 'Text in Headings(h1-h6) for auto & manually inserted referrers list',
   },
   [REFERRER_AUTO_LIST_POSITION_SETTING]: {
-    label: 'Markdown View: Auto Inserted Referrers List Position',
+    label: 'Markdown View - Referrers: Auto Inserted Referrers List Position',
     type: SettingItemType.Int,
     isEnum: true,
     public: true,
@@ -64,7 +64,7 @@ const setting: Record<string, SettingItem> = {
     },
   },
   [REFERRER_LIST_MENTION_TEXT_MAX_LENGTH]: {
-    label: 'Markdown View: Max Text Length Of Digest Of Referrer Of Note',
+    label: 'Markdown View - Referrers: Max Text Length Of Digest Of Referrer Of Note',
     type: SettingItemType.Int,
     public: true,
     value: 120,
@@ -72,14 +72,14 @@ const setting: Record<string, SettingItem> = {
     description: 'Left 0 to disabled digest to get better performance',
   },
   [REFERRER_ELEMENT_NUMBER_ENABLED]: {
-    label: 'Markdown View: Enable Searching Referrers For Elements',
+    label: 'Markdown View - Referrers: Enable Searching Referrers For Elements',
     type: SettingItemType.Bool,
     public: true,
     value: true,
     section: SECTION_NAME,
   },
   [REFERRER_ELEMENT_NUMBER_TYPE]: {
-    label: 'Markdown View: Which Number Should Be Displayed For Referred Elements',
+    label: 'Markdown View - Referrers: Which Number Should Be Displayed For Referred Elements',
     type: SettingItemType.Int,
     isEnum: true,
     public: true,
@@ -92,7 +92,7 @@ const setting: Record<string, SettingItem> = {
     },
   },
   [REFERRER_ELEMENT_MENTION_TEXT_MAX_LENGTH]: {
-    label: 'Markdown View: Max Text Length Of Digest Of Referrer Of Elements',
+    label: 'Markdown View - Referrers: Max Text Length Of Digest Of Referrer Of Elements',
     type: SettingItemType.Int,
     public: true,
     value: 120,
@@ -102,7 +102,7 @@ const setting: Record<string, SettingItem> = {
   [REFERRER_VIEW_REFERENCE_EXPAND_SETTING]: {
     section: SECTION_NAME,
     public: true,
-    label: 'Markdown View: Expand reference list by default',
+    label: 'Markdown View - Referrers: Expand reference list by default',
     type: SettingItemType.Int,
     isEnum: true,
     value: ReferenceListExpandMode.ExpandNone,
@@ -114,14 +114,28 @@ const setting: Record<string, SettingItem> = {
     },
   },
   [REFERRER_IDENTIFIER_ENABLED_SETTING]: {
-    label: 'Markdown View: Enable Identifier Icon For Copying Url',
+    label: 'Markdown View - Copy Anchor: Enable Identifier Icon For Copying Url',
     type: SettingItemType.Bool,
     public: true,
     value: true,
     section: SECTION_NAME,
   },
+  [PREVIEWER_ENABLED_SETTING]: {
+    label: 'Markdown Viewer - Previewer: Enable',
+    type: SettingItemType.Bool,
+    public: true,
+    value: true,
+    section: SECTION_NAME,
+  },
+  [PREVIEWER_HOVER_DELAY_SETTING]: {
+    label: 'Markdown Viewer - Previewer: Hover Delay Time(ms)',
+    type: SettingItemType.Int,
+    public: true,
+    value: 800,
+    section: SECTION_NAME,
+  },
   [URL_ICON_ENABLED_SETTING]: {
-    label: 'Markdown View: Enable Icon for External Url',
+    label: 'Markdown View - Url Icon: Enable Icon for External Url',
     type: SettingItemType.Bool,
     public: true,
     value: true,
@@ -136,21 +150,21 @@ const setting: Record<string, SettingItem> = {
     description: 'Display referrers in panel',
   },
   [REFERRER_PANEL_TITLE_SETTING]: {
-    label: 'Panel: Title',
+    label: 'Referrers Panel: Title',
     type: SettingItemType.String,
     public: true,
     value: 'REFERRERS',
     section: SECTION_NAME,
   },
   [REFERRER_PANEL_REFERENCE_EXPAND_SETTING]: {
-    label: 'Panel: Expand Reference List By Default',
+    label: 'Referrers Panel: Expand Reference List By Default',
     type: SettingItemType.Bool,
     public: true,
     value: false,
     section: SECTION_NAME,
   },
   [REFERRER_PANEL_MENTION_TEXT_MAX_LENGTH]: {
-    label: 'Panel: Max Text Length Of Digest Of Referrer',
+    label: 'Referrers Panel: Max Text Length Of Digest Of Referrer',
     type: SettingItemType.Int,
     public: true,
     value: 120,
@@ -158,7 +172,7 @@ const setting: Record<string, SettingItem> = {
     description: 'Left 0 to disabled digest to get better performance',
   },
   [QUICK_LINK_SYMBOL_SETTING]: {
-    label: 'Quick Link: Symbols To Trigger',
+    label: 'Editor - Quick Link: Symbols To Trigger',
     type: SettingItemType.String,
     public: true,
     value: '@@',
@@ -166,28 +180,28 @@ const setting: Record<string, SettingItem> = {
     section: SECTION_NAME,
   },
   [QUICK_LINK_SHOW_PATH_SETTING]: {
-    label: 'Quick Link: Display Path Of Note',
+    label: 'Editor - Quick Link: Display Path Of Note',
     type: SettingItemType.Bool,
     public: true,
     value: false,
     section: SECTION_NAME,
   },
   [QUICK_LINK_ELEMENTS_ENABLED_SETTING]: {
-    label: 'Quick Link: Enable Link To Element',
+    label: 'Editor - Quick Link: Enable Link To Element',
     type: SettingItemType.Bool,
     public: true,
     value: true,
     section: SECTION_NAME,
   },
   [QUICK_LINK_CREATE_NOTE_SETTING]: {
-    label: 'Quick Link: Enable Create New Note',
+    label: 'Editor - Quick Link: Enable Create New Note',
     type: SettingItemType.Bool,
     public: true,
     value: false,
     section: SECTION_NAME,
   },
   [QUICK_LINK_AFTER_COMPLETION_SETTING]: {
-    label: 'Quick Link: What Happen After Completion',
+    label: 'Editor - Quick Link: What Happen After Completion',
     isEnum: true,
     type: SettingItemType.Int,
     public: true,
@@ -199,7 +213,7 @@ const setting: Record<string, SettingItem> = {
     section: SECTION_NAME,
   },
   [URL_FOLD_ICON_SETTING]: {
-    label: 'Fold Url: Fold url of links and images in editor',
+    label: 'Editor - Fold Url: Fold url of links and images in editor',
     isEnum: true,
     type: SettingItemType.Int,
     public: true,
@@ -209,20 +223,6 @@ const setting: Record<string, SettingItem> = {
       [FoldUrlIconType.Ellipsis]: 'Fold into ellipsis',
       [FoldUrlIconType.Icon]: 'Fold into icon',
     },
-    section: SECTION_NAME,
-  },
-  [PREVIEWER_ENABLED_SETTING]: {
-    label: 'Previewer: Enable',
-    type: SettingItemType.Bool,
-    public: true,
-    value: true,
-    section: SECTION_NAME,
-  },
-  [PREVIEWER_HOVER_DELAY_SETTING]: {
-    label: 'Previewer: Hover Delay Time(ms)',
-    type: SettingItemType.Int,
-    public: true,
-    value: 800,
     section: SECTION_NAME,
   },
   [EXTRA_SYNTAX_ENABLED_SETTING]: {
@@ -237,13 +237,13 @@ const setting: Record<string, SettingItem> = {
 
   // below are advanced
   [REFERRER_PANEL_STYLESHEET_SETTING]: {
-    label: 'Panel: Stylesheet',
+    label: 'Referrers Panel: Stylesheet',
     type: SettingItemType.String,
     public: true,
     advanced: true,
     section: SECTION_NAME,
     value: '',
-    description: 'CSS For panel',
+    description: 'CSS For referrers panel',
   },
   [QUICK_LINK_SEARCH_PATTERN_SETTING]: {
     section: SECTION_NAME,
@@ -264,7 +264,7 @@ const setting: Record<string, SettingItem> = {
     description: `Search filter for searching for referrers. Filters can be found at https://joplinapp.org/help/#search-filters. ${REFERRER_SEARCH_PATTERN_PLACEHOLDER} is the placeholder for note id of current note.`,
   },
   [PREVIEWER_URL_BLACKLIST_SETTING]: {
-    label: 'Previewer: Url Blacklist',
+    label: 'Markdown Viewer - Previewer: Url Blacklist',
     type: SettingItemType.String,
     public: true,
     advanced: true,
