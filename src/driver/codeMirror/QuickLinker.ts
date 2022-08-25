@@ -171,7 +171,7 @@ export default class QuickLinker {
         })();
 
         return {
-          text: isLink ? `[${el.id}](#${el.id})` : `#${el.id}`,
+          text: (isLink && !this.isUrlOnly) ? `[${el.id}](#${el.id})` : `#${el.id}`,
           className: HINT_ITEM_CLASS,
           elId: el.id,
           render: (container) => {
@@ -385,6 +385,7 @@ export default class QuickLinker {
     };
 
     this.cm.on(completion, 'pick', ((hint: Hint) => {
+      // if is current note, just skip
       if (!isNoteHint(hint) || hint.note.isCurrent) {
         return;
       }
